@@ -14,6 +14,17 @@ This project is **audio-library agnostic** by design. The **core SID emulation a
 - 🔗 **C Bindings for Zig**: Provides clean **C bindings** to the simplified C++ framework, making **SID sound playback** in Zig straightforward and seamless.
 - 🎧 **Audio Backend Flexibility**: The framework allows easy integration with different audio libraries; SDL2 is used in the current example.
 
+## 🎼 **Audio and SID Chip Details**
+
+- 🎵 **Stereo Audio Output**: The generated audio fills a **stereo buffer**, providing the **SID mono signal** at **equal levels** on both **left and right** channels.
+- 🎚️ **Default Sampling Rate**: Set to **44.1kHz** by default. The sampling rate is **changeable at runtime** via the provided API, allowing flexible playback configurations.
+- 🎛️ **SID Chip Model Selection**:
+  - **SID6581**: Classic SID sound with characteristic filter behavior.
+  - **SID8580**: Enhanced model with improved signal-to-noise ratio (**default**).
+- 🌟 **Highest Emulation Quality**: The emulation quality is **fixed** at the **highest level** supported by the **ReSID** library: 
+  
+  > **SAMPLE_RESAMPLE_INTERPOLATE** – providing superior sound fidelity with resampling and interpolation techniques.
+
 ## 💡 How It Works
 
 This project bridges the gap between C++, C, and Zig:
@@ -28,8 +39,8 @@ This project bridges the gap between C++, C, and Zig:
 
 ```zig
 const std = @import("std");
-const ReSID = @import("reSID.zig").ReSID;
-const ReSIDDmpPlayer = @import("reSID.zig").ReSIDDmpPlayer;
+const ReSID = @import("ReSID.zig").ReSID;
+const ReSIDDmpPlayer = @import("ReSIDDmpPlayer.zig").ReSIDDmpPlayer;
 
 pub fn main() !void {
     const stdout = std.io.getStdOut().writer();
@@ -46,6 +57,10 @@ pub fn main() !void {
     defer player.deinit();
 
     player.play();
+    while (true) {
+        player.update();
+        // Add playback logic or break conditions if needed
+    }
 }
 ```
 
@@ -67,13 +82,13 @@ zig build run
 Or execute the binary directly:
 
 ```bash
-./zig-out/bin/zig_sid_demo
+LD_LIBRARY_PATH=. ./zig-out/bin/zig_sid_demo
 ```
 
 ## 🎧 License
 
-This project uses the **reSID** library and follows its licensing terms. The Zig and C bindings code is provided under the **MIT License**.
+This project uses the **ReSID** library and follows its licensing terms. The Zig and C bindings code is provided under the **MIT License**.
 
 ---
 
-✨ *SID sound made simple. Powered by reSID. Integrated with Zig.* ✨
+✨ *SID sound made simple. Powered by ReSID. Integrated with Zig.* ✨
