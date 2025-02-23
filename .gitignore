@@ -1,0 +1,10 @@
+*.o
+*.so
+wrapper_demo
+.zig-cache
+main
+zigsid_wrapper
+zig-out
+
+
+
