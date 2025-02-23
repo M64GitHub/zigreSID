@@ -32,15 +32,15 @@ public:
     // returns 1 on end of dump
     int Update();
 
-    int FillAudioBuffer();
+    int FillAudioBuffer(); // audio buffer fill: samples until next frame
     void SDL_audio_callback(void *userdata, unsigned char *stream, int len);
 
-    ReSIDPbData *GetPBData();
+    ReSIDPbData *GetPBData() const;
 
-    short outputs[3];
+    short outputs[3]; // channel amplitude for visualizers, etc.
 
-    unsigned int dmp_idx;
 private:
+    unsigned int dmp_idx; // inted into played sid dump
     int set_next_regs(); // called on each frame by fill_audio_buffer
 
     ReSID *R;
@@ -49,9 +49,6 @@ private:
     // sid dmp
     unsigned char *dmp;
     unsigned int dmp_len;
-    // unsigned int dmp_idx;
-
-    // audio buffer fill: samples until next frame
     int samples2do; // 882
 };
 

@@ -28,7 +28,7 @@ void ReSIDDmpPlayer::SetDmp(unsigned char *dump, unsigned int len)
     printf("[DMPPL] sid dump set\n"); 
 }
 
-ReSIDPbData *ReSIDDmpPlayer::GetPBData()
+ReSIDPbData *ReSIDDmpPlayer::GetPBData() const
 {
     return D;
 }
@@ -99,9 +99,6 @@ int ReSIDDmpPlayer::FillAudioBuffer()
 
     while( (bufpos + samples2do) < CFG_AUDIO_BUF_SIZE ) {
         cycles2do = (R->CYCLES_PER_SAMPLE * samples2do + 0.5);
-        // printf("[DMPPl] frame: %lu, samples2do: %d, cycles2do: %d, ctr: %lu\n", 
-        //        D->stat_framectr, 
-        //        samples2do, cycles2do, D->stat_cnt);
         R->Clock(cycles2do, D->buf_next + bufpos, CFG_AUDIO_BUF_SIZE);
         bufpos += samples2do;
 
@@ -114,8 +111,6 @@ int ReSIDDmpPlayer::FillAudioBuffer()
 
     remainder = CFG_AUDIO_BUF_SIZE - bufpos;
     cycles2do = ((double) remainder * R->CYCLES_PER_SAMPLE + 0.5);
-    // printf("[DMPPl] remainder: %d, bufpos: %d, cycles2do: %d\n",
-    //        remainder, bufpos, cycles2do);
     R->Clock(cycles2do, D->buf_next + bufpos, CFG_AUDIO_BUF_SIZE);
     samples2do -= remainder;
     bufpos = 0;
