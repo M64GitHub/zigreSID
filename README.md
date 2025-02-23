@@ -132,7 +132,7 @@ zig build run
 Or execute the binary directly:
 
 ```bash
-LD_LIBRARY_PATH=. ./zig-out/bin/zig_sid_demo
+./zig-out/bin/zig_sid_demo
 ```
 
 ## 🎧 **Zig API Documentation**
@@ -144,7 +144,7 @@ LD_LIBRARY_PATH=. ./zig-out/bin/zig_sid_demo
 - `getName() [*:0]const u8`: Returns the **name** of the SID instance.
 - `setDBGOutput(enable: bool)`: Enables (**true**) or disables (**false**) **debug output**.
 - `setChipModel(model: [*:0]const u8) bool`: Sets the **SID chip model** (**"MOS6581"** or **"MOS8580"**, default is 8580).
-- `setSamplingRate(rate: c_int)`: Sets the **sampling rate** (default **44100 Hz**, changeable at runtime).
+- `setSamplingRate(rate: c_int)`: Sets the **sampling rate** (default **44100 Hz**).
 - `getSamplingRate() c_int`: Returns the **current sampling rate**.
 
 ---
@@ -157,10 +157,9 @@ LD_LIBRARY_PATH=. ./zig-out/bin/zig_sid_demo
 - `stop()`: **Stops** and **resets** playback.
 - `pause()`: **Pauses** playback (audio generation stops).
 - `continuePlayback()`: **Continues** playback after pausing.
-- `update()`: **Updates** the **audio buffer**; should be called regularly.
-- `fillAudioBuffer() c_int`: **Fills** the audio buffer; returns **1** when the dump finishes.
+- `update()`: **Updates** the **audio buffer**; call this when not using callbacks. Returns 1, when the end of playback is reached
 - `setDmp(dump: [*c]u8, len: c_uint)`: Loads a **SID dump** for playback (**must be called before** `play()`).
-- `getPBData() *c.ReSIDPbData`: Returns a **pointer to playback data**.
+- `getPBData() *c.ReSIDPbData`: Returns a **pointer to playback data**. For advanced use
 - `getAudioCallback() *const fn(...)`: Provides the **SDL-compatible audio callback** for integration with **SDL2**.
 
 
