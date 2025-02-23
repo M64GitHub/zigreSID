@@ -77,7 +77,7 @@ bool ReSID::SetChipModel(const char *m)
 void ReSID::SetSamplingRate(int r)
 {
     sampling_rate = r;
-    sid.set_sampling_parameters(985248, SAMPLE_RESAMPLE_INTERPOLATE,
+    sid.set_sampling_parameters(985248, SAMPLE_INTERPOLATE,
                                 sampling_rate);
 }
 
