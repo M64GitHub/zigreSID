@@ -147,7 +147,7 @@ Or execute the binary directly:
 - `deinit()`: Frees the **SID instance**.
 - `getName() [*:0]const u8`: Returns the **name** of the SID instance.
 - `setDBGOutput(enable: bool)`: Enables (**true**) or disables (**false**) **debug output**.
-- `setChipModel(model: [*:0]const u8) bool`: Sets the **SID chip model** (**"MOS6581"** or **"MOS8580"**, default is 8580).
+- `setChipModel(model: [*:0]const u8) bool`: Sets the **SID chip model** (**"MOS6581"** or **"MOS8580"**, default is MOS8580).
 - `setSamplingRate(rate: c_int)`: Sets the **sampling rate** (default **44100 Hz**).
 - `getSamplingRate() c_int`: Returns the **current sampling rate**.
 
