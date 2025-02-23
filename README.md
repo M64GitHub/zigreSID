@@ -13,7 +13,7 @@ This project provides **SID soundchip emulation** for **Zig**, enabling you to g
 
 This project bridges the gap between C++, C, and Zig:
 
-1. **ReSID C++ Library**: Handles low-level SID emulation.
+1. **reSID C++ Library**: Handles low-level SID emulation.
 2. **Simplified C++ Framework**: A custom wrapper that manages timing, buffer generation, and playback logic, so you don’t have to.
 3. **C Bindings**: Exposes key C++ functionalities through a clean C interface.
 4. **Zig Wrapper**: Object-oriented style Zig code that wraps the C bindings, providing an intuitive API for playback and control.
