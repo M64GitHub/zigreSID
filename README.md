@@ -5,7 +5,8 @@ This project provides **SID soundchip emulation** for **Zig**, enabling you to g
 ## 🚀 Features
 
 - 🎹 **SID Soundchip Emulation for Zig**: Experience the legendary SID sound directly in your Zig projects.
-- ⚡ **Powered by ReSID**: Leverages the proven **reSID** C++ library (https://github.com/daglem/reSID) for high-quality sound emulation.
+- ⚡ **Powered by reSID**: Leverages the proven **reSID** C++ library for high-quality sound emulation.  
+(https://github.com/daglem/reSID) 
 - 🔧 **Simplified C++ Framework**: All complex timing calculations and internal audio buffer management are handled automatically, allowing you to focus solely on the high-level API.
 - 🔗 **C Bindings for Zig**: Provides clean **C bindings** to the simplified C++ framework, making **SID sound playback** in Zig straightforward and seamless.
 
@@ -40,10 +41,6 @@ pub fn main() !void {
     defer player.deinit();
 
     player.play();
-    while (true) {
-        player.update();
-        // Add playback logic or break conditions if needed
-    }
 }
 ```
 
