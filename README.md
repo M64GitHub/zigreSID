@@ -21,7 +21,7 @@ This project is **audio-library agnostic** by design. The **core SID emulation a
 - 🎛️ **SID Chip Model Selection**:
   - **SID6581**: Classic SID sound with characteristic filter behavior.
   - **SID8580**: Enhanced model with improved signal-to-noise ratio (**default**).
-- 🌟 **Highest Emulation Quality**: The emulation quality is **fixed** at the **highest level** supported by the **ReSID** library: 
+- 🌟 **Highest Emulation Quality**: The emulation quality is **fixed** at the **highest level** supported by the reSID library: 
   
   > **SAMPLE_RESAMPLE_INTERPOLATE** – providing superior sound fidelity with resampling and interpolation techniques.
 
