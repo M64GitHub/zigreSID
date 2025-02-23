@@ -17,10 +17,7 @@ pub fn main() !void {
 
     var sid = try ReSID.init("MyZIGSID");
     defer sid.deinit();
-
-    sid.setSamplingRate(samplingRate);
-    sid.setDBGOutput(true);
-    _ = sid.setChipModel("MOS6581");
+    _ = sid.setChipModel("MOS8580");
 
     // -- create player and initialize it with a demo sound
 

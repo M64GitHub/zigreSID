@@ -5,31 +5,27 @@
 #include "resid-dmpplayer.h"
 #include "dmpplayer-pbdata.h"
 
-ReSIDDmpPlayer::ReSIDDmpPlayer(ReSID *r)
+ReSIDDmpPlayer::ReSIDDmpPlayer(ReSID *r) :
+    R(r), dmp(0), dmp_idx(0), dmp_len(0),samples2do(0)
 {
-    R = r; 
     D = new ReSIDPbData();
-
-    dmp = 0;
-    dmp_len = 0;
-    dmp_idx = 0;
-    samples2do = 0; 
 
     D->buf_playing = 0;
     D->buf_next = 0;
-
 
     printf("[DMPPL] ReSID dump player initialized\n"); 
 }
 
 ReSIDDmpPlayer::~ReSIDDmpPlayer()
 {
+    delete D;
 }
 
 void ReSIDDmpPlayer::SetDmp(unsigned char *dump, unsigned int len)
 {
     dmp = dump;
     dmp_len = len;
+    printf("[DMPPL] sid dump set\n"); 
 }
 
 ReSIDPbData *ReSIDDmpPlayer::GetPBData()
@@ -38,6 +34,7 @@ ReSIDPbData *ReSIDDmpPlayer::GetPBData()
 }
 
 // call this frequently, to never underrun audio buffer fill
+// returns 1 on end of playback
 int ReSIDDmpPlayer::Update()
 {
     if(!D->buf_consumed) return 0;
@@ -51,8 +48,6 @@ void ReSIDDmpPlayer::Play()
 {
     if(!dmp || !dmp_len) return;
 
-    // prepare buffer for first playback
-//    dmp_idx = 0;
     D->buf_playing = 0;
     D->buf_next = D->buf1;
     set_next_regs();
