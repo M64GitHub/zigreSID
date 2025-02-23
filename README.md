@@ -23,8 +23,8 @@ This project bridges the gap between C++, C, and Zig:
 
 ```zig
 const std = @import("std");
-const ReSID = @import("ReSID.zig").ReSID;
-const ReSIDDmpPlayer = @import("ReSIDDmpPlayer.zig").ReSIDDmpPlayer;
+const ReSID = @import("reSID.zig").ReSID;
+const ReSIDDmpPlayer = @import("reSID.zig").ReSIDDmpPlayer;
 
 pub fn main() !void {
     const stdout = std.io.getStdOut().writer();
