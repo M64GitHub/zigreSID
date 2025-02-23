@@ -58,8 +58,7 @@ pub fn main() !void {
     defer sid.deinit();
 
     sid.setSamplingRate(samplingRate);
-    sid.setDBGOutput(true);
-    _ = sid.setChipModel("MOS6581");
+    _ = sid.setChipModel("MOS8580");
 
     // -- create player and initialize it with a demo sound
 
