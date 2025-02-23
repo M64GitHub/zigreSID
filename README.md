@@ -11,7 +11,7 @@ This project is **audio-library agnostic** by design. The **core SID emulation a
 - ⚡ **Powered by reSID**: Leverages the proven **reSID** C++ library for high-quality sound emulation.  
 (https://github.com/daglem/reSID)
 - 🔧 **Simplified C++ Framework**: All complex timing calculations and internal audio buffer management are handled automatically, allowing you to focus solely on the high-level API.
-- 🔗 **C Bindings for Zig**: Provides clean **C bindings** to the simplified C++ framework, making **SID sound playback** in Zig straightforward and seamless.
+- 🔗 **C Bindings for Zig**: Provides clean **C bindings** to the simplified C++ framework, making **SID sound playback in Zig** straightforward and seamless.
 - 🎧 **Audio Backend Flexibility**: The framework allows easy integration with different audio libraries; SDL2 is used in the current example.
 
 ## 🎼 **Audio and SID Chip Details**
@@ -19,7 +19,7 @@ This project is **audio-library agnostic** by design. The **core SID emulation a
 - 🎵 **Stereo Audio Output**: The generated audio fills a **stereo buffer**, providing the SID mono signal at equal levels on both left and right channels.
 - 🎚️ **Default Sampling Rate**: Set to **44.1kHz** by default. The sampling rate is **changeable at runtime** via the provided API
 - 🎛️ **SID Chip Model Selection**:
-  - **SID6581**: Classic SID sound with characteristic filter behavior.
+  - **SID6581**: Classic SID sound with characteristic filter behavior, more bassy sound
   - **SID8580**: Enhanced model with improved signal-to-noise ratio (**default**).
 - **Highest Emulation Quality**: The emulation quality is fixed to the **highest level** supported by the reSID library: **SAMPLE_RESAMPLE_INTERPOLATE** – providing superior sound fidelity with resampling and interpolation techniques.
 
@@ -31,7 +31,7 @@ This project bridges the gap between C++, C, and Zig:
 2. **Simplified C++ Framework**: A custom wrapper that manages timing, buffer generation, and playback logic, so you don’t have to.
 3. **C Bindings**: Exposes key C++ functionalities through a clean C interface.
 4. **Zig Wrapper**: Object-oriented style Zig code that wraps the C bindings, providing an intuitive API for playback and control.
-5. **SDL2 Audio Interface**: The current implementation uses SDL2 for audio playback, but this can be replaced or extended.
+5. **SDL2 Audio Interface**: The current demo code uses SDL2 for audio playback, but this can be replaced or extended.
 
 ## 🎼 Example Usage
 
