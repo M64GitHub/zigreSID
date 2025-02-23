@@ -18,6 +18,8 @@ public:
 
     void SetChipModel(chip_model m);
     bool SetChipModel(const char *m);
+    void SetSamplingRate(int r);
+    int  GetSamplingRate();
     void WriteRegs(unsigned char *regs, int len);
 
     // dumb audio rendering, not frame aware
@@ -37,6 +39,7 @@ private:
     char name[1024];
     SID  sid;
     chip_model model;
+    int sampling_rate;
     bool dbg_output;
 };
 

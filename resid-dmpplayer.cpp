@@ -39,7 +39,7 @@ ReSIDPbData *ReSIDDmpPlayer::GetPBData()
 int ReSIDDmpPlayer::Update()
 {
     if(!D->buf_consumed) return 0;
-    if(fill_audio_buffer()) return 1; // end of dmp reached
+    if(FillAudioBuffer()) return 1; // end of dmp reached
     D->buf_consumed = 0;
 
     return 0;
@@ -55,7 +55,7 @@ void ReSIDDmpPlayer::Play()
     D->buf_next = D->buf1;
     set_next_regs();
     samples2do = R->SAMPLES_PER_FRAME;
-    fill_audio_buffer();
+    FillAudioBuffer();
     D->buf_lock = 0;
 
     // start audio playback
@@ -92,7 +92,7 @@ int ReSIDDmpPlayer::set_next_regs()
     return 0;
 }
 
-int ReSIDDmpPlayer::fill_audio_buffer()
+int ReSIDDmpPlayer::FillAudioBuffer()
 {
     int bufpos    = 0;
     int remainder = 0;
@@ -132,3 +132,5 @@ int ReSIDDmpPlayer::LoadDmp(unsigned char *filename)
 
     return 0; 
 }
+
+

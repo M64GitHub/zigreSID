@@ -29,6 +29,17 @@ extern "C" {
         return resid->SetChipModel(m);
     }
 
+    
+    void ReSID_setSamplingRate(ReSID *resid, int r)
+    {
+        resid->SetSamplingRate(r);
+    }
+
+    int  ReSID_getSamplingRate(ReSID *resid)
+    {
+        return resid->GetSamplingRate();
+    }
+
 // -- ReSIDDmpPlayer
 
     ReSIDDmpPlayer* ReSIDDmpPlayer_create(ReSID *r)
@@ -66,9 +77,23 @@ extern "C" {
         dmpply->Update();
     }
 
-    ReSIDPbData    *ReSIDDmpPlayer_getPBData(ReSIDDmpPlayer* dmpply)
+    ReSIDPbData *ReSIDDmpPlayer_getPBData(ReSIDDmpPlayer* dmpply)
     {
         return dmpply->GetPBData();
+    }
+
+    int ReSIDDmpPlayer_fillAudioBuffer(ReSIDDmpPlayer* dmpply)
+    {
+        return dmpply->FillAudioBuffer();
+    }
+
+    
+    void ReSIDDmpPlayer_SDL_audio_callback(ReSIDDmpPlayer* dmpply, 
+                                                      void *userdata, 
+                                                      unsigned char *stream, 
+                                                      int len)
+    {
+        
     }
 
 }

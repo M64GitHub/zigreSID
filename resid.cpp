@@ -8,8 +8,9 @@ ReSID::ReSID(const char *n) : dbg_output(false)
 {
     strncpy(name, n, 1024);
     if(dbg_output) printf("[ReSID::%s] ReSID initializing ...\n", name);
+    sampling_rate = 44100;
 
-    sid.set_sampling_parameters(985248, SAMPLE_RESAMPLE_INTERPOLATE, 44100);
+    SetSamplingRate(sampling_rate);
 
     SetChipModel(MOS8580);
 
@@ -71,6 +72,18 @@ bool ReSID::SetChipModel(const char *m)
     return model_known;
 }
 
+void ReSID::SetSamplingRate(int r)
+{
+    sampling_rate = r;
+    sid.set_sampling_parameters(985248, SAMPLE_RESAMPLE_INTERPOLATE, 
+                                sampling_rate);
+}
+
+int ReSID::GetSamplingRate()
+{
+    return  sampling_rate;
+}
+
 void ReSID::WriteRegs(unsigned char *regs, int len)
 {
     for(int i=0; i<len; i++) {
@@ -96,7 +109,7 @@ void ReSID::precalc_constants()
     // SAMPLES_PER_FRAME
     //
     // 44.1 kHz =  22.676... us
-    d1 = ((double) 1000.0) / ((double) CFG_AUDIO_SAMPLING_RATE);
+    d1 = ((double) 1000.0) / ((double) sampling_rate);
     // 50 Hz = 20ms. => 20000us / 22.676 us = 882.00144  
     d1 = ((double) 20.0) / d1;
     SAMPLES_PER_FRAME = (int) d1;
@@ -110,7 +123,7 @@ void ReSID::precalc_constants()
     // CYCLES_PER_SAMPLE
     //
     // 44.1 kHz =  22.676 us
-    d3 = ((double) 1000000.0) / ((double) CFG_AUDIO_SAMPLING_RATE);
+    d3 = ((double) 1000000.0) / ((double) sampling_rate);
     // 1 cycle = 1,015us => 22676 / 1.015
     d3 = d3 / ((double) 1.015);
     CYCLES_PER_SAMPLE = d3;

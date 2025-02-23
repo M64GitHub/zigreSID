@@ -26,6 +26,14 @@ pub const ReSID = struct {
     pub fn setChipModel(self: *ReSID, model: [*:0]const u8) bool {
         return c.ReSID_setChipModel(self.ptr, model);
     }
+
+    pub fn setSamplingRate(self: *ReSID, rate: i32) void {
+        c.ReSID_setSamplingRate(self.ptr, rate);
+    }
+
+    pub fn getSamplingRate(self: *ReSID) i32 {
+        return c.ReSID_getSamplingRate(self.ptr);
+    }
 };
 
 pub const ReSIDDmpPlayer = struct {
@@ -52,7 +60,7 @@ pub const ReSIDDmpPlayer = struct {
         c.ReSIDDmpPlayer_pause(self.ptr);
     }
 
-    pub fn continuePlayback(self: *ReSIDDmpPlayer) void {
+    pub fn continue_play(self: *ReSIDDmpPlayer) void {
         c.ReSIDDmpPlayer_continue(self.ptr);
     }
 
@@ -62,5 +70,13 @@ pub const ReSIDDmpPlayer = struct {
 
     pub fn getPBData(self: *ReSIDDmpPlayer) *c.ReSIDPbData {
         return c.ReSIDDmpPlayer_getPBData(self.ptr);
+    }
+
+    pub fn fillAudioBuffer(self: *ReSIDDmpPlayer) i32 {
+        return c.ReSIDDmpPlayer_fillAudioBuffer(self.ptr);
+    }
+
+    pub fn sdlAudioCallback(self: *ReSIDDmpPlayer, userdata: ?*anyopaque, stream: [*]u8, len: i32) void {
+        c.ReSIDDmpPlayer_SDL_audio_callback(self.ptr, userdata, stream, len);
     }
 };

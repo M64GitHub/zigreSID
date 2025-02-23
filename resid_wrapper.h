@@ -19,6 +19,8 @@ void            ReSID_destroy(ReSID* resid);
 const char*     ReSID_getName(ReSID* resid);
 void            ReSID_setDBGOutput(ReSID *resid, bool b);
 bool            ReSID_setChipModel(ReSID *resid, const char *m);
+void            ReSID_setSamplingRate(ReSID *resid, int r);
+int             ReSID_getSamplingRate(ReSID *resid);
 
 // -- C-compatible interface for class ReSIDDmpPlayer
 
@@ -30,6 +32,11 @@ void            ReSIDDmpPlayer_pause(ReSIDDmpPlayer* dmpply);
 void            ReSIDDmpPlayer_continue(ReSIDDmpPlayer* dmpply);
 void            ReSIDDmpPlayer_update(ReSIDDmpPlayer* dmpply);
 ReSIDPbData    *ReSIDDmpPlayer_getPBData(ReSIDDmpPlayer* dmpply);
+int             ReSIDDmpPlayer_fillAudioBuffer(ReSIDDmpPlayer* dmpply);
+void            ReSIDDmpPlayer_SDL_audio_callback(ReSIDDmpPlayer* dmpply, 
+                                                  void *userdata, 
+                                                  unsigned char *stream, 
+                                                  int len);
 
 #ifdef __cplusplus
 }
