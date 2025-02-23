@@ -86,7 +86,6 @@ extern "C" {
     {
         return dmpply->FillAudioBuffer();
     }
-
     
     void ReSIDDmpPlayer_SDL_audio_callback(ReSIDDmpPlayer* dmpply, 
                                                       void *userdata, 

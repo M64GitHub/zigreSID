@@ -37,7 +37,6 @@ void            ReSIDDmpPlayer_SDL_audio_callback(ReSIDDmpPlayer* dmpply,
                                                   void *userdata, 
                                                   unsigned char *stream, 
                                                   int len);
-
 void            ReSIDDmpPlayer_setdmp(ReSIDDmpPlayer* dmpply, 
                                       unsigned char *dump, unsigned int len);
 

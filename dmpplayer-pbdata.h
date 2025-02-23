@@ -3,9 +3,10 @@
 
 #include "audio-config.h"
 
+// data for the dump-player
 typedef struct S_ReSIDPbData {
-    short buf1[CFG_AUDIO_BUF_SIZE+1];
-    short buf2[CFG_AUDIO_BUF_SIZE+1];
+    short buf1[CFG_AUDIO_BUF_SIZE];
+    short buf2[CFG_AUDIO_BUF_SIZE];
     short *buf_playing;
     short *buf_next;
     char buf_consumed;

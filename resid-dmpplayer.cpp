@@ -98,9 +98,6 @@ int ReSIDDmpPlayer::FillAudioBuffer()
         cycles2do = (R->CYCLES_PER_SAMPLE * samples2do + 0.5);
         R->Clock(cycles2do, D->buf_next + bufpos, CFG_AUDIO_BUF_SIZE);
         bufpos += samples2do;
-
-        // next frame
-        // printf("[DMPPl] *** next frame ***\n");
         D->stat_framectr++;
         samples2do = R->SAMPLES_PER_FRAME;
         if(set_next_regs()) return 1; // end of dmp reached
@@ -133,7 +130,6 @@ void ReSIDDmpPlayer::SDL_audio_callback(void *userdata,
         D->stat_buf_underruns++;
         return;
     }
-
 
     // play audio buffer
     memcpy(stream, D->buf_next, len);

@@ -1,5 +1,4 @@
 // resid.h, 2023, m64
-
 #ifndef SDL_RESID_H
 #define SDL_RESID_H
 
