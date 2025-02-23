@@ -108,6 +108,8 @@ pub fn main() !void {
 
     std.time.sleep(5 * std.time.ns_per_s); // Let the sound play for a bit
 
+    player.stop();
+
     c.SDL_PauseAudioDevice(dev, 1); // Stop playback
     try stdout.print("Playback stopped.\\n", .{});
 }
