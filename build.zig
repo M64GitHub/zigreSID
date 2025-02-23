@@ -38,6 +38,8 @@ pub fn build(b: *std.Build) void {
         .flags = &.{ "-x", "c++", "-std=c++17", "-DVERSION=\"lala\"" },
     });
 
+    sid_lib.addIncludePath(.{ .cwd_relative = "/usr/include/SDL2" });
+
     // Step 2: Build the Zig executable and link with SID library
     const exe = b.addExecutable(.{
         .name = "zig_sid_demo",
@@ -47,6 +49,7 @@ pub fn build(b: *std.Build) void {
     });
     exe.linkLibrary(sid_lib);
     exe.linkSystemLibrary("stdc++");
+    exe.linkSystemLibrary("SDL2");
     exe.addIncludePath(b.path("."));
 
     b.installArtifact(exe);

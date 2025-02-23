@@ -1,6 +1,7 @@
 // resid-dmpplayer.cpp, 2023 M64
 
 #include <stdio.h>
+#include <string.h>
 #include "resid-dmpplayer.h"
 #include "dmpplayer-pbdata.h"
 
@@ -131,6 +132,35 @@ int ReSIDDmpPlayer::LoadDmp(unsigned char *filename)
 {
 
     return 0; 
+}
+
+void ReSIDDmpPlayer::SDL_audio_callback(void *userdata, 
+                                        unsigned char *stream, 
+                                        int len)
+{
+    D->stat_cnt++;
+
+    if (!D->play) return;
+
+    if (D->buf_lock) {
+        D->stat_buf_underruns++;
+        return;
+    }
+
+    // play audio buffer
+    memcpy(stream, (unsigned char*)D->buf_next, len);
+
+    // switch buffers
+    if (D->buf_next == D->buf1) {
+        D->buf_next = D->buf2;
+        D->buf_playing = D->buf1;
+    } else {
+        D->buf_next = D->buf1;
+        D->buf_playing = D->buf2;
+    }
+
+    D->stat_bufwrites++;
+    D->buf_consumed = 1;
 }
 
 

@@ -96,4 +96,10 @@ extern "C" {
         
     }
 
+    void ReSIDDmpPlayer_setdmp(ReSIDDmpPlayer* dmpply, 
+                               unsigned char *dump, unsigned int len)
+    {
+        dmpply->SetDmp(dump, len);
+    }
+
 }

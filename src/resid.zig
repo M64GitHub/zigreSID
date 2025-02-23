@@ -72,11 +72,24 @@ pub const ReSIDDmpPlayer = struct {
         return c.ReSIDDmpPlayer_getPBData(self.ptr);
     }
 
+    pub fn setDmp(self: *ReSIDDmpPlayer, dump: [*c]u8, len: c_uint) void {
+        c.ReSIDDmpPlayer_setdmp(self.ptr, dump, len);
+    }
+
     pub fn fillAudioBuffer(self: *ReSIDDmpPlayer) i32 {
         return c.ReSIDDmpPlayer_fillAudioBuffer(self.ptr);
     }
 
     pub fn sdlAudioCallback(self: *ReSIDDmpPlayer, userdata: ?*anyopaque, stream: [*]u8, len: i32) void {
         c.ReSIDDmpPlayer_SDL_audio_callback(self.ptr, userdata, stream, len);
+    }
+
+    pub fn internalAudioCallback(userdata: ?*anyopaque, stream: [*c]u8, len: c_int) callconv(.C) void {
+        const player: *ReSIDDmpPlayer = @ptrCast(@alignCast(userdata));
+        player.sdlAudioCallback(userdata, stream, len);
+    }
+
+    pub fn getAudioCallback() *const fn (?*anyopaque, [*c]u8, c_int) callconv(.C) void {
+        return &internalAudioCallback;
     }
 };
