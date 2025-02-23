@@ -1,4 +1,4 @@
-// sid_wrapper.h (C header for C compatibility) - NEW WRAPPER FILE ADDED TO LIB
+// sid_wrapper.h - 2025, m64
 #ifndef SID_WRAPPER_H
 #define SID_WRAPPER_H
 

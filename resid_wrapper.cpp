@@ -1,4 +1,4 @@
-// sid_wrapper.cpp (C++ wrapper implementation) - NEW WRAPPER FILE ADDED TO LIB
+// sid_wrapper.cpp  - 2025, m64
 #include "resid_wrapper.h"
 #include "resid.h"
 #include "resid-dmpplayer.h"
