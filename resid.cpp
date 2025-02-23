@@ -17,6 +17,8 @@ ReSID::ReSID(const char *n) : dbg_output(false)
     precalc_constants();
 
     if(dbg_output) printf("[ReSID::%s] ReSID initialized\n", name);
+
+    printf("[ReSID] this: %p\n", this);
 }
 
 ReSID::~ReSID()
@@ -75,7 +77,7 @@ bool ReSID::SetChipModel(const char *m)
 void ReSID::SetSamplingRate(int r)
 {
     sampling_rate = r;
-    sid.set_sampling_parameters(985248, SAMPLE_RESAMPLE_INTERPOLATE, 
+    sid.set_sampling_parameters(985248, SAMPLE_INTERPOLATE,
                                 sampling_rate);
 }
 

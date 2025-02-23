@@ -34,9 +34,9 @@ pub fn main() !void {
     // SDL2 Audio Initialization
     var spec = c.SDL_AudioSpec{
         .freq = samplingRate,
-        .format = c.AUDIO_S16SYS,
-        .channels = 2,
-        .samples = 4096,
+        .format = c.AUDIO_S16,
+        .channels = 1,
+        .samples = 2048,
         .callback = ReSIDDmpPlayer.getAudioCallback(),
         .userdata = @ptrCast(&player), // reference to player
     };
@@ -63,7 +63,13 @@ pub fn main() !void {
 
     player.play();
 
-    std.time.sleep(5 * std.time.ns_per_s); // Let the sound play for a bit
+    for (1..10) |i| {
+        stdout.print("Still alive! Step {d}\n", .{i}) catch {};
+        std.time.sleep(0.5 * std.time.ns_per_s);
+    }
+
+    try stdout.print("Press enter to exit\n", .{});
+    _ = std.io.getStdIn().reader().readByte() catch null;
 
     player.stop();
 

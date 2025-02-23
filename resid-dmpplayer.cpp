@@ -12,11 +12,6 @@ ReSIDDmpPlayer::ReSIDDmpPlayer(ReSID *r) :
 
     D->buf_playing = 0;
     D->buf_next = 0;
-
-    printf("[DMPPL] ReSID dump player initialized\n"); 
-
-    printf("[DMPPL] this: %p\n", this);
-    printf("[DMPPL] ReSIDPbData: %p\n", D);
 }
 
 ReSIDDmpPlayer::~ReSIDDmpPlayer()
@@ -28,9 +23,6 @@ void ReSIDDmpPlayer::SetDmp(unsigned char *dump, unsigned int len)
 {
     dmp = dump;
     dmp_len = len;
-    printf("[DMPPL] sid dump set\n"); 
-
-    printf("[DMPPL] dmp[0]: %02X\n", dump[0]);
 }
 
 ReSIDPbData *ReSIDDmpPlayer::GetPBData() const
@@ -52,8 +44,6 @@ int ReSIDDmpPlayer::Update()
 void ReSIDDmpPlayer::Play()
 {
     if(!dmp || !dmp_len) return;
-
-    printf("[DMPPL] ReSIDPbData: %p\n", D);
 
     D->buf_playing = 0;
     D->buf_next = D->buf1;
@@ -128,7 +118,6 @@ int ReSIDDmpPlayer::FillAudioBuffer()
 
 int ReSIDDmpPlayer::LoadDmp(unsigned char *filename)
 {
-
     return 0; 
 }
 
@@ -136,7 +125,6 @@ void ReSIDDmpPlayer::SDL_audio_callback(void *userdata,
                                         unsigned char *stream, 
                                         int len)
 {
-    printf("callback!\n");
     D->stat_cnt++;
 
     if (!D->play) return;
@@ -146,8 +134,9 @@ void ReSIDDmpPlayer::SDL_audio_callback(void *userdata,
         return;
     }
 
+
     // play audio buffer
-    memcpy(stream, (unsigned char*)D->buf_next, len);
+    memcpy(stream, D->buf_next, len);
 
     // switch buffers
     if (D->buf_next == D->buf1) {
@@ -160,6 +149,7 @@ void ReSIDDmpPlayer::SDL_audio_callback(void *userdata,
 
     D->stat_bufwrites++;
     D->buf_consumed = 1;
+    Update();
 }
 
 
