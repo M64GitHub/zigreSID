@@ -93,7 +93,7 @@ extern "C" {
                                                       unsigned char *stream, 
                                                       int len)
     {
-        
+       dmpply->SDL_audio_callback(userdata, stream, len);
     }
 
     void ReSIDDmpPlayer_setdmp(ReSIDDmpPlayer* dmpply, 

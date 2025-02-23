@@ -13,7 +13,7 @@ pub fn main() !void {
 
     const samplingRate: i32 = 44100;
 
-    // -- create sid and player
+    // -- create sid and configure it
 
     var sid = try ReSID.init("MyZIGSID");
     defer sid.deinit();
@@ -22,11 +22,15 @@ pub fn main() !void {
     sid.setDBGOutput(true);
     _ = sid.setChipModel("MOS6581");
 
-    try stdout.print("SID instance name: {s}\\n", .{sid.getName()});
+    // -- create player and initialize it with a demo sound
 
     var player = try ReSIDDmpPlayer.init(sid.ptr);
     defer player.deinit();
-    player.setDmp(c.demo_sid, c.demo_sid_len);
+    player.setDmp(c.demo_sid, c.demo_sid_len); // set buffer of demo sound
+
+    // -- THAT's IT! All we have to do now is to call player.play()
+    // for this SDL implementation we need SDL to callback our
+    // player.sdlAudioCallback()
 
     // -- init sdl with a callback to our player
 
@@ -37,7 +41,7 @@ pub fn main() !void {
         .channels = 2,
         .samples = 4096,
         .callback = ReSIDDmpPlayer.getAudioCallback(),
-        .userdata = @ptrCast(&player),
+        .userdata = @ptrCast(&player), // reference to player
     };
 
     if (c.SDL_Init(c.SDL_INIT_AUDIO) < 0) {
@@ -55,6 +59,10 @@ pub fn main() !void {
 
     c.SDL_PauseAudioDevice(dev, 0); // Start playback
     try stdout.print("Playback started at {d} Hz.\\n", .{samplingRate});
+
+    // -- end of SDL initialization
+
+    // all we have to do now is to call .play()
 
     player.play();
 

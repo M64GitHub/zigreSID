@@ -8,10 +8,11 @@
 ReSIDDmpPlayer::ReSIDDmpPlayer(ReSID *r)
 {
     R = r; 
-    D = new ReSIDPbData;
+    D = new ReSIDPbData();
 
     dmp = 0;
     dmp_len = 0;
+    dmp_idx = 0;
     samples2do = 0; 
 
     D->buf_playing = 0;
@@ -138,6 +139,7 @@ void ReSIDDmpPlayer::SDL_audio_callback(void *userdata,
                                         unsigned char *stream, 
                                         int len)
 {
+    printf("callback!\n");
     D->stat_cnt++;
 
     if (!D->play) return;
