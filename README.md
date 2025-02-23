@@ -18,7 +18,7 @@ This project is **audio-library agnostic** by design. The **core SID emulation a
 
 ## 🎼 **Audio and SID Chip Details**
 
-- 🎵 **Stereo Audio Output**: The generated audio fills a **stereo buffer**, providing the SID mono signal at equal levels on both left and right channels.
+- 🎵 **Stereo Audio Output**: The generated audio fills a **mono buffer**, providing the SID mono signal at equal levels on the left and right channel.
 - 🎚️ **Default Sampling Rate**: Set to **44.1kHz** by default. The sampling rate is **changeable at runtime** via the provided API
 - 🎛️ **SID Chip Model Selection**:
   - **SID6581**: Classic SID sound with characteristic filter behavior, more bassy sound
