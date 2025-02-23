@@ -160,7 +160,7 @@ Or execute the binary directly:
 - `play()`: Starts **playback** from the beginning.
 - `stop()`: **Stops** and **resets** playback.
 - `pause()`: **Pauses** playback (audio generation stops).
-- `continuePlayback()`: **Continues** playback after pausing.
+- `continue_play()`: **Continues** playback after pausing.
 - `update()`: **Updates** the **audio buffer**; call this when not using callbacks. Returns 1, when the end of playback is reached
 - `setDmp(dump: [*c]u8, len: c_uint)`: Loads a **SID dump** for playback (**must be called before** `play()`).
 - `getPBData() *c.ReSIDPbData`: Returns a **pointer to playback data**. For advanced use
