@@ -16,14 +16,12 @@ This project is **audio-library agnostic** by design. The **core SID emulation a
 
 ## 🎼 **Audio and SID Chip Details**
 
-- 🎵 **Stereo Audio Output**: The generated audio fills a **stereo buffer**, providing the **SID mono signal** at **equal levels** on both **left and right** channels.
-- 🎚️ **Default Sampling Rate**: Set to **44.1kHz** by default. The sampling rate is **changeable at runtime** via the provided API, allowing flexible playback configurations.
+- 🎵 **Stereo Audio Output**: The generated audio fills a **stereo buffer**, providing the SID mono signal at equal levels on both left and right channels.
+- 🎚️ **Default Sampling Rate**: Set to **44.1kHz** by default. The sampling rate is **changeable at runtime** via the provided API
 - 🎛️ **SID Chip Model Selection**:
   - **SID6581**: Classic SID sound with characteristic filter behavior.
   - **SID8580**: Enhanced model with improved signal-to-noise ratio (**default**).
-- 🌟 **Highest Emulation Quality**: The emulation quality is **fixed** at the **highest level** supported by the reSID library: 
-  
-  > **SAMPLE_RESAMPLE_INTERPOLATE** – providing superior sound fidelity with resampling and interpolation techniques.
+- **Highest Emulation Quality**: The emulation quality is fixed to the **highest level** supported by the reSID library: **SAMPLE_RESAMPLE_INTERPOLATE** – providing superior sound fidelity with resampling and interpolation techniques.
 
 ## 💡 How It Works
 
