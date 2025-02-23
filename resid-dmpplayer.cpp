@@ -149,7 +149,10 @@ void ReSIDDmpPlayer::SDL_audio_callback(void *userdata,
 
     D->stat_bufwrites++;
     D->buf_consumed = 1;
-    Update();
+    if(Update()) {
+        D->play = 0;
+        memset(stream, 0, len);
+    }
 }
 
 
