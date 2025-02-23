@@ -1,6 +1,6 @@
 # Zig SID Soundchip Emulation 🎵✨
 
-This project provides **SID soundchip emulation** for **Zig**, enabling you to generate and play SID audio with ease. Commodoere 64 sound forever! It is built upon the powerful **reSID** C++ library, delivering authentic SID sound emulation combined with the simplicity and safety of Zig.
+This project provides **SID soundchip emulation** for **Zig**, enabling you to generate and play SID audio with ease. Commodoere 64 sound forever🎶! It is built upon the powerful **reSID** C++ library, delivering authentic SID sound emulation combined with the simplicity and safety of Zig.
 
 
 ### 🎧 **Audio Library Independence**
@@ -165,6 +165,26 @@ Or execute the binary directly:
 - `setDmp(dump: [*c]u8, len: c_uint)`: Loads a **SID dump** for playback (**must be called before** `play()`).
 - `getPBData() *c.ReSIDPbData`: Returns a **pointer to playback data**. For advanced use
 - `getAudioCallback() *const fn(...)`: Provides the **SDL-compatible audio callback** for integration with **SDL2**.
+
+## 💾 Status
+The current status is: 🔊 first shot, working! ... as a bare minimum, and in progress.  
+The api will for sure be extended, what immediately comes to my mind is to ease playing different sounds: like player.playDump(...)  
+Also audio rendering functions, to be able to either save as wav, or to play / mix audio, and also to be able to use SDL's enqueueing functions.
+
+### 💾 **Status**
+
+🔊 **Current Status:** *First milestone achieved — fully functional and playing SID audio!* 🚀 The **core functionality** is up and running, providing **non-blocking background playback** with a clean and responsive Zig API. 
+
+### ✨ **Roadmap & Future Enhancements**
+
+This is just the **beginning**. The following **upgrades and enhancements** are planned:
+
+- 🎵 **Flexible Sound Playback**: Introducing convenient methods like `player.playDump(...)` for **easy playback of multiple SID dumps** without complex setup.
+- 🎚️ **Advanced Audio Rendering**: Support for **audio rendering** to files (**WAV export**), enabling high-quality sound saving for further processing or sharing.
+- 🎛️ **Real-Time Audio Mixing**: Implementing audio **mixing capabilities** for combining multiple SID streams and effects **in real time**.
+- 🔗 **SDL2 Audio Enqueue Integration**: Extending **SDL2 support** by leveraging **SDL’s enqueueing functions** for smoother, more flexible audio streaming.
+
+✨ *Stay tuned for these exciting updates as the project evolves—bringing even more SID power to your Zig applications!* 🎧💖
 
 
 ## 🎧 License
