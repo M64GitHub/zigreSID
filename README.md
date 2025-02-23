@@ -85,6 +85,35 @@ Or execute the binary directly:
 LD_LIBRARY_PATH=. ./zig-out/bin/zig_sid_demo
 ```
 
+## 🎧 **Zig API Documentation**
+
+### 🎹 **ReSID Class** (SID Emulation)
+
+- `init(name: [*:0]const u8) !ReSID`: Initializes a **SID instance** with a given name.
+- `deinit()`: Frees the **SID instance**.
+- `getName() [*:0]const u8`: Returns the **name** of the SID instance.
+- `setDBGOutput(enable: bool)`: Enables (**true**) or disables (**false**) **debug output**.
+- `setChipModel(model: [*:0]const u8) bool`: Sets the **SID chip model** (**"MOS6581"** or **"MOS8580"**, default is 8580).
+- `setSamplingRate(rate: c_int)`: Sets the **sampling rate** (default **44100 Hz**, changeable at runtime).
+- `getSamplingRate() c_int`: Returns the **current sampling rate**.
+
+---
+
+### 🎛️ **ReSIDDmpPlayer Class** (Playback Controller)
+
+- `init(resid: *c.ReSID) !ReSIDDmpPlayer`: Creates a **player instance** linked to a **SID instance**.
+- `deinit()`: Frees the **player instance**.
+- `play()`: Starts **playback** from the beginning.
+- `stop()`: **Stops** and **resets** playback.
+- `pause()`: **Pauses** playback (audio generation stops).
+- `continuePlayback()`: **Continues** playback after pausing.
+- `update()`: **Updates** the **audio buffer**; should be called regularly.
+- `fillAudioBuffer() c_int`: **Fills** the audio buffer; returns **1** when the dump finishes.
+- `setDmp(dump: [*c]u8, len: c_uint)`: Loads a **SID dump** for playback (**must be called before** `play()`).
+- `getPBData() *c.ReSIDPbData`: Returns a **pointer to playback data**.
+- `getAudioCallback() *const fn(...)`: Provides the **SDL-compatible audio callback** for integration with **SDL2**.
+
+
 ## 🎧 License
 
 This project uses the **ReSID** library and follows its licensing terms. The Zig and C bindings code is provided under the **MIT License**.
