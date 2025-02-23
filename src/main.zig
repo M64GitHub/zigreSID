@@ -42,20 +42,20 @@ pub fn main() !void {
     };
 
     if (c.SDL_Init(c.SDL_INIT_AUDIO) < 0) {
-        try stdout.print("Failed to initialize SDL audio: {s}\\n", .{c.SDL_GetError()});
+        try stdout.print("Failed to initialize SDL audio: {s}\n", .{c.SDL_GetError()});
         return;
     }
     defer c.SDL_Quit();
 
     const dev = c.SDL_OpenAudioDevice(null, 0, &spec, null, 0);
     if (dev == 0) {
-        try stdout.print("Failed to open SDL audio device: {s}\\n", .{c.SDL_GetError()});
+        try stdout.print("Failed to open SDL audio device: {s}\n", .{c.SDL_GetError()});
         return;
     }
     defer c.SDL_CloseAudioDevice(dev);
 
     c.SDL_PauseAudioDevice(dev, 0); // Start playback
-    try stdout.print("Playback started at {d} Hz.\\n", .{samplingRate});
+    try stdout.print("Playback started at {d} Hz.\n", .{samplingRate});
 
     // -- end of SDL initialization
 
@@ -68,5 +68,5 @@ pub fn main() !void {
     player.stop();
 
     c.SDL_PauseAudioDevice(dev, 1); // Stop playback
-    try stdout.print("Playback stopped.\\n", .{});
+    try stdout.print("Playback stopped.\n", .{});
 }
