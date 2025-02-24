@@ -15,7 +15,7 @@ This project is **audio-library agnostic** by design. The **core SID emulation a
 - 🔗 **C Bindings for Zig**: Provides clean **C bindings** to the simplified C++ framework, making **SID sound playback in Zig** straightforward and seamless.
 - 🎧 **Audio Backend Flexibility**: The framework allows easy integration with different audio libraries; SDL2 is used in the current example.
 - ⚡ **Non-Blocking Audio Playback**: The audio playback runs in the background, so your application remains responsive and interactive while playing music.
-- 🧵 **Threaded and Unthreaded Playback Support**: Provides two execution models—unthreaded for simple integration and threaded for performance improvements.
+- 🧵 **Threaded and Unthreaded Playback Support**: Provides two execution models—unthreaded for simple integration and threaded for performance improvements, **audio visualization** and **modification** possibilities.
 
 ## 🎼 **Audio and SID Chip Details**
 
