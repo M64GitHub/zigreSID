@@ -79,7 +79,7 @@ void ReSID::SetSamplingRate(int r)
                                 sampling_rate);
 }
 
-int ReSID::GetSamplingRate()
+int ReSID::GetSamplingRate() const
 {
     return  sampling_rate;
 }

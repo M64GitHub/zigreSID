@@ -18,7 +18,7 @@ public:
     void SetChipModel(chip_model m);
     bool SetChipModel(const char *m);
     void SetSamplingRate(int r);
-    int  GetSamplingRate();
+    int  GetSamplingRate() const;
     void WriteRegs(unsigned char *regs, int len);
     unsigned char *GetRegs();
 
@@ -31,7 +31,6 @@ public:
     int SAMPLES_PER_FRAME;
     int CYCLES_PER_FRAME;
     double CYCLES_PER_SAMPLE;
-
 
 private:
     void precalc_constants();
