@@ -151,6 +151,7 @@ Or execute the binary directly:
 - `setChipModel(model: [*:0]const u8) bool`: Sets the **SID chip model** (**"MOS6581"** or **"MOS8580"**, default is MOS8580).
 - `setSamplingRate(rate: c_int)`: Sets the **sampling rate** (default **44100 Hz**).
 - `getSamplingRate() c_int`: Returns the **current sampling rate**.
+- `writeRegs(self: *ReSID, regs: [*c]u8, len: c_int) void`: This is a register bulk write function, and the main function for the dumpplayer to generate sound. Write up to 25 register values to the SID chip.
 
 ---
 
