@@ -916,7 +916,9 @@ int SID::clock_resample_interpolate(cycle_count& delta_t, short* buf, int n,
     // Linear interpolation.
     // fir_offset_rmd is equal for all samples, it can thus be factorized out:
     // sum(v1 + rmd*(v2 - v1)) = sum(v1) + rmd*(sum(v2) - sum(v1))
-    int v = v1 + (fir_offset_rmd*(v2 - v1) >> FIXP_SHIFT);
+    // int v = v1 + (fir_offset_rmd*(v2 - v1) >> FIXP_SHIFT);
+    int v = v1 + (static_cast<long long>(fir_offset_rmd) * (v2 - v1) 
+	    >> FIXP_SHIFT);
 
     v >>= FIR_SHIFT;
 

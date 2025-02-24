@@ -35,10 +35,10 @@ pub fn build(b: *std.Build) void {
             "resid-dmpplayer.cpp",
             "resid_wrapper.cpp",
         },
-        .flags = &.{ "-x", "c++", "-std=c++17", "-DVERSION=\"lala\"" },
+        .flags = &.{ "-x", "c++", "-DVERSION=\"m64-000\"", "-Ofast" },
     });
 
-    sid_lib.addIncludePath(.{ .cwd_relative = "/usr/include/SDL2" });
+    sid_lib.addIncludePath(.{ .cwd_relative = "/usr/include/" });
 
     // Step 2: Build the Zig executable and link with SID library
     const exe = b.addExecutable(.{
