@@ -70,7 +70,8 @@ Both executables will be available in `zig-out/bin/`:
 
 ## 🧬 Demo Code
 ### main_unthreaded.zig
-This is the most simple example of how to play a SID dump: the ReSIDDmpPlayer writes the SID register values of the dump on each virtual frame (synced to the PAL vertical sync). You can use a siddump utility to generate your own dumps. In this example the siddump is included via a C header file, generated via `xxd -i`.
+This is the most simple example of how to play a SID dump: the ReSIDDmpPlayer writes the SID register values of the dump on each virtual frame (synced to a virtual PAL video standard vertical sync).  
+You can use a siddump utility to generate your own dumps. In this example the siddump is included via a C header file, generated via `xxd -i`.  
 Once you set up the `sid` and `player` objects, you can run `player.play()` to start playback. SDL will play the sound in the background, and update the audiodata via callback. Audio generation is done within the callback in the SDL thread.
 
 ```zig
