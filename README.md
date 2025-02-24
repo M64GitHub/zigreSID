@@ -42,7 +42,7 @@ const std = @import("std");
 const c = @cImport({
     @cInclude("SDL.h");
     @cInclude("resid_wrapper.h");
-    @cInclude("demo_sound.h");
+    @cInclude("demo_sound.h"); // a siddump of the plasmaghost music
 });
 
 const ReSID = @import("resid.zig").ReSID;
@@ -165,7 +165,7 @@ Or execute the binary directly:
 - `continue_play()`: **Continues** playback after pausing.
 - `update()`: **Updates** the **audio buffer**; call this when not using callbacks. Returns 1, when the end of playback is reached
 - `setDmp(dump: [*c]u8, len: c_uint)`: Loads a **SID dump** for playback (**must be called before** `play()`).
-- `getPBData() *c.ReSIDPbData`: Returns a **pointer to playback data**. For advanced use
+- `getPBData() *c.ReSIDPbData`: Returns a **pointer to playback data**. For advanced use.
 - `getAudioCallback() *const fn(...)`: Provides the **SDL-compatible audio callback** for integration with **SDL2**.
 
 ### 💾 **Status**
@@ -187,7 +187,7 @@ Overall, the audio buffer management and audio callback handling will be migrate
 
 ## 🎧 License
 
-This project uses the **ReSID** library and follows its licensing terms. The Zig and C bindings code is provided under the **MIT License**.
+This project uses the **reSID** library and follows its licensing terms. The Zig and C bindings code is provided under the **MIT License**.
 
 ---
 
