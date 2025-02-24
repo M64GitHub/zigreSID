@@ -94,6 +94,11 @@ void ReSID::WriteRegs(unsigned char *regs, int len)
     }
 }
 
+unsigned char *ReSID::GetRegs()
+{
+    return shadow_regs;
+}
+
 int ReSID::Clock(unsigned int cycles, short *buf, int buflen)
 {
     cycle_count delta_t = cycles;
@@ -131,7 +136,7 @@ void ReSID::precalc_constants()
     // prepare shadow regs
     for(int i=0; i<32; i++) { shadow_regs[i] = 0; }
 
-    printf("[ReSID] samples per frame : %d (%f)\n", SAMPLES_PER_FRAME, d1);
-    printf("[ReSID] cycles  per frame : %d (%f)\n", CYCLES_PER_FRAME, d2 - 0.5);
-    printf("[ReSID] cycles  per sample: %f\n", CYCLES_PER_SAMPLE);
+    if(dbg_output) printf("[ReSID::%s] samples per frame : %d (%f)\n", name, SAMPLES_PER_FRAME, d1);
+    if(dbg_output) printf("[ReSID::%s] cycles  per frame : %d (%f)\n", name, CYCLES_PER_FRAME, d2 - 0.5);
+    if(dbg_output) printf("[ReSID::%s] cycles  per sample: %f\n", name, CYCLES_PER_SAMPLE);
 }

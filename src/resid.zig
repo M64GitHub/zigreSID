@@ -38,6 +38,13 @@ pub const ReSID = struct {
     pub fn writeRegs(self: *ReSID, regs: [*c]u8, len: c_int) void {
         c.ReSID_writeRegs(self.ptr, regs, len);
     }
+
+    pub fn getRegs(self: *ReSID) [25]u8 {
+        const regs_ptr = c.Resid_getRegs(self.ptr);
+        var regs: [25]u8 = undefined;
+        std.mem.copyForwards(u8, &regs, regs_ptr[0..25]);
+        return regs;
+    }
 };
 
 pub const ReSIDDmpPlayer = struct {

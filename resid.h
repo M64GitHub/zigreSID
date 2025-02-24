@@ -20,6 +20,7 @@ public:
     void SetSamplingRate(int r);
     int  GetSamplingRate();
     void WriteRegs(unsigned char *regs, int len);
+    unsigned char *GetRegs();
 
     // dumb audio rendering, not frame aware
     int Clock(unsigned int cycles, short *buf, int buflen);
@@ -31,7 +32,6 @@ public:
     int CYCLES_PER_FRAME;
     double CYCLES_PER_SAMPLE;
 
-    unsigned char shadow_regs[32];
 
 private:
     void precalc_constants();
@@ -40,6 +40,7 @@ private:
     chip_model model;
     int sampling_rate;
     bool dbg_output;
+    unsigned char shadow_regs[32];
 };
 
 #endif

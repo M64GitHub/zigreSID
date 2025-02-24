@@ -45,6 +45,12 @@ extern "C" {
         resid->WriteRegs(regs, len);
     }
 
+
+    unsigned char  *Resid_getRegs(ReSID *resid)
+    {
+        return resid->GetRegs();
+    }
+
 // -- ReSIDDmpPlayer
 
     ReSIDDmpPlayer* ReSIDDmpPlayer_create(ReSID *r)
