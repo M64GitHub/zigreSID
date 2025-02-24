@@ -1,7 +1,7 @@
 # Zig SID Soundchip Emulation 🎵✨
 
 This project provides **SID soundchip emulation** for **Zig**, enabling you to generate and play SID audio with ease. It is built upon the powerful **reSID** C++ library, delivering authentic SID sound emulation combined with the simplicity and safety of Zig.  
-Commodore 64 sound forever 🎶!!
+🎶 Commodore 64 sound forever 🎶!!
 
 ### 🎧 **Audio Library Independence**
 This project is **audio-library agnostic** by design. The **core SID emulation and playback logic** is completely independent of any audio backend. However, the **current implementation** demonstrates audio playback using **SDL2** for convenience and cross-platform support. You can easily adapt or extend the audio interface to suit other libraries or custom solutions.
@@ -14,7 +14,7 @@ This project is **audio-library agnostic** by design. The **core SID emulation a
 - 🔧 **Simplified C++ Framework**: All complex timing calculations and internal audio buffer management are handled automatically, allowing you to focus solely on the high-level API.
 - 🔗 **C Bindings for Zig**: Provides clean **C bindings** to the simplified C++ framework, making **SID sound playback in Zig** straightforward and seamless.
 - 🎧 **Audio Backend Flexibility**: The framework allows easy integration with different audio libraries; SDL2 is used in the current example.
-- ⚡ **Non-Blocking Audio Playback**: The audio playback runs **in the background**, so your application remains responsive and interactive while playing music.
+- ⚡ **Non-Blocking Audio Playback**: The audio playback runs in the background, so your application remains responsive and interactive while playing music.
 - 🧵 **Threaded and Unthreaded Playback Support**: Provides two execution models—**unthreaded** for simple integration and **threaded** for performance improvements.
 
 ## 🎼 **Audio and SID Chip Details**
@@ -24,9 +24,9 @@ This project is **audio-library agnostic** by design. The **core SID emulation a
 - 🎛️ **SID Chip Model Selection**:
   - **SID6581**: Classic SID sound with characteristic filter behavior, more bassy sound.
   - **SID8580**: Enhanced model with improved signal-to-noise ratio (**default**).
-- **Highest Emulation Quality**: The emulation quality is set to the **highest level** supported by the reSID library: **SAMPLE_RESAMPLE_INTERPOLATE**.
+- **Highest Emulation Quality**: The emulation quality is set to the highest possible level supported by the reSID library: `SAMPLE_RESAMPLE_INTERPOLATE`.
 
-## 💡 How It Works
+## 💡 How The reSID Integration Works
 
 This project bridges the gap between C++, C, and Zig:
 
@@ -35,7 +35,7 @@ This project bridges the gap between C++, C, and Zig:
 3. **C Bindings**: Exposes key C++ functionalities through a clean C interface.
 4. **Zig Wrapper**: Object-oriented style Zig code that wraps the C bindings, providing an intuitive API for playback and control.
 5. **SDL2 Audio Interface**: The current demo code uses SDL2 for audio playback, but this can be replaced or extended.
-6. 🧵 **Threaded and Unthreaded Execution**: Compare performance using two provided executables.
+6. 🧵 **Threaded and Unthreaded Execution**: Use the threaded variant to move audio buffer generation out of SDL into its own thread.
 
 ## 🎼 Example Usage
 
@@ -67,6 +67,93 @@ Both executables will be available in `zig-out/bin/`:
 
 - `zig_sid_demo_unthreaded`
 - `zig_sid_demo_threaded`
+
+## 🧬 Demo Code
+### main_unthreaded.zig
+This is the most simple example of how to play a SID dump: the ReSIDDmpPlayer writes the SID register values of the dump on each virtual frame (synced to the PAL vertical sync). You can use a siddump utility to generate your own dumps. In this example the siddump is included via a C header file, generated via `xxd -i`.
+Once you set up the `sid` and `player` objects, you can run `player.play()` to start playback. SDL will play the sound in the background, and update the audiodata via callback. Audio generation is done within the callback in the SDL thread.
+
+```zig
+const std = @import("std");
+const c = @cImport({
+    @cInclude("SDL.h");
+    @cInclude("resid_wrapper.h");
+    @cInclude("demo_sound.h");
+});
+
+const ReSID = @import("resid.zig").ReSID;
+const ReSIDDmpPlayer = @import("resid.zig").ReSIDDmpPlayer;
+
+pub fn main() !void {
+    const stdout = std.io.getStdOut().writer();
+
+    const samplingRate: i32 = 44100;
+
+    try stdout.print("[MAIN] zigSID audio demo unthreaded!\n", .{});
+
+    // -- create sid and configure it
+    var sid = try ReSID.init("MyZIGSID");
+    defer sid.deinit();
+    _ = sid.setChipModel("MOS8580"); // just demo usage, this is the default
+
+    // -- create player and initialize it with a demo sound
+    var player = try ReSIDDmpPlayer.init(sid.ptr);
+    defer player.deinit();
+    player.setDmp(c.demo_sid, c.demo_sid_len); // set buffer of demo sound
+
+    // -- THAT's IT! All we have to do now is to call player.play()
+    // For this SDL implementation we need SDL to callback our
+    // player.sdlAudioCallback(), it is specified below.
+    // The userdata is required to point to the player object
+
+    // -- init sdl with a callback to our player
+
+    // SDL2 Audio Initialization
+    var spec = c.SDL_AudioSpec{
+        .freq = samplingRate,
+        .format = c.AUDIO_S16,
+        .channels = 1,
+        .samples = 4096,
+        .callback = ReSIDDmpPlayer.getAudioCallback(),
+        .userdata = @ptrCast(&player), // reference to player
+    };
+
+    if (c.SDL_Init(c.SDL_INIT_AUDIO) < 0) {
+        try stdout.print("[MAIN] Failed to initialize SDL audio: {s}\n", .{c.SDL_GetError()});
+        return;
+    }
+    defer c.SDL_Quit();
+
+    const dev = c.SDL_OpenAudioDevice(null, 0, &spec, null, 0);
+    if (dev == 0) {
+        try stdout.print("[MAIN] Failed to open SDL audio device: {s}\n", .{c.SDL_GetError()});
+        return;
+    }
+    defer c.SDL_CloseAudioDevice(dev);
+
+    c.SDL_PauseAudioDevice(dev, 0); // Start playback
+    try stdout.print("[MAIN] SDL audio started at {d} Hz.\n", .{samplingRate});
+
+    // -- end of SDL initialization
+
+    // all we have to do now is to call .play()
+
+    player.play();
+
+    for (1..10) |i| {
+        stdout.print("[MAIN] Still alive! Step {d}\n", .{i}) catch {};
+        std.time.sleep(0.5 * std.time.ns_per_s);
+    }
+
+    try stdout.print("[MAIN] Press enter to exit\n", .{});
+    _ = std.io.getStdIn().reader().readByte() catch null;
+
+    player.stop();
+
+    c.SDL_PauseAudioDevice(dev, 1); // Stop playback
+    try stdout.print("[MAIN] SDL audio stopped.\n", .{});
+}
+```
 
 ## 🎧 **Zig API Documentation**
 
