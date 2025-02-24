@@ -182,7 +182,8 @@ This is just the **beginning**. The following **upgrades and enhancements** are 
 - 🎚️ **Volume and Panning Control**: Adding **runtime volume adjustment** and **stereo panning controls**
 - 🔗 **SDL2 Audio Enqueue Integration**: Extending **SDL2 support** by leveraging **SDL’s enqueueing functions** for smoother, more flexible audio streaming.
 
-Overall also the audio buffers handling code (and audio-callback) will move from the dump-player to the sid code. This will enable to manipulate sound by simply sett the SID registers, and also implement new players.
+Overall, the audio buffer management and audio callback handling will be migrated from the dump-player to the core SID module. This enhancement will unlock real-time sound manipulation by directly setting SID registers and pave the way for the implementation of custom player modules.
+
 
 ## 🎧 License
 
