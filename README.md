@@ -15,7 +15,7 @@ This project is **audio-library agnostic** by design. The **core SID emulation a
 - 🔗 **C Bindings for Zig**: Provides clean **C bindings** to the simplified C++ framework, making **SID sound playback in Zig** straightforward and seamless.
 - 🎧 **Audio Backend Flexibility**: The framework allows easy integration with different audio libraries; SDL2 is used in the current example.
 - ⚡ **Non-Blocking Audio Playback**: The audio playback runs in the background, so your application remains responsive and interactive while playing music.
-- 🧵 **Threaded and Unthreaded Playback Support**: Provides two execution models—**unthreaded** for simple integration and **threaded** for performance improvements.
+- 🧵 **Threaded and Unthreaded Playback Support**: Provides two execution models—unthreaded for simple integration and threaded for performance improvements.
 
 ## 🎼 **Audio and SID Chip Details**
 
@@ -293,11 +293,12 @@ pub fn main() !void {
 
 ## ✨ **Roadmap & Future Enhancements**
 
-- 🎵 **Flexible Sound Playback**: Easy playback of multiple SID dumps (`player.playDump(...)`).
-- 🎚️ **Advanced Audio Rendering**: Export audio as **WAV** for further processing.
+- 🎵 **Flexible Sound Playback**: Convenience functions. (Like one for easy playback of multiple SID dumps (`player.playDump(...)`).
+- 🎚️ **Audio Rendering**: Export audio as **WAV** or **RAW** into a buffer for further processing.
 - 🎛️ **Real-Time Audio Mixing**: Support for mixing multiple SID streams in real time.
 - 🎚️ **Volume and Panning Control**: Add runtime **volume adjustments** and **stereo panning**.
 - 🔗 **Enhanced Multithreading Options**: More robust threading support for ultra-smooth playback.
+- **SDL Enqueueing support**: precalculate chunks of audio and simply enqueue them. No need for audio updating later. But also no real time audio control.
 
 ## 🎧 License
 
