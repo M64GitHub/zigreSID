@@ -40,6 +40,11 @@ extern "C" {
         return resid->GetSamplingRate();
     }
 
+    void ReSID_writeRegs(ReSID *resid, unsigned char *regs, int len)
+    {
+        resid->WriteRegs(regs, len);
+    }
+
 // -- ReSIDDmpPlayer
 
     ReSIDDmpPlayer* ReSIDDmpPlayer_create(ReSID *r)

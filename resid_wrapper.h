@@ -21,6 +21,7 @@ void            ReSID_setDBGOutput(ReSID *resid, bool b);
 bool            ReSID_setChipModel(ReSID *resid, const char *m);
 void            ReSID_setSamplingRate(ReSID *resid, int r);
 int             ReSID_getSamplingRate(ReSID *resid);
+void            ReSID_writeRegs(ReSID *resid, unsigned char*regs, int len);
 
 // -- C-compatible interface for class ReSIDDmpPlayer
 

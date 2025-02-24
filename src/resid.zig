@@ -34,6 +34,10 @@ pub const ReSID = struct {
     pub fn getSamplingRate(self: *ReSID) i32 {
         return c.ReSID_getSamplingRate(self.ptr);
     }
+
+    pub fn writeRegs(self: *ReSID, regs: [*c]u8, len: c_int) void {
+        c.ReSID_writeRegs(self.ptr, regs, len);
+    }
 };
 
 pub const ReSIDDmpPlayer = struct {
