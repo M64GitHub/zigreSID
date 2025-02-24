@@ -182,6 +182,8 @@ This is just the **beginning**. The following **upgrades and enhancements** are 
 - 🎚️ **Volume and Panning Control**: Adding **runtime volume adjustment** and **stereo panning controls**
 - 🔗 **SDL2 Audio Enqueue Integration**: Extending **SDL2 support** by leveraging **SDL’s enqueueing functions** for smoother, more flexible audio streaming.
 
+Overall also the audio buffers handling code (and audio-callback) will move from the dump-player to the sid code. This will enable to manipulate sound by simply sett the SID registers, and also implement new players.
+
 ## 🎧 License
 
 This project uses the **ReSID** library and follows its licensing terms. The Zig and C bindings code is provided under the **MIT License**.
