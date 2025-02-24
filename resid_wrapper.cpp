@@ -106,4 +106,14 @@ extern "C" {
         dmpply->SetDmp(dump, len);
     }
 
+    void ReSIDDmpPlayer_updateExternal(ReSIDDmpPlayer* dmpply,
+                                              bool b)
+    {
+        dmpply->UpdateExternal(b);
+    }
+
+    bool ReSIDDmpPlayer_isPlaying(ReSIDDmpPlayer* dmpply)
+    {
+        return dmpply->IsPlaying();
+    }
 }

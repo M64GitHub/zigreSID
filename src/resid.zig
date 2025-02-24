@@ -96,4 +96,12 @@ pub const ReSIDDmpPlayer = struct {
     pub fn getAudioCallback() *const fn (?*anyopaque, [*c]u8, c_int) callconv(.C) void {
         return &internalAudioCallback;
     }
+
+    pub fn updateExternal(self: *ReSIDDmpPlayer, b: bool) void {
+        c.ReSIDDmpPlayer_updateExternal(self.ptr, b);
+    }
+
+    pub fn isPlaying(self: *ReSIDDmpPlayer) bool {
+        return c.ReSIDDmpPlayer_isPlaying(self.ptr);
+    }
 };

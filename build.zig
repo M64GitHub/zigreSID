@@ -5,7 +5,7 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    // Step 1: Create shared library from C++ SID code and wrapper
+    // Step 1: Create reSID C++ shared library and C wrapper
     const sid_lib = b.addSharedLibrary(.{
         .name = "sid",
         .target = target,
@@ -40,26 +40,44 @@ pub fn build(b: *std.Build) void {
 
     sid_lib.addIncludePath(.{ .cwd_relative = "/usr/include/" });
 
-    // Step 2: Build the Zig executable and link with SID library
-    const exe = b.addExecutable(.{
-        .name = "zig_sid_demo",
-        .root_source_file = b.path("src/main.zig"),
+    // Step 2: Build Unthreaded Executable
+    const exe_unthreaded = b.addExecutable(.{
+        .name = "zig_sid_demo_unthreaded",
+        .root_source_file = b.path("src/main_unthreaded.zig"),
         .target = target,
         .optimize = optimize,
     });
-    exe.linkLibrary(sid_lib);
-    exe.linkSystemLibrary("stdc++");
-    exe.linkSystemLibrary("SDL2");
-    exe.addIncludePath(b.path("."));
+    exe_unthreaded.linkLibrary(sid_lib);
+    exe_unthreaded.linkSystemLibrary("stdc++");
+    exe_unthreaded.linkSystemLibrary("SDL2");
+    exe_unthreaded.addIncludePath(b.path("."));
+    b.installArtifact(exe_unthreaded);
 
-    b.installArtifact(exe);
+    // Step 3: Build Threaded Executable
+    const exe_threaded = b.addExecutable(.{
+        .name = "zig_sid_demo_threaded",
+        .root_source_file = b.path("src/main_threaded.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    exe_threaded.linkLibrary(sid_lib);
+    exe_threaded.linkSystemLibrary("stdc++");
+    exe_threaded.linkSystemLibrary("SDL2");
+    exe_threaded.addIncludePath(b.path("."));
+    b.installArtifact(exe_threaded);
 
-    // Step 3: Run step
-    const run_cmd = b.addRunArtifact(exe);
+    // Step 4: Run steps for both
+    const run_unthreaded = b.addRunArtifact(exe_unthreaded);
+    const run_threaded = b.addRunArtifact(exe_threaded);
+
     if (b.args) |args| {
-        run_cmd.addArgs(args);
+        run_unthreaded.addArgs(args);
+        run_threaded.addArgs(args);
     }
 
-    const run_step = b.step("run", "Run the Zig SID demo");
-    run_step.dependOn(&run_cmd.step);
+    const run_step_unthreaded = b.step("run-unthreaded", "Run the unthreaded SID demo");
+    run_step_unthreaded.dependOn(&run_unthreaded.step);
+
+    const run_step_threaded = b.step("run-threaded", "Run the threaded SID demo");
+    run_step_threaded.dependOn(&run_threaded.step);
 }

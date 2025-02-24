@@ -17,8 +17,6 @@ ReSID::ReSID(const char *n) : dbg_output(false)
     precalc_constants();
 
     if(dbg_output) printf("[ReSID::%s] ReSID initialized\n", name);
-
-    printf("[ReSID] this: %p\n", this);
 }
 
 ReSID::~ReSID()

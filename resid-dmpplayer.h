@@ -24,6 +24,9 @@ public:
     void Pause();// stops generation of new audio buffers only
     void Continue(); // continues updating audio buffer
 
+    bool IsPlaying();
+    void UpdateExternal(bool b);
+
     // continuously call this from outside, to ensure
     // audio buffer is filled and ready for playback
     // (compare to teensy audio library)

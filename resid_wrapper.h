@@ -40,6 +40,9 @@ void            ReSIDDmpPlayer_SDL_audio_callback(ReSIDDmpPlayer* dmpply,
                                                   int len);
 void            ReSIDDmpPlayer_setdmp(ReSIDDmpPlayer* dmpply, 
                                       unsigned char *dump, unsigned int len);
+void            ReSIDDmpPlayer_updateExternal(ReSIDDmpPlayer* dmpply,
+                                              bool b);
+bool            ReSIDDmpPlayer_isPlaying(ReSIDDmpPlayer* dmpply);
 
 #ifdef __cplusplus
 }

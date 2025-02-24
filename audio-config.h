@@ -4,7 +4,7 @@
 #define AUDIO_CONFIG_H
 
 // audio buffer size in samples
-#define CFG_AUDIO_BUF_SIZE        2048 
+#define CFG_AUDIO_BUF_SIZE        4096 
 
 #endif
 

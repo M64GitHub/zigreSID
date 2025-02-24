@@ -12,6 +12,7 @@ ReSIDDmpPlayer::ReSIDDmpPlayer(ReSID *r) :
 
     D->buf_playing = 0;
     D->buf_next = 0;
+    D->updates_external = 0;
 }
 
 ReSIDDmpPlayer::~ReSIDDmpPlayer()
@@ -70,6 +71,18 @@ void ReSIDDmpPlayer::Pause()
 void ReSIDDmpPlayer::Continue()
 {
     D->play = 1;
+}
+
+bool ReSIDDmpPlayer::IsPlaying()
+{
+    if(D->play) return true;
+    return false;
+}
+
+void ReSIDDmpPlayer::UpdateExternal(bool b)
+{
+    if(b) D->updates_external = 1;
+    else D->updates_external = 0;
 }
 
 int ReSIDDmpPlayer::set_next_regs()
@@ -145,9 +158,12 @@ void ReSIDDmpPlayer::SDL_audio_callback(void *userdata,
 
     D->stat_bufwrites++;
     D->buf_consumed = 1;
-    if(Update()) {
-        D->play = 0;
-        memset(stream, 0, len);
+
+    if(!D->updates_external) {
+        if(Update()) {
+            D->play = 0;
+            memset(stream, 0, len);
+        }
     }
 }
 

@@ -12,6 +12,7 @@ typedef struct S_ReSIDPbData {
     char buf_consumed;
     char buf_lock;
     char play;
+    char updates_external;
     unsigned long stat_cnt;
     unsigned long stat_bufwrites;
     unsigned long stat_buf_underruns;
