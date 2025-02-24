@@ -159,7 +159,8 @@ pub fn main() !void {
 This example of how to play a SID dump is a little bit more advanced. We set up the  `sid` and `player` objects like in the unthreaded version, and run `player.play()` to start playback.  
 Before we do so, we need to tell the player, it shall not call the update() function in the SDL audio thread. We do so by calling `player.updateExternal(true);`.  
 SDL will still play the audio buffer in the background, but this audio buffer will never get updated. We need to call the update function ourselfes. Luckily the update function will only do it's work, when the audiobuffer is consumed by SDL, else not waste time and CPU. All we need to do is to run the update() function in a timer interval smaller than the playback duration of the audio buffer (4096 samples).  
-Our thread will need to exit when playback stopped, so we simply check `player.isPlaying()` in our "infinite" while loop.
+Our thread will need to exit when playback stopped, so we simply check `player.isPlaying()` in our "infinite" while loop.  
+This also gives you the opportunity to access and modify the audio buffer. You can access it via `([*c]c_short) player.getPBData().buf_next`. The audio playback uses 2 buffers. When update() is called, it will fill `player.getPBData().buf_next` while SDL plays `player.getPBData().buf_playing`. When SDL consumed the playback buffer, these two buffers will be swapped internally.
 
 ```zig
 const std = @import("std");
