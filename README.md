@@ -14,16 +14,17 @@ This project is **audio-library agnostic** by design. The **core SID emulation a
 - 🔧 **Simplified C++ Framework**: All complex timing calculations and internal audio buffer management are handled automatically, allowing you to focus solely on the high-level API.
 - 🔗 **C Bindings for Zig**: Provides clean **C bindings** to the simplified C++ framework, making **SID sound playback in Zig** straightforward and seamless.
 - 🎧 **Audio Backend Flexibility**: The framework allows easy integration with different audio libraries; SDL2 is used in the current example.
-- ⚡ **Non-Blocking Audio Playback**: The audio playback runs **in the background**, so your application remains responsive and interactive while playing music. 
+- ⚡ **Non-Blocking Audio Playback**: The audio playback runs **in the background**, so your application remains responsive and interactive while playing music.
+- 🧵 **Threaded and Unthreaded Playback Support**: Provides two execution models—**unthreaded** for simple integration and **threaded** for performance improvements.
 
 ## 🎼 **Audio and SID Chip Details**
 
 - 🎵 **Stereo Audio Output**: The generated audio fills a **mono buffer**, providing the SID mono signal at equal levels on the left and right channel.
-- 🎚️ **Default Sampling Rate**: Set to **44.1kHz** by default. The sampling rate is **changeable at runtime** via the provided API
+- 🎚️ **Default Sampling Rate**: Set to **44.1kHz** by default. The sampling rate is **changeable at runtime** via the provided API.
 - 🎛️ **SID Chip Model Selection**:
-  - **SID6581**: Classic SID sound with characteristic filter behavior, more bassy sound
+  - **SID6581**: Classic SID sound with characteristic filter behavior, more bassy sound.
   - **SID8580**: Enhanced model with improved signal-to-noise ratio (**default**).
-- **Highest Emulation Quality**: The emulation quality is set to the **highest level** supported by the reSID library: **SAMPLE_RESAMPLE_INTERPOLATE**
+- **Highest Emulation Quality**: The emulation quality is set to the **highest level** supported by the reSID library: **SAMPLE_RESAMPLE_INTERPOLATE**.
 
 ## 💡 How It Works
 
@@ -34,89 +35,23 @@ This project bridges the gap between C++, C, and Zig:
 3. **C Bindings**: Exposes key C++ functionalities through a clean C interface.
 4. **Zig Wrapper**: Object-oriented style Zig code that wraps the C bindings, providing an intuitive API for playback and control.
 5. **SDL2 Audio Interface**: The current demo code uses SDL2 for audio playback, but this can be replaced or extended.
+6. 🧵 **Threaded and Unthreaded Execution**: Compare performance using two provided executables.
 
 ## 🎼 Example Usage
 
-```zig
-const std = @import("std");
-const c = @cImport({
-    @cInclude("SDL.h");
-    @cInclude("resid_wrapper.h");
-    @cInclude("demo_sound.h"); // a siddump of the plasmaghost music
-});
+Two examples are available for demonstration:
 
-const ReSID = @import("resid.zig").ReSID;
-const ReSIDDmpPlayer = @import("resid.zig").ReSIDDmpPlayer;
+- 🏃 **Unthreaded Playback:** `src/main_unthreaded.zig`
+- ⚡ **Threaded Playback:** `src/main_threaded.zig`
 
-pub fn main() !void {
-    const stdout = std.io.getStdOut().writer();
+### 🏃 **Run Unthreaded Playback**
+```bash
+zig build run-unthreaded
+```
 
-    const samplingRate: i32 = 44100;
-
-    // -- create sid and configure it
-
-    var sid = try ReSID.init("MyZIGSID");
-    defer sid.deinit();
-    _ = sid.setChipModel("MOS8580");
-
-    // -- create player and initialize it with a demo sound
-
-    var player = try ReSIDDmpPlayer.init(sid.ptr);
-    defer player.deinit();
-    player.setDmp(c.demo_sid, c.demo_sid_len); // set buffer of demo sound
-
-    // -- THAT's IT! All we have to do now is to call player.play()
-    // For this SDL implementation we need SDL to callback our
-    // player.sdlAudioCallback(), it is specified below.
-    // The userdata is required to point to the player object
-
-    // -- init sdl with a callback to our player
-
-    // SDL2 Audio Initialization
-    var spec = c.SDL_AudioSpec{
-        .freq = samplingRate,
-        .format = c.AUDIO_S16,
-        .channels = 1,
-        .samples = 2048,
-        .callback = ReSIDDmpPlayer.getAudioCallback(),
-        .userdata = @ptrCast(&player), // reference to player
-    };
-
-    if (c.SDL_Init(c.SDL_INIT_AUDIO) < 0) {
-        try stdout.print("Failed to initialize SDL audio: {s}\n", .{c.SDL_GetError()});
-        return;
-    }
-    defer c.SDL_Quit();
-
-    const dev = c.SDL_OpenAudioDevice(null, 0, &spec, null, 0);
-    if (dev == 0) {
-        try stdout.print("Failed to open SDL audio device: {s}\n", .{c.SDL_GetError()});
-        return;
-    }
-    defer c.SDL_CloseAudioDevice(dev);
-
-    c.SDL_PauseAudioDevice(dev, 0); // Start playback
-    try stdout.print("Playback started at {d} Hz.\n", .{samplingRate});
-
-    // -- end of SDL initialization
-
-    // all we have to do now is to call .play()
-
-    player.play();
-
-    for (1..10) |i| {
-        stdout.print("Still alive! Step {d}\n", .{i}) catch {};
-        std.time.sleep(0.5 * std.time.ns_per_s);
-    }
-
-    try stdout.print("Press enter to exit\n", .{});
-    _ = std.io.getStdIn().reader().readByte() catch null;
-
-    player.stop();
-
-    c.SDL_PauseAudioDevice(dev, 1); // Stop playback
-    try stdout.print("Playback stopped.\n", .{});
-}
+### ⚡ **Run Threaded Playback**
+```bash
+zig build run-threaded
 ```
 
 ## 🛠️ Building the Project
@@ -128,17 +63,10 @@ sudo apt install libsdl2-dev
 zig build
 ```
 
-To run:
+Both executables will be available in `zig-out/bin/`:
 
-```bash
-zig build run
-```
-
-Or execute the binary directly:
-
-```bash
-./zig-out/bin/zig_sid_demo
-```
+- `zig_sid_demo_unthreaded`
+- `zig_sid_demo_threaded`
 
 ## 🎧 **Zig API Documentation**
 
@@ -151,7 +79,7 @@ Or execute the binary directly:
 - `setChipModel(model: [*:0]const u8) bool`: Sets the **SID chip model** (**"MOS6581"** or **"MOS8580"**, default is MOS8580).
 - `setSamplingRate(rate: c_int)`: Sets the **sampling rate** (default **44100 Hz**).
 - `getSamplingRate() c_int`: Returns the **current sampling rate**.
-- `writeRegs(self: *ReSID, regs: [*c]u8, len: c_int) void`: This is a register bulk write function, and the main function for the dumpplayer to generate sound. Write up to 25 register values to the SID chip.
+- `writeRegs(self: *ReSID, regs: [*c]u8, len: c_int) void`: Bulk register write function for direct SID manipulation.
 
 ---
 
@@ -163,27 +91,24 @@ Or execute the binary directly:
 - `stop()`: **Stops** and **resets** playback.
 - `pause()`: **Pauses** playback (audio generation stops).
 - `continue_play()`: **Continues** playback after pausing.
-- `update()`: **Updates** the **audio buffer**; call this when not using callbacks. Returns 1, when the end of playback is reached
+- `update()`: **Updates** the **audio buffer**; call this when not using callbacks. Returns 1 when playback ends.
 - `setDmp(dump: [*c]u8, len: c_uint)`: Loads a **SID dump** for playback (**must be called before** `play()`).
-- `getPBData() *c.ReSIDPbData`: Returns a **pointer to playback data**. For advanced use.
-- `getAudioCallback() *const fn(...)`: Provides the **SDL-compatible audio callback** for integration with **SDL2**.
+- `getPBData() *c.ReSIDPbData`: Returns a **pointer to playback data**.
+- `getAudioCallback() *const fn(...)`: Provides the **SDL-compatible audio callback**.
+- `updateExternal(b: bool)`: Allows external control of the audio update process.
+- `isPlaying() bool`: Checks if playback is currently active.
 
-### 💾 **Status**
+## 💾 **Status**
 
-🔊 **Current Status:** *First milestone achieved — fully functional and playing SID audio!* The **core functionality** is up and running, providing **non-blocking background playback** with a clean and responsive Zig API. 
+🔊 **Current Status:** *Now featuring **threaded** and **unthreaded** playback options!* 🚀 Both versions are available for performance comparison. The **non-blocking background playback** is fully operational, ensuring responsive applications.
 
-### ✨ **Roadmap & Future Enhancements**
+## ✨ **Roadmap & Future Enhancements**
 
-This is just the **beginning**. The following **upgrades and enhancements** are planned:
-
-- 🎵 **Flexible Sound Playback**: Introducing convenient methods like `player.playDump(...)` for **easy playback of multiple SID dumps** without complex setup.
-- 🎚️ **Advanced Audio Rendering**: Support for **audio rendering** to files (**WAV export**), enabling high-quality sound saving for further processing or sharing.
-- 🎛️ **Real-Time Audio Mixing**: Implementing audio **mixing capabilities** for combining multiple SID streams and effects **in real time**.
-- 🎚️ **Volume and Panning Control**: Adding **runtime volume adjustment** and **stereo panning controls**
-- 🔗 **SDL2 Audio Enqueue Integration**: Extending **SDL2 support** by leveraging **SDL’s enqueueing functions** for smoother, more flexible audio streaming.
-
-Overall, the audio buffer management and audio callback handling will be migrated from the dump-player to the core SID module. This enhancement will unlock real-time sound manipulation by directly setting SID registers and pave the way for the implementation of custom player modules.
-
+- 🎵 **Flexible Sound Playback**: Easy playback of multiple SID dumps (`player.playDump(...)`).
+- 🎚️ **Advanced Audio Rendering**: Export audio as **WAV** for further processing.
+- 🎛️ **Real-Time Audio Mixing**: Support for mixing multiple SID streams in real time.
+- 🎚️ **Volume and Panning Control**: Add runtime **volume adjustments** and **stereo panning**.
+- 🔗 **Enhanced Multithreading Options**: More robust threading support for ultra-smooth playback.
 
 ## 🎧 License
 
@@ -191,4 +116,4 @@ This project uses the **reSID** library and follows its licensing terms. The Zig
 
 ---
 
-✨ *SID sound made simple. Powered by ReSID. Integrated with Zig.* ✨
+✨ *SID sound made simple. Powered by ReSID. Integrated with Zig. Now with threaded and unthreaded playback magic.* ✨
