@@ -69,7 +69,7 @@ Both executables will be available in `zig-out/bin/`:
 - `zig_sid_demo_threaded`
 
 ## 🧬 Demo Code
-### main_unthreaded.zig
+### main_unthreaded.zig - audio buffer calculation in the SDL callback
 This is the most simple example of how to play a SID dump: the ReSIDDmpPlayer writes the SID register values of the dump on each virtual frame (synced to a virtual PAL video standard vertical sync).  
 You can use a siddump utility to generate your own dumps. In this example the siddump is included via a C header file, generated via `xxd -i`.  
 Once you set up the `sid` and `player` objects, you can run `player.play()` to start playback. SDL will play the sound in the background, and update the audiodata via callback. Audio generation is done within the callback in the SDL thread.
@@ -155,7 +155,7 @@ pub fn main() !void {
     try stdout.print("[MAIN] SDL audio stopped.\n", .{});
 }
 ```
-### main_threaded.zig
+### main_threaded.zig - audio buffer calculation in its own thread
 This example of how to play a SID dump is a little bit more advanced. We set up the  `sid` and `player` objects like in the unthreaded version, and run `player.play()` to start playback.  
 Before we do so, we need to tell the player, it shall not call the update() function in the SDL audio thread. We do so by calling `player.updateExternal(true);`.  
 SDL will still play the audio buffer in the background, but this audio buffer will never get updated. We need to call the update function ourselfes. Luckily the update function will only do it's work, when the audiobuffer is consumed by SDL, else not waste time and CPU. All we need to do is to run the update() function in a timer interval smaller than the playback duration of the audio buffer (4096 samples).  
