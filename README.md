@@ -289,7 +289,7 @@ pub fn main() !void {
 
 ## 💾 **Status**
 
-🔊 **Current Status:** *Now featuring **threaded** and **unthreaded** playback options!* 🚀 Both versions are available for performance comparison. The **non-blocking background playback** is fully operational, ensuring responsive applications.
+🔊 **Current Status:** *Now featuring **threaded** and **unthreaded** playback options!* The non-blocking background playback is fully operational, ensuring responsive applications.
 
 ## ✨ **Roadmap & Future Enhancements**
 
