@@ -187,7 +187,7 @@ Overall, the audio buffer management and audio callback handling will be migrate
 
 ## 🎧 License
 
-This project uses the **ReSID** library and follows its licensing terms. The Zig and C bindings code is provided under the **MIT License**.
+This project uses the **reSID** library and follows its licensing terms. The Zig and C bindings code is provided under the **MIT License**.
 
 ---
 
