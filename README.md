@@ -161,7 +161,7 @@ Before we do so, we need to tell the player, it shall not call the update() func
 SDL will still play the audio buffer in the background, but this audio buffer will never get updated. We need to call the update function ourselfes. Luckily the update function will only do it's work, when the audiobuffer is consumed by SDL, else not waste time and CPU. All we need to do is to run the update() function in a timer interval smaller than the playback duration of the audio buffer (4096 samples).  
 Our thread will need to exit when playback stopped, so we simply check `player.isPlaying()` in our "infinite" while loop.  
 #### Realtime audio visualisation and modification
-This also gives you the opportunity to access and modify the audio buffer. You can access it via `([*c]c_short) player.getPBData().buf_next`. The audio playback uses 2 buffers. When update() is called, it will fill `player.getPBData().buf_next` while SDL plays `player.getPBData().buf_playing`. When SDL consumed the playback buffer, these two buffers will be swapped internally.
+This thread also gives you the opportunity to access and modify the audio buffer. You can access it via `([*c]c_short) player.getPBData().buf_next`. The audio playback uses 2 buffers. When update() is called, it will fill `player.getPBData().buf_next` while SDL plays `player.getPBData().buf_playing`. When SDL consumed the playback buffer, these two buffers will be swapped internally.
 
 ```zig
 const std = @import("std");
