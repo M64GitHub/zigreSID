@@ -278,6 +278,7 @@ pub fn main() !void {
 - `setSamplingRate(rate: c_int)`: Sets the **sampling rate** (default **44100 Hz**).
 - `getSamplingRate() c_int`: Returns the **current sampling rate**.
 - `writeRegs(self: *ReSID, regs: [*c]u8, len: c_int) void`: Bulk register write function for direct SID manipulation.
+- `getRegs(self: *ReSID) [25]u8`: Read the current values of the SID registers
 
 ---
 
