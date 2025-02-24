@@ -5,7 +5,7 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    // Step 1: Create reSID C++ shared library and C wrapper
+    // Create reSID C++ shared library and C wrapper
     const sid_lib = b.addSharedLibrary(.{
         .name = "sid",
         .target = target,
@@ -40,7 +40,7 @@ pub fn build(b: *std.Build) void {
 
     sid_lib.addIncludePath(.{ .cwd_relative = "/usr/include/" });
 
-    // Step 2: Build Unthreaded Executable
+    // Build Unthreaded Executable
     const exe_unthreaded = b.addExecutable(.{
         .name = "zig_sid_demo_unthreaded",
         .root_source_file = b.path("src/main_unthreaded.zig"),
@@ -53,7 +53,7 @@ pub fn build(b: *std.Build) void {
     exe_unthreaded.addIncludePath(b.path("."));
     b.installArtifact(exe_unthreaded);
 
-    // Step 3: Build Threaded Executable
+    // Build Threaded Executable
     const exe_threaded = b.addExecutable(.{
         .name = "zig_sid_demo_threaded",
         .root_source_file = b.path("src/main_threaded.zig"),
@@ -66,7 +66,7 @@ pub fn build(b: *std.Build) void {
     exe_threaded.addIncludePath(b.path("."));
     b.installArtifact(exe_threaded);
 
-    // Step 4: Run steps for both
+    // Run steps for both
     const run_unthreaded = b.addRunArtifact(exe_unthreaded);
     const run_threaded = b.addRunArtifact(exe_threaded);
 
