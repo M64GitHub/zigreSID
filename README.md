@@ -300,6 +300,7 @@ pub fn main() !void {
 - 🔗 **Enhanced Multithreading Options**: More robust threading support for ultra-smooth playback.
 - **SDL Enqueueing support**: precalculate chunks of audio and simply enqueue them. No need for audio updating later. But also no real time audio control.
 - **ReSIDSDL**: Providing a dedicated object that uses SDL for playback. Internally doing SDL initialization and configuration. This will reduce the usage to a few very simple and clean API calls.
+- **Low Level SID Access**: binding more of the resid original API to zig.
 
 ## 🎧 License
 
