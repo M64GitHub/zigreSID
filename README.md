@@ -42,7 +42,7 @@ const std = @import("std");
 const c = @cImport({
     @cInclude("SDL.h");
     @cInclude("resid_wrapper.h");
-    @cInclude("demo_sound.h");
+    @cInclude("demo_sound.h"); // a siddump of the plasmaghost music
 });
 
 const ReSID = @import("resid.zig").ReSID;
