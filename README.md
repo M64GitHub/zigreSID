@@ -145,7 +145,7 @@ pub fn main() !void {
     for (1..10) |_| {
         const regs = sid.getRegs(); // [25]u8 array
 
-        try stdout.print("SID Registers: ", .{});
+        try stdout.print("[MAIN] SID Registers: ", .{});
         for (regs) |value| {
             try stdout.print("{x:0>2} ", .{value});
         }
@@ -185,7 +185,6 @@ fn playerThreadFunc(player: *ReSIDDmpPlayer) void {
     while (player.isPlaying()) {
         player.update();
         std.time.sleep(5 * std.time.ns_per_ms);
-        player.getPBData().buf_
     }
 }
 
@@ -255,7 +254,7 @@ pub fn main() !void {
     for (1..10) |_| {
         const regs = sid.getRegs(); // [25]u8 array
 
-        try stdout.print("SID Registers: ", .{});
+        try stdout.print("[MAIN] SID Registers: ", .{});
         for (regs) |value| {
             try stdout.print("{x:0>2} ", .{value});
         }
