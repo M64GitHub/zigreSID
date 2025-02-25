@@ -12,18 +12,18 @@ This project is **audio-library agnostic** by design. The **core SID emulation a
 (https://github.com/daglem/reSID)
 - 🔧 **Simplified C++ Framework**: All complex timing calculations and internal audio buffer management are handled automatically, allowing you to focus solely on the high-level API.
 - 🔗 **C Bindings for Zig**: Provides clean **C bindings** to the simplified C++ framework, making **SID sound playback in Zig** straightforward and seamless.
-- 🎧 **Audio Backend Flexibility**: The framework allows easy integration with different audio libraries; SDL2 is used in the current example.
+- 🎧 **Audio Backend Flexibility**: The framework allows easy integration with different audio libraries
 - ⚡ **Non-Blocking Audio Playback**: The audio playback runs in the background, so your application remains responsive and interactive while playing music.
-- 🧵 **Threaded and Unthreaded Playback Support**: Provides two execution models—unthreaded for simple integration and threaded for performance improvements, **audio visualization** and **modification** possibilities.
+- 🧵 **Playback Support for a dedicated thread**: Provides two execution models—"unthreaded" for simple integration and multi threaded for performance improvements, **audio visualization** and -**modification** possibilities.
 
 ## 🎼 **Audio and SID Chip Details**
 
-- 🎵 **Stereo Audio Output**: The generated audio fills a **mono buffer**, providing the SID mono signal at equal levels on the left and right channel.
-- 🎚️ **Default Sampling Rate**: Set to **44.1kHz** by default. The sampling rate is **changeable at runtime** via the provided API.
+- 🎵 **Stereo Audio Output**: The generated audio fills a **mono buffer**, providing the SID mono signal at equal levels on the left and right audio channel. A dual SID for a 6 voice true stereo sound is in progress.
+- 🎚️ **Sampling Rate**: Set to **44.1kHz** by default. The sampling rate is **changeable at runtime** via the provided API.
 - 🎛️ **SID Chip Model Selection**:
   - **SID6581**: Classic SID sound with characteristic filter behavior, more bassy sound.
   - **SID8580**: Enhanced model with improved signal-to-noise ratio (**default**).
-- **Highest Emulation Quality**: The emulation quality is set to the highest possible level supported by the reSID library: `SAMPLE_RESAMPLE_INTERPOLATE`.
+- **Emulation Quality**: The emulation quality is set to the highest possible level supported by the reSID library: `SAMPLE_RESAMPLE_INTERPOLATE`.
 
 ## 💡 How The reSID Integration Works
 
