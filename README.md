@@ -79,7 +79,8 @@ zig build run-threaded
 ### 🧬 **How Audio Buffer Generation Works**  
 
 #### 🔄 **Frame-Based SID Register Processing**  
-- **SID dumps** contain **SID register values** representing audio frames.  
+- **SID dumps** contain **SID register values** representing audio frames.
+- The player receives a dump via the `setDmp()` function
 - For each **virtual PAL frame** (**50.125 Hz**, synchronized to a virtual vertical sync), the **player** reads a set of **25 SID register values** from the dump.  
 - These registers are **bulk-written** to the **reSID engine** using `writeRegs()`.  
 - The **`fillAudioBuffer()`** function clocks the **reSID engine** internally, generating **audio samples** that form the **audio buffer**.  
@@ -129,7 +130,7 @@ zig build run-threaded
 
 
 
-### 🎛️ **Playback State and Audio Buffer Insights**  
+### 🎛️ **Playback State and Audio Buffer Access**  
 
 #### 🔍 **Playback Control Functions**  
 - `player.play()`: Start playback from the beginning.  
@@ -436,6 +437,7 @@ pub fn main() !void {
 - `getAudioCallback() *const fn(...)`: Provides the **SDL-compatible audio callback**.
 - `updateExternal(b: bool)`: Allows external control of the audio update process.
 - `isPlaying() bool`: Checks if playback is currently active.
+- `fillAudioBuffer() i32`: internal function called by `update()`. Returns 1 at end of dump reached.
 
 ## 💾 **Status**
 
