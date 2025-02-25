@@ -365,4 +365,4 @@ This project uses the **reSID** library and follows its licensing terms. The Zig
 
 ---
 
-✨ *SID sound made simple. Powered by ReSID. Integrated with Zig. Now with threaded and unthreaded playback magic.* ✨
+✨ *SID sound made simple. Powered by ReSID. Integrated with Zig. ✨
