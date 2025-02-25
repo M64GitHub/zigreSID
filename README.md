@@ -13,7 +13,7 @@ This project is **audio-library agnostic** by design. The **core SID emulation a
 - ⚡ **Powered by reSID**: Leverages the proven **reSID** C++ library for high-quality sound emulation.  
 (https://github.com/daglem/reSID)
 - 🔧 **Simplified Framework**: All complex timing calculations and internal audio buffer management are handled automatically, allowing you to focus solely on the high-level API.
-- 🔗 **C Bindings for Zig**: Provides clean **C bindings** and integrates a clear and explicit Zig interface making **SID sound playback in Zig** straightforward and seamless.
+- 🔗 **reSID C Bindings for Zig**: Provides clean **C bindings** and integrates a clear and explicit Zig interface making **SID sound playback in Zig** straightforward and seamless.
 - 🎧 **Audio Backend Flexibility**: The framework allows easy integration with different audio libraries
 - ⚡ **Non-Blocking Audio Playback**: The audio playback runs in the background, so your application remains responsive and interactive while playing music.
 - 🧵 **Playback Support for a dedicated thread**: Provides two execution models—"unthreaded" for simple integration and multi threaded for performance improvements, **audio visualization** and -**modification** possibilities.
