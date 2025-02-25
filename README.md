@@ -77,7 +77,7 @@ The player processes SID register values for each virtual frame, synchronized to
 You can generate your own SID dumps using a siddump utility. In this demo, the SID dump is included via a C header file generated using the `xxd -i` tool.
 - After initializing the `sid` and `player` struct instances, set the dump for the player:  
   ```zig
-  player.setDmp(c.demo_sid, c.demo_sid_len);
+  player.setDmp(sounddata.demo_sid, sounddata.demo_sid_len);
   ```
 - And to start playback, simply call:  
   ```zig
