@@ -70,9 +70,10 @@ zig build run-unthreaded
 zig build run-threaded
 ```
 
-## 🎼 **ReSIDDmpPlayer Audio Buffer Generation Documentation**  
+  
+## 🎼 **ReSIDDmpPlayer Audio Buffer Generation**  
 
-The **`ReSIDDmpPlayer`** is designed to handle **SID sound playback** by managing **audio buffer generation** and **SID register updates** in a precise, synchronized manner. This ensures **high-quality audio output** that closely replicates the timing and behavior of the **original SID chip**.
+**`ReSIDDmpPlayer`** one method to playback whole SID tunes. Is designed to handle SID sound playback by managing audio buffer generation and SID register updates based on reading the register values from a dump, in repeated steps.
 
 ---
 ### 🧬 **How Audio Buffer Generation Works**  
