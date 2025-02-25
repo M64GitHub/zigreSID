@@ -33,7 +33,7 @@ This project bridges the gap between C++, C, and Zig:
 1. **reSID C++ Library**: Handles low-level SID emulation.
 2. **Simplified C++ Framework**: A custom wrapper that manages timing, buffer generation, and playback logic, so you don’t have to.
 3. **C Bindings**: Exposes key C++ functionalities through a clean C interface.
-4. **Zig Wrapper**: Zig code using structs and methods to wrap C bindings, offering a clean and intuitive API for SID playback and control.
+4. **Zig Wrapper**: A clear and explicit Zig interface built with structs and associated methods, wrapping C bindings for seamless SID playback and control.
 5. **SDL2 Audio Interface**: The current demo code uses SDL2 for audio playback, but this can be replaced or extended.
 6. 🧵 **Threaded and Unthreaded Execution**: Use the threaded variant to move audio buffer generation out of SDL into its own thread.
 
@@ -73,6 +73,23 @@ Both executables will be available in `zig-out/bin/`:
 This is the most simple example of how to play a SID dump: the ReSIDDmpPlayer writes the SID register values of the dump on each virtual frame (synced to a virtual PAL video standard vertical sync).  
 You can use a siddump utility to generate your own dumps. In this example the siddump is included via a C header file, generated via `xxd -i`.  
 Once you set up the `sid` and `player` objects, you can run `player.play()` to start playback. SDL will play the sound in the background, and update the audiodata via callback. Audio generation is done within the callback in the SDL thread.
+
+## 🧬 **Demo Code**
+
+This example demonstrates the simplest way to play a SID dump using the `ReSIDDmpPlayer`.  
+The player processes SID register values for each virtual frame, synchronized to a virtual PAL video standard vertical sync for accurate timing.
+
+🔗 **Custom SID Dumps:**  
+You can generate your own SID dumps using a siddump utility. In this demo, the SID dump is included via a C header file generated using the `xxd -i` tool.
+
+🎵 **Playback Flow:**  
+- After initializing the `sid` and `player` **struct instances**, simply call:  
+  ```zig
+  player.play();
+  ```  
+  to start playback.
+- SDL2 handles audio playback in the background using its audio callback mechanism. The audiodata is also updated callback.
+- Audio generation runs entirely within the SDL audio thread.
 
 ```zig
 const std = @import("std");
