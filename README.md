@@ -183,6 +183,42 @@ Our thread will need to exit when playback stopped, so we simply check `player.i
 #### Realtime audio visualisation and modification
 This thread also gives you the opportunity to access and modify the audio buffer. You can access it via `([*c]c_short) player.getPBData().buf_next`. The audio playback uses 2 buffers. When update() is called, it will fill `player.getPBData().buf_next` while SDL plays `player.getPBData().buf_playing`. When SDL consumed the playback buffer, these two buffers will be swapped internally.
 
+### main_threaded.zig - audio buffer calculation in a dedicated thread
+
+This example demonstrates a more advanced approach to playing a SID dump.  
+The `sid` and `player` struct instances are initialized similarly to the unthreaded version. Playback also starts by calling:  
+```zig
+player.play();
+```
+
+Before starting playback, the player must be instructed **not** to update the audio buffer within the SDL audio thread. This is done by calling:  
+```zig
+player.updateExternal(true);
+```
+
+SDL2 continues handling audio playback in the background. However, the audio buffer will no longer be updated automatically. The responsibility to call `player.update()` lies with the user.  
+
+The `update()` function only performs computations when the audio buffer is consumed by SDL, ensuring efficient CPU usage. To maintain continuous playback, `update()` must be called at intervals shorter than the playback duration of the audio buffer (**4096 samples**).
+
+The dedicated thread runs this `update()` function in a loop and exits gracefully once playback is complete. It runs until the player has stopped playing. It will check the player state via:  
+```zig
+player.isPlaying();
+```
+
+#### Realtime audio visualization and modification
+
+Running `update()` in a separate thread enables **real-time audio visualization and manipulation**.  
+The active audio buffer can be accessed via:  
+```zig
+([*c]c_short) player.getPBData().buf_playing
+```
+
+The playback mechanism uses a **double-buffering strategy**:  
+- While SDL plays `player.getPBData().buf_playing`,  
+- `player.getPBData().buf_next` is prepared by `update()`.  
+Once the playback buffer is fully consumed, the buffers are **swapped internally** to maintain seamless playback.
+
+
 ```zig
 const std = @import("std");
 const c = @cImport({
