@@ -315,7 +315,7 @@ pub fn main() !void {
 
 ## 🎧 **Zig API Documentation**
 
-### 🎹 **ReSID Class** (SID Emulation)
+### 🎹 **ReSID Struct** (SID Emulation)
 
 - `init(name: [*:0]const u8) !ReSID`: Initializes a **SID instance** with a given name.
 - `deinit()`: Frees the **SID instance**.
@@ -329,7 +329,7 @@ pub fn main() !void {
 
 ---
 
-### 🎛️ **ReSIDDmpPlayer Class** (Playback Controller)
+### 🎛️ **ReSIDDmpPlayer Struct** (Playback Controller)
 
 - `init(resid: *c.ReSID) !ReSIDDmpPlayer`: Creates a **player instance** linked to a **SID instance**.
 - `deinit()`: Frees the **player instance**.
