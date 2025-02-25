@@ -73,7 +73,7 @@ zig build run-threaded
   
 ## 🎼 **ReSIDDmpPlayer Audio Buffer Generation**  
 
-**`ReSIDDmpPlayer`** is one method to playback whole SID tunes. Is designed to handle SID sound playback by managing audio buffer generation and SID register updates based on reading the register values from a dump, in repeated steps.
+**`ReSIDDmpPlayer`** is one method to playback whole SID tunes, or sound effects. Is designed to handle SID sound playback by managing audio buffer generation and SID register updates based on reading the register values from a dump, in repeated steps.
 
 
 ### 🧬 **How Audio Buffer Generation Works**  
