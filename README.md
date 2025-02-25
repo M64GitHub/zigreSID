@@ -104,16 +104,21 @@ zig build run-threaded
   ```zig
   player.updateExternal(true);
   ```  
-- In this mode, the **audio backend** (SDL2) plays audio from the buffer but **does not trigger buffer generation**.  
-- The user must run:
-  ```zig
-  player.update();
-  ```  
-  at **regular intervals** (shorter than the buffer playback time, typically 4096 samples at 44.1kHz).  
+- In this mode, the **audio backend** (SDL2) plays audio from the buffer but **does not trigger buffer generation**.
 - This approach allows for:  
   - 💡 **Real-time audio visualization**  
   - 🎚️ **Live audio manipulation**  
   - 🚀 **Performance optimization** via **multithreading**  
+- The user must run:
+  ```zig
+  player.update();
+  ```  
+  at **regular intervals** (shorter than the buffer playback time, typically 4096 samples at 44.1kHz).
+- Use **Zig’s threading API**:  
+  ```zig
+  const playerThread = try std.Thread.spawn(.{}, playerThreadFunc, .{&player});
+  defer playerThread.join(); 
+  ``` 
 - Example threaded update loop:  
   ```zig
   while (player.isPlaying()) {
@@ -153,25 +158,6 @@ zig build run-threaded
   const regs = sid.getRegs(); // Returns [25]u8 array
   ```  
 
-
-
-### 🚀 **Performance Considerations**  
-
-- **Threaded playback** improves performance by running `player.update()` in a **dedicated thread**, freeing the **main thread** for other tasks.  
-- Use **Zig’s threading API**:  
-  ```zig
-  const playerThread = try std.Thread.spawn(.{}, playerThreadFunc, .{&player});
-  defer playerThread.join(); 
-  ```  
- - Call the players `update()` function in the thread, as long as the player is playing
-   ```zig
-   fn playerThreadFunc(player: *ReSIDDmpPlayer) void {
-       while (player.isPlaying()) {
-           player.update();
-           std.time.sleep(5 * std.time.ns_per_ms);
-       }
-   }
-   ```
 
 ## 🧬 **Demo Code**
 
