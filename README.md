@@ -38,22 +38,6 @@ This project bridges the gap between C++, C, and Zig:
 5. **SDL2 Audio Interface**: The current demo code uses SDL2 for audio playback, but this can be replaced or extended.
 6. 🧵 **Threaded and Unthreaded Execution**: Use the threaded variant to move audio buffer generation out of SDL into its own thread.
 
-## 🎼 Example Usage
-
-Two examples are available for demonstration:
-
-- 🏃 **Unthreaded Playback:** `src/main_unthreaded.zig`
-- ⚡ **Threaded Playback:** `src/main_threaded.zig`
-
-### 🏃 **Run Unthreaded Playback**
-```bash
-zig build run-unthreaded
-```
-
-### ⚡ **Run Threaded Playback**
-```bash
-zig build run-threaded
-```
 
 ## 🛠️ Building the Project
 
@@ -64,10 +48,27 @@ sudo apt install libsdl2-dev
 zig build
 ```
 
+Two examples are available for demonstration:
+
+- 🏃 **Unthreaded Playback:** `src/main_unthreaded.zig`
+- ⚡ **Threaded Playback:** `src/main_threaded.zig`
+
 Both executables will be available in `zig-out/bin/`:
 
 - `zig_sid_demo_unthreaded`
 - `zig_sid_demo_threaded`
+
+## 🎼 Running the demos
+
+### 🏃 **Run Unthreaded Playback**
+```bash
+zig build run-unthreaded
+```
+
+### ⚡ **Run Threaded Playback**
+```bash
+zig build run-threaded
+```
 
 ## 🎼 **ReSIDDmpPlayer Audio Buffer Generation Documentation**  
 
