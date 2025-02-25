@@ -75,7 +75,7 @@ zig build run-threaded
 
 **`ReSIDDmpPlayer`** one method to playback whole SID tunes. Is designed to handle SID sound playback by managing audio buffer generation and SID register updates based on reading the register values from a dump, in repeated steps.
 
----
+
 ### 🧬 **How Audio Buffer Generation Works**  
 
 #### 🔄 **Frame-Based SID Register Processing**  
@@ -90,7 +90,7 @@ zig build run-threaded
   - `buf_next`: Prepared by the player for **future playback**.  
 - Once the **audio backend** finishes playing `buf_playing`, the buffers are **swapped** internally to ensure **gapless playback**.  
 
----
+
 
 ### ⚡ **Buffer Generation Approaches**  
 
@@ -122,7 +122,7 @@ zig build run-threaded
   }
   ```
 
----
+
 
 ### 🎛️ **Playback State and Audio Buffer Insights**  
 
@@ -140,7 +140,7 @@ zig build run-threaded
   ```  
 - Modify `buf_next` during playback for **dynamic audio effects** or **custom processing**.  
 
----
+
 
 ### 🔄 **SID Register Handling**  
 
@@ -153,7 +153,7 @@ zig build run-threaded
   const regs = sid.getRegs(); // Returns [25]u8 array
   ```  
 
----
+
 
 ### 🚀 **Performance Considerations**  
 
