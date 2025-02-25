@@ -70,7 +70,7 @@ Both executables will be available in `zig-out/bin/`:
 
 ## 🧬 **Demo Code**
 
-### main_unthreaded.zig - audio buffer calculation in SDL
+### main_unthreaded.zig - audio buffer calculation in the SDL callback
 
 This example demonstrates the simplest way to play a SID dump using the `ReSIDDmpPlayer`.  
 The player processes SID register values for each virtual frame, synchronized to a virtual PAL video standard vertical sync for accurate timing.
