@@ -73,13 +73,15 @@ Both executables will be available in `zig-out/bin/`:
 ### main_unthreaded.zig - audio buffer calculation in the SDL callback
 
 This example demonstrates the simplest way to play a SID dump using the `ReSIDDmpPlayer`.  
-The player processes SID register values for each virtual frame, synchronized to a virtual PAL video standard vertical sync for accurate timing.
+The player processes SID register values for each virtual frame, synchronized to a virtual PAL video standard vertical sync for accurate timing.  
 
-🔗 **Custom SID Dumps:**  
 You can generate your own SID dumps using a siddump utility. In this demo, the SID dump is included via a C header file generated using the `xxd -i` tool.
+ - Set the dump for the player:
+```zig
+player.setDmp(c.demo_sid, c.demo_sid_len);
+```
 
-🎵 **Playback Flow:**  
-- After initializing the `sid` and `player` **struct instances**, simply call:  
+- After initializing the `sid` and `player` struct instances, simply call:  
   ```zig
   player.play();
   ```  
