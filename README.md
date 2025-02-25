@@ -421,7 +421,6 @@ pub fn main() !void {
 - `writeRegs(self: *ReSID, regs: [*c]u8, len: c_int) void`: Bulk register write function for direct SID manipulation.
 - `getRegs(self: *ReSID) [25]u8`: Read the current values of the SID registers
 
----
 
 ### 🎛️ **ReSIDDmpPlayer Struct** (Playback Controller)
 
