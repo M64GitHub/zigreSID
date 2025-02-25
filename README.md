@@ -8,6 +8,8 @@ It is built upon the powerful **reSID** C++ library, delivering authentic SID so
 ### 🎧 **Audio Library Independence**
 This project is **audio-library agnostic** by design. The **core SID emulation and playback logic** is completely independent of any audio backend. However, the **current implementation** demonstrates audio playback using **SDL2** for convenience and cross-platform support. You can easily adapt or extend the audio interface to suit other libraries or custom solutions. The playback engine supports both **automatic audio callbacks** for seamless integration and **manual audio buffer generation** for full control and customization of the audio stream.  
 
+<br>
+
 ## 🚀 Features
 
 - 🎹 **SID Soundchip Emulation for Zig**: Experience the legendary SID sound directly in your Zig projects.
@@ -19,6 +21,8 @@ This project is **audio-library agnostic** by design. The **core SID emulation a
 - ⚡ **Non-Blocking Audio Playback**: The audio playback runs in the background, so your application remains responsive and interactive while playing music.
 - 🧵 **Playback Support for a dedicated thread**: Provides two execution models—"unthreaded" for simple integration and multi threaded for performance improvements, **audio visualization** and -**modification** possibilities.
 
+<br>
+
 ## 🎼 **Audio and SID Chip Details**
 
 - 🎵 **Stereo Audio Output**: The generated audio fills a **mono buffer**, providing the SID mono signal at equal levels on the left and right audio channel. A dual SID for a 6 voice true stereo sound is in progress.
@@ -27,6 +31,8 @@ This project is **audio-library agnostic** by design. The **core SID emulation a
   - **SID6581**: Classic SID sound with characteristic filter behavior, more bassy sound.
   - **SID8580**: Enhanced model with improved signal-to-noise ratio (**default**).
 - **Emulation Quality**: The emulation quality is set to the highest possible level supported by the reSID library: `SAMPLE_RESAMPLE_INTERPOLATE`.
+
+<br>
 
 ## 💡 How The reSID Zig Integration Works
 
@@ -39,6 +45,7 @@ This project bridges the gap between C++, C, and Zig:
 5. **SDL2 Audio Interface**: The current demo code uses SDL2 for audio playback, but this can be replaced or extended.
 6. 🧵 **Threaded and Unthreaded Execution**: Use the threaded variant to move audio buffer generation out of SDL into its own thread.
 
+<br>
 
 ## 🛠️ Building the Project
 
@@ -71,6 +78,7 @@ zig build run-unthreaded
 zig build run-threaded
 ```
 
+<br>
   
 ## 🎼 **ReSIDDmpPlayer Audio Buffer Generation**  
 
@@ -160,6 +168,7 @@ zig build run-threaded
   const regs = sid.getRegs(); // Returns [25]u8 array
   ```  
 
+<br>
 
 ## 🧬 **Demo Code**
 
@@ -269,6 +278,7 @@ pub fn main() !void {
     try stdout.print("[MAIN] SDL audio stopped.\n", .{});
 }
 ```
+<br>
 
 ### main_threaded.zig - audio buffer calculation in a dedicated thread
 
@@ -406,6 +416,8 @@ pub fn main() !void {
 }
 ```
 
+<br>
+
 
 ## 🎧 **Zig API Documentation**
 
@@ -420,6 +432,8 @@ pub fn main() !void {
 - `getSamplingRate() c_int`: Returns the **current sampling rate**.
 - `writeRegs(self: *ReSID, regs: [*c]u8, len: c_int) void`: Bulk register write function for direct SID manipulation.
 - `getRegs(self: *ReSID) [25]u8`: Read the current values of the SID registers
+
+<br>
 
 
 ### 🎛️ **ReSIDDmpPlayer Struct** (Playback Controller)
@@ -438,9 +452,13 @@ pub fn main() !void {
 - `isPlaying() bool`: Checks if playback is currently active.
 - `fillAudioBuffer() i32`: internal function called by `update()`. Returns 1 at end of dump reached.
 
+<br>
+
 ## 💾 **Status**
 
 🔊 **Current Status:** The non-blocking background playback for sid-dumps is fully operational.
+
+<br>
 
 ## ✨ **Roadmap & Future Enhancements**
 
@@ -451,6 +469,8 @@ pub fn main() !void {
 - **SDL Enqueueing support**: precalculate chunks of audio and simply enqueue them. No need for audio updating later. But also no real time audio control.
 - **ReSIDSDL**: Providing a dedicated object that uses SDL for playback. Internally doing SDL initialization and configuration. This will reduce the usage to a few very simple and clean API calls.
 - **Low Level SID Access**: binding the full resid original API to zig.
+
+<br>
 
 ## 🎧 License
 
