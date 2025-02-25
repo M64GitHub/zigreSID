@@ -197,7 +197,7 @@ player.isPlaying();
 
 #### Realtime audio visualization and modification
 
-Running `update()` in a separate thread enables **real-time audio visualization and manipulation**.  
+Running `update()` in a separate thread enables **real-time audio visualization** and **manipulation**.  
 The active audio buffer can be accessed via:  
 ```zig
 ([*c]c_short) player.getPBData().buf_playing
@@ -205,7 +205,7 @@ The active audio buffer can be accessed via:
 
 The playback mechanism uses a **double-buffering strategy**:  
 - While SDL plays `player.getPBData().buf_playing`,  
-- `player.getPBData().buf_next` is prepared by `update()`.  
+- `player.getPBData().buf_next` is prepared by `update()`. By modifying this buffer you can control the audio!    
 Once the playback buffer is fully consumed, the buffers are **swapped internally** to maintain seamless playback.
 
 
