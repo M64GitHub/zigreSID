@@ -1,8 +1,9 @@
 const std = @import("std");
-const c = @cImport({
-    @cInclude("SDL.h");
-    @cInclude("resid_wrapper.h");
+const sounddata = @cImport({
     @cInclude("demo_sound.h");
+});
+const SDL = @cImport({
+    @cInclude("SDL.h");
 });
 
 const ReSID = @import("resid.zig").ReSID;
@@ -29,7 +30,7 @@ pub fn main() !void {
     // -- create player and initialize it with a demo sound
     var player = try ReSIDDmpPlayer.init(sid.ptr);
     defer player.deinit();
-    player.setDmp(c.demo_sid, c.demo_sid_len); // set buffer of demo sound
+    player.setDmp(sounddata.demo_sid, sounddata.demo_sid_len); // set buffer of demo sound
     player.updateExternal(true); // make sure, SDL does not call the update-
     // function
 
@@ -44,29 +45,29 @@ pub fn main() !void {
     // -- init sdl with a callback to our player
 
     // SDL2 Audio Initialization
-    var spec = c.SDL_AudioSpec{
+    var spec = SDL.SDL_AudioSpec{
         .freq = samplingRate,
-        .format = c.AUDIO_S16,
+        .format = SDL.AUDIO_S16,
         .channels = 1,
         .samples = 4096,
         .callback = ReSIDDmpPlayer.getAudioCallback(),
         .userdata = @ptrCast(&player), // reference to player
     };
 
-    if (c.SDL_Init(c.SDL_INIT_AUDIO) < 0) {
-        try stdout.print("[MAIN] Failed to initialize SDL audio: {s}\n", .{c.SDL_GetError()});
+    if (SDL.SDL_Init(SDL.SDL_INIT_AUDIO) < 0) {
+        try stdout.print("[MAIN] Failed to initialize SDL audio: {s}\n", .{SDL.SDL_GetError()});
         return;
     }
-    defer c.SDL_Quit();
+    defer SDL.SDL_Quit();
 
-    const dev = c.SDL_OpenAudioDevice(null, 0, &spec, null, 0);
+    const dev = SDL.SDL_OpenAudioDevice(null, 0, &spec, null, 0);
     if (dev == 0) {
-        try stdout.print("[MAIN] Failed to open SDL audio device: {s}\n", .{c.SDL_GetError()});
+        try stdout.print("[MAIN] Failed to open SDL audio device: {s}\n", .{SDL.SDL_GetError()});
         return;
     }
-    defer c.SDL_CloseAudioDevice(dev);
+    defer SDL.SDL_CloseAudioDevice(dev);
 
-    c.SDL_PauseAudioDevice(dev, 0); // Start playback
+    SDL.SDL_PauseAudioDevice(dev, 0); // Start playback
     try stdout.print("[MAIN] SDL audio started at {d} Hz.\n", .{samplingRate});
 
     // -- end of SDL initialization
@@ -94,6 +95,6 @@ pub fn main() !void {
 
     player.stop();
 
-    c.SDL_PauseAudioDevice(dev, 1); // Stop playback
+    SDL.SDL_PauseAudioDevice(dev, 1); // Stop playback
     try stdout.print("[MAIN] SDL audio stopped.\n", .{});
 }
