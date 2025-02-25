@@ -69,31 +69,35 @@ Both executables will be available in `zig-out/bin/`:
 - `zig_sid_demo_unthreaded`
 - `zig_sid_demo_threaded`
 
-## 🧬 **How Audio Buffer Generation Works**  
+## 🎼 **ReSIDDmpPlayer Audio Buffer Generation Documentation**  
 
-### 🔄 **Frame-Based SID Register Processing**  
+The **`ReSIDDmpPlayer`** is designed to handle **SID sound playback** by managing **audio buffer generation** and **SID register updates** in a precise, synchronized manner. This ensures **high-quality audio output** that closely replicates the timing and behavior of the **original SID chip**.
+
+---
+### 🧬 **How Audio Buffer Generation Works**  
+
+#### 🔄 **Frame-Based SID Register Processing**  
 - **SID dumps** contain **SID register values** representing audio frames.  
 - For each **virtual PAL frame** (**50.125 Hz**, synchronized to a virtual vertical sync), the **player** reads a set of **25 SID register values** from the dump.  
 - These registers are **bulk-written** to the **reSID engine** using `writeRegs()`.  
-- The **`FillAudioBuffer()`** function clocks the **reSID engine** internally, generating **audio samples** that form the **audio buffer**.  
+- The **`fillAudioBuffer()`** function clocks the **reSID engine** internally, generating **audio samples** that form the **audio buffer**.  
 
-### 🎵 **Audio Buffer Structure and Playback**  
+#### 🎵 **Audio Buffer Structure and Playback**  
 - The generated audio is stored in **double buffers**:  
   - `buf_playing`: Currently being played by the **audio backend** (e.g., SDL2).  
   - `buf_next`: Prepared by the player for **future playback**.  
 - Once the **audio backend** finishes playing `buf_playing`, the buffers are **swapped** internally to ensure **gapless playback**.  
-- The audio data is output in **stereo**, duplicating the **mono SID signal** on both channels.  
 
 ---
 
-## ⚡ **Buffer Generation Approaches**  
+### ⚡ **Buffer Generation Approaches**  
 
-### 🏃 **Unthreaded Mode** (Default, SDL Audio Callback Driven)  
+#### 🏃 **Unthreaded Mode** (Default, SDL Audio Callback Driven)  
 - The **audio buffer** is updated **automatically** within the **SDL audio thread**.  
 - The **SDL audio callback** invokes the player's internal audio generation methods, ensuring **continuous playback** without manual intervention.  
 - Suitable for **simpler use cases** where **real-time audio control** is **not required**.  
 
-### 🧵 **Threaded Mode** (Manual Audio Buffer Updates)  
+#### 🧵 **Threaded Mode** (Manual Audio Buffer Updates)  
 - The **user** gains full control over **buffer updates** by calling:  
   ```zig
   player.updateExternal(true);
@@ -118,15 +122,15 @@ Both executables will be available in `zig-out/bin/`:
 
 ---
 
-## 🎛️ **Playback State and Audio Buffer Insights**  
+### 🎛️ **Playback State and Audio Buffer Insights**  
 
-### 🔍 **Playback Control Functions**  
+#### 🔍 **Playback Control Functions**  
 - `player.play()`: Start playback from the beginning.  
 - `player.stop()`: Stop playback and reset internal buffers.  
 - `player.pause()`: Pause audio generation.  
 - `player.continue_play()`: Resume playback after pause.  
 
-### 🎚️ **Accessing Audio Buffers**  
+#### 🎚️ **Accessing Audio Buffers**  
 - Access **audio data buffers** for **real-time manipulation**:  
   ```zig
   const nextBuffer = ([*c]c_short) player.getPBData().buf_next;
@@ -136,7 +140,7 @@ Both executables will be available in `zig-out/bin/`:
 
 ---
 
-## 🔄 **SID Register Handling**  
+### 🔄 **SID Register Handling**  
 
 - The player reads **SID register values** per frame and writes them to the **reSID** engine using:
   ```zig
@@ -149,7 +153,7 @@ Both executables will be available in `zig-out/bin/`:
 
 ---
 
-## 🚀 **Performance Considerations**  
+### 🚀 **Performance Considerations**  
 
 - **Threaded playback** improves performance by running `player.update()` in a **dedicated thread**, freeing the **main thread** for other tasks.  
 - Use **Zig’s threading API**:  
@@ -157,6 +161,15 @@ Both executables will be available in `zig-out/bin/`:
   const playerThread = try std.Thread.spawn(.{}, playerThreadFunc, .{&player});
   defer playerThread.join(); 
   ```  
+ - Call the players `update()` function in the thread, as long as the player is playing
+   ```zig
+   fn playerThreadFunc(player: *ReSIDDmpPlayer) void {
+       while (player.isPlaying()) {
+           player.update();
+           std.time.sleep(5 * std.time.ns_per_ms);
+       }
+   }
+   ```
 
 ## 🧬 **Demo Code**
 
