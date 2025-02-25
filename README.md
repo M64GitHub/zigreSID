@@ -179,19 +179,16 @@ pub fn main() !void {
 ### main_threaded.zig - audio buffer calculation in a dedicated thread
 
 This example demonstrates a more advanced approach to playing a SID dump.  
-The `sid` and `player` struct instances are initialized similarly to the unthreaded version. Playback also starts by calling:  
-```zig
-player.play();
-```
+The `sid` and `player` struct instances are initialized the same way as in the unthreaded version. Playback also starts by calling `player.play()`.  
 
 Before starting playback, the player must be instructed **not** to update the audio buffer within the SDL audio thread. This is done by calling:  
 ```zig
 player.updateExternal(true);
 ```
 
-SDL2 continues handling audio playback in the background. However, the audio buffer will no longer be updated automatically. The responsibility to call `player.update()` lies with the user.  
+SDL2 continues handling audio playback in the background. However, the audio buffer will no longer be updated automatically. The responsibility to call `player.update()` now lies with the user.  
 
-The `update()` function only performs computations when the audio buffer is consumed by SDL, ensuring efficient CPU usage. To maintain continuous playback, `update()` must be called at intervals shorter than the playback duration of the audio buffer (**4096 samples**).
+The `update()` function only performs computations when the audio buffer has been consumed by SDL, ensuring efficient CPU usage. To maintain continuous playback, `update()` must be called at intervals shorter than the playback duration of the audio buffer (**4096 samples**).
 
 The dedicated thread runs this `update()` function in a loop and exits gracefully once playback is complete. It runs until the player has stopped playing. It will check the player state via:  
 ```zig
