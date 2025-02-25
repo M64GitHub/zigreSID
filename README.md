@@ -1,9 +1,12 @@
 # Zig SID Soundchip Emulation
 
-This project provides **SID soundchip emulation** for **Zig**, enabling you to generate and play SID audio with ease. It is built upon the powerful **reSID** C++ library, delivering authentic SID sound emulation combined with the simplicity and safety of Zig. 🎶 Because we love the Commodore 64 🎶
+This project provides **SID soundchip emulation** for **Zig**, enabling you to generate and play SID audio with ease.  
+It is built upon the powerful **reSID** C++ library, delivering authentic SID sound emulation combined with the simplicity and safety of Zig.  
+✨ **Playback flexibility included:** Use **automatic audio callbacks** for seamless playback or take full control by **manually generating custom audio buffers** for advanced sound manipulation.  
+🎶 Because we love the Commodore 64 🎶
 
 ### 🎧 **Audio Library Independence**
-This project is **audio-library agnostic** by design. The **core SID emulation and playback logic** is completely independent of any audio backend. However, the **current implementation** demonstrates audio playback using **SDL2** for convenience and cross-platform support. You can easily adapt or extend the audio interface to suit other libraries or custom solutions.
+This project is **audio-library agnostic** by design. The **core SID emulation and playback logic** is completely independent of any audio backend. However, the **current implementation** demonstrates audio playback using **SDL2** for convenience and cross-platform support. You can easily adapt or extend the audio interface to suit other libraries or custom solutions. Either by utilizing audio-callbacks, or by manually generating custom audio-buffers.
 
 ## 🚀 Features
 
