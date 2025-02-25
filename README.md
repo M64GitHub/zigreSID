@@ -27,7 +27,7 @@ This project is **audio-library agnostic** by design. The **core SID emulation a
   - **SID8580**: Enhanced model with improved signal-to-noise ratio (**default**).
 - **Emulation Quality**: The emulation quality is set to the highest possible level supported by the reSID library: `SAMPLE_RESAMPLE_INTERPOLATE`.
 
-## 💡 How The reSID Integration Works
+## 💡 How The reSID Zig Integration Works
 
 This project bridges the gap between C++, C, and Zig:
 
