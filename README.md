@@ -86,6 +86,7 @@ zig build run-threaded
 
 **`ReSIDDmpPlayer`** is currently the main method to playback whole SID tunes, or sound effects. Is designed to handle SID sound playback in the most simple way (see demo code below). Internally it operates by managing audio buffer generation and SID register updates based on reading the registers values from a dump, in repeated steps.
 
+<br>
 
 ### 🧬 **How Audio Buffer Generation Works**  
 
@@ -110,7 +111,9 @@ zig build run-threaded
 - The **audio buffer** is updated **automatically** within the **SDL audio thread**.  
 - The **SDL audio callback** invokes the player's internal audio generation methods, ensuring **continuous playback** without manual intervention.  
 - Suitable for **simpler use cases** where **real-time audio control** is **not required**.  
+
 <br>
+
 #### 🧵 **Threaded Mode** (Manual Audio Buffer Updates)  
 - The **user** gains full control over **buffer updates** by calling:  
   ```zig
