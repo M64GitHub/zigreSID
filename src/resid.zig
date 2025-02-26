@@ -71,7 +71,7 @@ pub const ReSIDDmpPlayer = struct {
         c.ReSIDDmpPlayer_pause(self.ptr);
     }
 
-    pub fn continue_play(self: *ReSIDDmpPlayer) void {
+    pub fn continuePlayback(self: *ReSIDDmpPlayer) void {
         c.ReSIDDmpPlayer_continue(self.ptr);
     }
 

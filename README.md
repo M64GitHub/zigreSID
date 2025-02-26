@@ -155,7 +155,7 @@ zig build run-threaded
 - `player.play()`: Start playback from the beginning.  
 - `player.stop()`: Stop playback and reset internal buffers.  
 - `player.pause()`: Pause audio generation.  
-- `player.continue_play()`: Resume playback after pause.  
+- `player.continuePlayback()`: Resume playback after pause.  
 
 #### 🎚️ **Accessing Audio Buffers**  
 - Access **audio data buffers** for **real-time manipulation**:  
