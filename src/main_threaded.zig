@@ -11,7 +11,9 @@ const ReSIDDmpPlayer = @import("resid.zig").ReSIDDmpPlayer;
 
 fn playerThreadFunc(player: *ReSIDDmpPlayer) void {
     while (player.isPlaying()) {
-        player.update();
+        if (player.update()) {
+            player.stop();
+        }
         std.time.sleep(5 * std.time.ns_per_ms);
     }
 }

@@ -134,10 +134,14 @@ zig build run-threaded
   ``` 
 - Example threaded update loop:  
   ```zig
-  while (player.isPlaying()) {
-      player.update();
-      std.time.sleep(5 * std.time.ns_per_ms); // Small delay for CPU optimization
-  }
+    fn playerThreadFunc(player: *ReSIDDmpPlayer) void {
+        while (player.isPlaying()) {
+            if (player.update()) {
+                player.stop();
+            }
+            std.time.sleep(5 * std.time.ns_per_ms);
+        }
+    }
   ```
 
 
@@ -335,7 +339,9 @@ const ReSIDDmpPlayer = @import("resid.zig").ReSIDDmpPlayer;
 
 fn playerThreadFunc(player: *ReSIDDmpPlayer) void {
     while (player.isPlaying()) {
-        player.update();
+        if (player.update()) {
+            break;
+        }
         std.time.sleep(5 * std.time.ns_per_ms);
     }
 }
@@ -458,7 +464,7 @@ pub fn main() !void {
 - `getAudioCallback() *const fn(...)`: Provides the **SDL-compatible audio callback**.
 - `updateExternal(b: bool)`: Allows external control of the audio update process.
 - `isPlaying() bool`: Checks if playback is currently active.
-- `fillAudioBuffer() i32`: internal function called by `update()`. Returns 1 at end of dump reached.
+- `fillAudioBuffer() bool`: internal function called by `update()`. Returns true at end of dump reached.
 
 <br>
 

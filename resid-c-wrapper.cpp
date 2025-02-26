@@ -84,9 +84,9 @@ extern "C" {
         dmpply->Continue();
     }
 
-    void ReSIDDmpPlayer_update(ReSIDDmpPlayer* dmpply)
+    bool ReSIDDmpPlayer_update(ReSIDDmpPlayer* dmpply)
     {
-        dmpply->Update();
+        return dmpply->Update();
     }
 
     DmpPlayerContext *ReSIDDmpPlayer_getPlayerContext(ReSIDDmpPlayer* dmpply)

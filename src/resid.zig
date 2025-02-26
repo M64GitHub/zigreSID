@@ -75,8 +75,8 @@ pub const ReSIDDmpPlayer = struct {
         c.ReSIDDmpPlayer_continue(self.ptr);
     }
 
-    pub fn update(self: *ReSIDDmpPlayer) void {
-        c.ReSIDDmpPlayer_update(self.ptr);
+    pub fn update(self: *ReSIDDmpPlayer) bool {
+        return c.ReSIDDmpPlayer_update(self.ptr);
     }
 
     pub fn getPlayerContext(self: *ReSIDDmpPlayer) *c.DmpPlayerContext {

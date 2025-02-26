@@ -31,8 +31,8 @@ public:
     // (compare to teensy audio library)
     // when called not often enough, buffer underrun will be 
     // detected
-    // returns 1 on end of dump
-    int Update();
+    // returns true on end of dump
+    bool Update();
 
     bool FillAudioBuffer(); // audio buffer fill: samples until next frame
     void SDL_audio_callback(void *userdata, unsigned char *stream, int len);
