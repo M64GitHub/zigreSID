@@ -154,8 +154,8 @@ zig build run-threaded
 #### 🎚️ **Accessing Audio Buffers**  
 - Access **audio data buffers** for **real-time manipulation**:  
   ```zig
-  const nextBuffer = ([*c]c_short) player.getPBData().buf_next;
-  const playingBuffer = ([*c]c_short) player.getPBData().buf_playing;
+  const nextBuffer = ([*c]c_short) player.getPlayerContext().buf_next;
+  const playingBuffer = ([*c]c_short) player.getPlayerContext().buf_playing;
   ```  
 - Modify `buf_next` during playback for **dynamic audio effects** or **custom processing**.  
 
@@ -312,12 +312,12 @@ player.isPlaying();
 Running `update()` in a separate thread enables **real-time audio visualization** and **manipulation**.  
 The active audio buffer can be accessed via:  
 ```zig
-([*c]c_short) player.getPBData().buf_playing
+([*c]c_short) player.getPlayerContext().buf_playing
 ```
 
 The playback mechanism uses a **double-buffering strategy**:  
-- While SDL plays `player.getPBData().buf_playing`,  
-- `player.getPBData().buf_next` is prepared by `update()`. By modifying this buffer you can control the audio!    
+- While SDL plays `player.getPlayerContext().buf_playing`,  
+- `player.getPlayerContext().buf_next` is prepared by `update()`. By modifying this buffer you can control the audio!    
 Once the playback buffer is fully consumed, the buffers are **swapped internally** to maintain seamless playback.
 
 
@@ -454,7 +454,7 @@ pub fn main() !void {
 - `continue_play()`: **Continues** playback after pausing.
 - `update()`: **Updates** the **audio buffer**; call this when not using callbacks. Returns 1 when playback ends.
 - `setDmp(dump: [*c]u8, len: c_uint)`: Loads a **SID dump** for playback (**must be called before** `play()`).
-- `getPBData() *c.ReSIDPbData`: Returns a **pointer to playback data**.
+- `getPlayerContext() *c.DmpPlayerContext`: Returns a **pointer to playback data**.
 - `getAudioCallback() *const fn(...)`: Provides the **SDL-compatible audio callback**.
 - `updateExternal(b: bool)`: Allows external control of the audio update process.
 - `isPlaying() bool`: Checks if playback is currently active.
