@@ -102,8 +102,8 @@ zig build run-threaded
   - `buf_next`: Prepared by the player for **future playback**.  
 - Once the **audio backend** finishes playing `buf_playing`, the buffers are **swapped** internally to ensure **gapless playback**.  
 
-
 <br>
+
 ### ⚡ **Buffer Generation Approaches**  
 
 #### 🏃 **Unthreaded Mode** (Default, SDL Audio Callback Driven)  
@@ -141,6 +141,7 @@ zig build run-threaded
 
 
 <br>
+
 ### 🎛️ **Playback State and Audio Buffer Access**  
 
 #### 🔍 **Playback Control Functions**  
@@ -159,6 +160,7 @@ zig build run-threaded
 
 
 <br>
+
 ### 🔄 **SID Register Handling**  
 
 - The player reads **SID register values** per frame and writes them to the **reSID** engine using:
@@ -280,6 +282,7 @@ pub fn main() !void {
     try stdout.print("[MAIN] SDL audio stopped.\n", .{});
 }
 ```
+
 <br>
 
 ### main_threaded.zig - audio buffer calculation in a dedicated thread
