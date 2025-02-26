@@ -134,10 +134,12 @@ zig build run-threaded
   ``` 
 - Example threaded update loop:  
   ```zig
-    fn playerThreadFunc(player: *ReSIDDmpPlayer) void {
+    fn playerThreadFunc(player: *ReSIDDmpPlayer) !void {
         while (player.isPlaying()) {
             if (player.update()) {
                 player.stop();
+                const stdout = std.io.getStdOut().writer();
+                try stdout.print("[PLAYER] Player stopped!\n", .{});
             }
             std.time.sleep(5 * std.time.ns_per_ms);
         }
@@ -337,10 +339,12 @@ const SDL = @cImport({
 const ReSID = @import("resid.zig").ReSID;
 const ReSIDDmpPlayer = @import("resid.zig").ReSIDDmpPlayer;
 
-fn playerThreadFunc(player: *ReSIDDmpPlayer) void {
+fn playerThreadFunc(player: *ReSIDDmpPlayer) !void {
     while (player.isPlaying()) {
         if (player.update()) {
-            break;
+            player.stop();
+            const stdout = std.io.getStdOut().writer();
+            try stdout.print("[PLAYER] Player stopped!\n", .{});
         }
         std.time.sleep(5 * std.time.ns_per_ms);
     }
