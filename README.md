@@ -66,6 +66,8 @@ Both executables will be available in `zig-out/bin/`:
 - `zig_sid_demo_unthreaded`
 - `zig_sid_demo_threaded`
 
+<br>
+
 ## 🎼 Running the demos
 
 ### 🏃 **Run Unthreaded Playback**
@@ -101,14 +103,14 @@ zig build run-threaded
 - Once the **audio backend** finishes playing `buf_playing`, the buffers are **swapped** internally to ensure **gapless playback**.  
 
 
-
+<br>
 ### ⚡ **Buffer Generation Approaches**  
 
 #### 🏃 **Unthreaded Mode** (Default, SDL Audio Callback Driven)  
 - The **audio buffer** is updated **automatically** within the **SDL audio thread**.  
 - The **SDL audio callback** invokes the player's internal audio generation methods, ensuring **continuous playback** without manual intervention.  
 - Suitable for **simpler use cases** where **real-time audio control** is **not required**.  
-
+<br>
 #### 🧵 **Threaded Mode** (Manual Audio Buffer Updates)  
 - The **user** gains full control over **buffer updates** by calling:  
   ```zig
@@ -138,7 +140,7 @@ zig build run-threaded
   ```
 
 
-
+<br>
 ### 🎛️ **Playback State and Audio Buffer Access**  
 
 #### 🔍 **Playback Control Functions**  
@@ -156,7 +158,7 @@ zig build run-threaded
 - Modify `buf_next` during playback for **dynamic audio effects** or **custom processing**.  
 
 
-
+<br>
 ### 🔄 **SID Register Handling**  
 
 - The player reads **SID register values** per frame and writes them to the **reSID** engine using:
