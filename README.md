@@ -126,7 +126,8 @@ zig build run-threaded
   ```zig
   player.update();
   ```  
-  at **regular intervals** (shorter than the buffer playback time, typically 4096 samples at 44.1kHz).
+  at **regular intervals** (shorter than the buffer playback time, typically 4096 samples at 44.1kHz).  
+  update() returns false, when the end of buffer playback is reached.
 - Use **Zig’s threading API**:  
   ```zig
   const playerThread = try std.Thread.spawn(.{}, playerThreadFunc, .{&player});
