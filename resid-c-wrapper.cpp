@@ -94,7 +94,7 @@ extern "C" {
         return dmpply->GetPlayerContext();
     }
 
-    int ReSIDDmpPlayer_fillAudioBuffer(ReSIDDmpPlayer* dmpply)
+    bool ReSIDDmpPlayer_fillAudioBuffer(ReSIDDmpPlayer* dmpply)
     {
         return dmpply->FillAudioBuffer();
     }

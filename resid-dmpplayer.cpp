@@ -35,7 +35,7 @@ DmpPlayerContext *ReSIDDmpPlayer::GetPlayerContext() const
 int ReSIDDmpPlayer::Update()
 {
     if(!D->buf_consumed) return 0;
-    if(FillAudioBuffer()) return 1; // end of dmp reached
+    if(FillAudioBuffer()) return true; // end of dmp reached
     D->buf_consumed = 0;
 
     return 0;
@@ -98,7 +98,7 @@ int ReSIDDmpPlayer::set_next_regs()
     return 0;
 }
 
-int ReSIDDmpPlayer::FillAudioBuffer()
+bool ReSIDDmpPlayer::FillAudioBuffer()
 {
     int bufpos    = 0;
     int remainder = 0;
@@ -112,7 +112,7 @@ int ReSIDDmpPlayer::FillAudioBuffer()
         bufpos += samples2do;
         D->stat_framectr++;
         samples2do = R->SAMPLES_PER_FRAME;
-        if(set_next_regs()) return 1; // end of dmp reached
+        if(set_next_regs()) return true; // end of dmp reached
     }
 
     remainder = CFG_AUDIO_BUF_SIZE - bufpos;
@@ -122,7 +122,7 @@ int ReSIDDmpPlayer::FillAudioBuffer()
     bufpos = 0;
    
     D->buf_lock = 0;
-    return 0;
+    return false;
 }
 
 int ReSIDDmpPlayer::LoadDmp(unsigned char *filename)

@@ -34,7 +34,7 @@ public:
     // returns 1 on end of dump
     int Update();
 
-    int FillAudioBuffer(); // audio buffer fill: samples until next frame
+    bool FillAudioBuffer(); // audio buffer fill: samples until next frame
     void SDL_audio_callback(void *userdata, unsigned char *stream, int len);
 
     DmpPlayerContext *GetPlayerContext() const;

@@ -34,7 +34,7 @@ void            ReSIDDmpPlayer_pause(ReSIDDmpPlayer* dmpply);
 void            ReSIDDmpPlayer_continue(ReSIDDmpPlayer* dmpply);
 void            ReSIDDmpPlayer_update(ReSIDDmpPlayer* dmpply);
 DmpPlayerContext *ReSIDDmpPlayer_getPlayerContext(ReSIDDmpPlayer* dmpply);
-int             ReSIDDmpPlayer_fillAudioBuffer(ReSIDDmpPlayer* dmpply);
+bool            ReSIDDmpPlayer_fillAudioBuffer(ReSIDDmpPlayer* dmpply);
 void            ReSIDDmpPlayer_SDL_audio_callback(ReSIDDmpPlayer* dmpply, 
                                                   void *userdata, 
                                                   unsigned char *stream, 
