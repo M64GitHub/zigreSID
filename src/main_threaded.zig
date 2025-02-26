@@ -11,7 +11,7 @@ const ReSIDDmpPlayer = @import("resid.zig").ReSIDDmpPlayer;
 
 fn playerThreadFunc(player: *ReSIDDmpPlayer) !void {
     while (player.isPlaying()) {
-        if (player.update()) {
+        if (!player.update()) {
             player.stop();
             const stdout = std.io.getStdOut().writer();
             try stdout.print("[PLAYER] Player stopped!\n", .{});

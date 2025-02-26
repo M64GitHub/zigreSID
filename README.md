@@ -136,7 +136,7 @@ zig build run-threaded
   ```zig
     fn playerThreadFunc(player: *ReSIDDmpPlayer) !void {
         while (player.isPlaying()) {
-            if (player.update()) {
+            if (!player.update()) {
                 player.stop();
                 const stdout = std.io.getStdOut().writer();
                 try stdout.print("[PLAYER] Player stopped!\n", .{});
@@ -341,7 +341,7 @@ const ReSIDDmpPlayer = @import("resid.zig").ReSIDDmpPlayer;
 
 fn playerThreadFunc(player: *ReSIDDmpPlayer) !void {
     while (player.isPlaying()) {
-        if (player.update()) {
+        if (!player.update()) {
             player.stop();
             const stdout = std.io.getStdOut().writer();
             try stdout.print("[PLAYER] Player stopped!\n", .{});
@@ -462,7 +462,7 @@ pub fn main() !void {
 - `stop()`: **Stops** and **resets** playback.
 - `pause()`: **Pauses** playback (audio generation stops).
 - `continue_play()`: **Continues** playback after pausing.
-- `update()`: **Updates** the **audio buffer**; call this when not using callbacks. Returns 1 when playback ends.
+- `update()`: **Updates** the **audio buffer**; call this when not using callbacks. Returns false when playback ends.
 - `setDmp(dump: [*c]u8, len: c_uint)`: Loads a **SID dump** for playback (**must be called before** `play()`).
 - `getPlayerContext() *c.DmpPlayerContext`: Returns a **pointer to playback data**.
 - `getAudioCallback() *const fn(...)`: Provides the **SDL-compatible audio callback**.

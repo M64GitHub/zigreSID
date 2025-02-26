@@ -34,11 +34,11 @@ DmpPlayerContext *ReSIDDmpPlayer::GetPlayerContext() const
 // returns true on end of playback
 bool ReSIDDmpPlayer::Update()
 {
-    if(!D->buf_consumed) return false;
-    if(FillAudioBuffer()) return true; // end of dmp reached
+    if(!D->buf_consumed) return true;
+    if(FillAudioBuffer()) return false; // end of dmp reached
     D->buf_consumed = 0;
 
-    return false;
+    return true;
 }
 
 void ReSIDDmpPlayer::Play()
@@ -162,7 +162,7 @@ void ReSIDDmpPlayer::SDL_audio_callback(void *userdata,
     D->buf_consumed = 1;
 
     if(!D->updates_external) {
-        if(Update()) {
+        if(!Update()) {
             D->play = 0;
             memset(stream, 0, len);
         }

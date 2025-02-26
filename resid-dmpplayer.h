@@ -31,7 +31,7 @@ public:
     // (compare to teensy audio library)
     // when called not often enough, buffer underrun will be 
     // detected
-    // returns true on end of dump
+    // returns false on end of dump
     bool Update();
 
     bool FillAudioBuffer(); // audio buffer fill: samples until next frame
