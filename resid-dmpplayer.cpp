@@ -30,16 +30,6 @@ DmpPlayerContext *ReSIDDmpPlayer::GetPlayerContext() const
     return D;
 }
 
-// call this frequently, to never underrun audio buffer fill
-// returns true on end of playback
-bool ReSIDDmpPlayer::Update()
-{
-    if(!D->buf_consumed) return true;
-    if(FillAudioBuffer()) return false; // end of dmp reached
-    D->buf_consumed = 0;
-
-    return true;
-}
 
 void ReSIDDmpPlayer::Play()
 {
@@ -125,14 +115,28 @@ bool ReSIDDmpPlayer::FillAudioBuffer()
     return false;
 }
 
-int ReSIDDmpPlayer::LoadDmp(unsigned char *filename)
+// call this frequently, to never underrun audio buffer fill
+// returns true on end of playback
+bool ReSIDDmpPlayer::Update()
 {
-    return 0; 
+    if(D->buf_consumed) {
+        // switch buffers
+        if (D->buf_next == D->buf1) {
+            D->buf_next = D->buf2;
+            D->buf_playing = D->buf1;
+        } else {
+            D->buf_next = D->buf1;
+            D->buf_playing = D->buf2;
+        }
+        D->buf_consumed = false;
+        if(FillAudioBuffer()) return false;
+    }
+
+    return true;
 }
 
 void ReSIDDmpPlayer::SDL_audio_callback(void *userdata, 
-                                        unsigned char *stream, 
-                                        int len)
+                                        unsigned char *stream, int len)
 {
     D->stat_cnt++;
 
@@ -149,15 +153,6 @@ void ReSIDDmpPlayer::SDL_audio_callback(void *userdata,
     // play audio buffer
     memcpy(stream, D->buf_next, len);
 
-    // switch buffers
-    if (D->buf_next == D->buf1) {
-        D->buf_next = D->buf2;
-        D->buf_playing = D->buf1;
-    } else {
-        D->buf_next = D->buf1;
-        D->buf_playing = D->buf2;
-    }
-
     D->stat_bufwrites++;
     D->buf_consumed = 1;
 
@@ -169,4 +164,7 @@ void ReSIDDmpPlayer::SDL_audio_callback(void *userdata,
     }
 }
 
-
+int ReSIDDmpPlayer::LoadDmp(unsigned char *filename)
+{
+    return 0; 
+}
