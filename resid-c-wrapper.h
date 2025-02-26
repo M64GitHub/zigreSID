@@ -3,7 +3,7 @@
 #define SID_WRAPPER_H
 
 #include <stdbool.h>
-#include "dmpplayer-pbdata.h"
+#include "resid-dmpplayer-ctx.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,7 +33,7 @@ void            ReSIDDmpPlayer_stop(ReSIDDmpPlayer* dmpply);
 void            ReSIDDmpPlayer_pause(ReSIDDmpPlayer* dmpply);
 void            ReSIDDmpPlayer_continue(ReSIDDmpPlayer* dmpply);
 void            ReSIDDmpPlayer_update(ReSIDDmpPlayer* dmpply);
-ReSIDPbData    *ReSIDDmpPlayer_getPBData(ReSIDDmpPlayer* dmpply);
+DmpPlayerContext *ReSIDDmpPlayer_getPlayerContext(ReSIDDmpPlayer* dmpply);
 int             ReSIDDmpPlayer_fillAudioBuffer(ReSIDDmpPlayer* dmpply);
 void            ReSIDDmpPlayer_SDL_audio_callback(ReSIDDmpPlayer* dmpply, 
                                                   void *userdata, 

@@ -1,5 +1,6 @@
 // sid_wrapper.cpp  - 2025, m64
-#include "resid_wrapper.h"
+#include "resid-c-wrapper.h"
+#include "resid-dmpplayer-ctx.h"
 #include "resid.h"
 #include "resid-dmpplayer.h"
 
@@ -88,9 +89,9 @@ extern "C" {
         dmpply->Update();
     }
 
-    ReSIDPbData *ReSIDDmpPlayer_getPBData(ReSIDDmpPlayer* dmpply)
+    DmpPlayerContext *ReSIDDmpPlayer_getPlayerContext(ReSIDDmpPlayer* dmpply)
     {
-        return dmpply->GetPBData();
+        return dmpply->GetPlayerContext();
     }
 
     int ReSIDDmpPlayer_fillAudioBuffer(ReSIDDmpPlayer* dmpply)

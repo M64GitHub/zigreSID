@@ -4,8 +4,7 @@
 #define RESID_DMPPLAYER_H
 
 #include "resid.h"
-#include "dmpplayer-pbdata.h"
-
+#include "resid-dmpplayer-ctx.h"
 
 class ReSIDDmpPlayer
 {
@@ -38,7 +37,7 @@ public:
     int FillAudioBuffer(); // audio buffer fill: samples until next frame
     void SDL_audio_callback(void *userdata, unsigned char *stream, int len);
 
-    ReSIDPbData *GetPBData() const;
+    DmpPlayerContext *GetPlayerContext() const;
 
     short outputs[3]; // channel amplitude for visualizers, etc.
 
@@ -47,7 +46,7 @@ private:
     int set_next_regs(); // called on each frame by fill_audio_buffer
 
     ReSID *R;
-    ReSIDPbData *D;
+    DmpPlayerContext *D;
 
     // sid dmp
     unsigned char *dmp;

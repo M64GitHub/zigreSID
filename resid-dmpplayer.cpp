@@ -3,12 +3,11 @@
 #include <stdio.h>
 #include <string.h>
 #include "resid-dmpplayer.h"
-#include "dmpplayer-pbdata.h"
 
 ReSIDDmpPlayer::ReSIDDmpPlayer(ReSID *r) :
     R(r), dmp(0), dmp_idx(0), dmp_len(0),samples2do(0)
 {
-    D = new ReSIDPbData();
+    D = new DmpPlayerContext();
 
     D->buf_playing = 0;
     D->buf_next = 0;
@@ -26,7 +25,7 @@ void ReSIDDmpPlayer::SetDmp(unsigned char *dump, unsigned int len)
     dmp_len = len;
 }
 
-ReSIDPbData *ReSIDDmpPlayer::GetPBData() const
+DmpPlayerContext *ReSIDDmpPlayer::GetPlayerContext() const
 {
     return D;
 }

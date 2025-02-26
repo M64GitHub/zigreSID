@@ -33,7 +33,7 @@ pub fn build(b: *std.Build) void {
             "resid/wave.cc",
             "resid.cpp",
             "resid-dmpplayer.cpp",
-            "resid_wrapper.cpp",
+            "resid-c-wrapper.cpp",
         },
         .flags = &.{ "-x", "c++", "-DVERSION=\"m64-000\"", "-Ofast" },
     });

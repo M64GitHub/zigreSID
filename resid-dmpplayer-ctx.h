@@ -4,7 +4,7 @@
 #include "audio-config.h"
 
 // data for the dump-player
-typedef struct S_ReSIDPbData {
+typedef struct S_DmpPlayerContext {
     short buf1[CFG_AUDIO_BUF_SIZE];
     short buf2[CFG_AUDIO_BUF_SIZE];
     short *buf_playing;
@@ -17,7 +17,7 @@ typedef struct S_ReSIDPbData {
     unsigned long stat_bufwrites;
     unsigned long stat_buf_underruns;
     unsigned long stat_framectr;
-} ReSIDPbData;
+} DmpPlayerContext;
 
 #endif
 

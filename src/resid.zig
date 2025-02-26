@@ -1,6 +1,6 @@
 const std = @import("std");
 const c = @cImport({
-    @cInclude("resid_wrapper.h");
+    @cInclude("resid-c-wrapper.h");
 });
 
 pub const ReSID = struct {
@@ -79,7 +79,7 @@ pub const ReSIDDmpPlayer = struct {
         c.ReSIDDmpPlayer_update(self.ptr);
     }
 
-    pub fn getPBData(self: *ReSIDDmpPlayer) *c.ReSIDPbData {
+    pub fn getPlayerContext(self: *ReSIDDmpPlayer) *c.DmpPlayerContext {
         return c.ReSIDDmpPlayer_getPBData(self.ptr);
     }
 
