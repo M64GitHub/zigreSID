@@ -166,7 +166,7 @@ zig build run-threaded
 
 - The player reads **SID register values** per frame and writes them to the **reSID** engine using:
   ```zig
-  sid.writeRegs(registers[0..], 25);
+  sid.writeRegs(registers[0..]);
   ```  
 - For **register inspection** (e.g., visualizations), the current **SID state** can be queried:
   ```zig
@@ -438,7 +438,7 @@ pub fn main() !void {
 - `setChipModel(model: [*:0]const u8) bool`: Sets the **SID chip model** (**"MOS6581"** or **"MOS8580"**, default is MOS8580).
 - `setSamplingRate(rate: c_int)`: Sets the **sampling rate** (default **44100 Hz**).
 - `getSamplingRate() c_int`: Returns the **current sampling rate**.
-- `writeRegs(self: *ReSID, regs: [*c]u8, len: c_int) void`: Bulk register write function for direct SID manipulation.
+- `writeRegs(self: *ReSID, regs: *[25]u8) void`: Bulk register write function for direct SID manipulation.
 - `getRegs(self: *ReSID) [25]u8`: Read the current values of the SID registers
 
 <br>

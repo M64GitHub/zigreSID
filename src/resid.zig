@@ -35,8 +35,8 @@ pub const ReSID = struct {
         return c.ReSID_getSamplingRate(self.ptr);
     }
 
-    pub fn writeRegs(self: *ReSID, regs: [*c]u8, len: c_int) void {
-        c.ReSID_writeRegs(self.ptr, regs, len);
+    pub fn writeRegs(self: *ReSID, regs: *[25]u8) void {
+        c.ReSID_writeRegs(self.ptr, regs, 25);
     }
 
     pub fn getRegs(self: *ReSID) [25]u8 {
