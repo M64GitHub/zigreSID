@@ -31,14 +31,14 @@ DmpPlayerContext *ReSIDDmpPlayer::GetPlayerContext() const
 }
 
 // call this frequently, to never underrun audio buffer fill
-// returns 1 on end of playback
-int ReSIDDmpPlayer::Update()
+// returns true on end of playback
+bool ReSIDDmpPlayer::Update()
 {
-    if(!D->buf_consumed) return 0;
+    if(!D->buf_consumed) return false;
     if(FillAudioBuffer()) return true; // end of dmp reached
     D->buf_consumed = 0;
 
-    return 0;
+    return false;
 }
 
 void ReSIDDmpPlayer::Play()
@@ -136,7 +136,10 @@ void ReSIDDmpPlayer::SDL_audio_callback(void *userdata,
 {
     D->stat_cnt++;
 
-    if (!D->play) return;
+    if (!D->play) {
+        memset(stream, 0, len);
+        return;
+    }
 
     if (D->buf_lock) {
         D->stat_buf_underruns++;
