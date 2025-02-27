@@ -97,9 +97,9 @@ zig build run-threaded
 
 #### 🎵 **Audio Buffer Structure and Playback**  
 - The generated audio is stored in **double buffers**:  
-  - `buf_playing`: Currently being played by the **audio backend** (e.g., SDL2).  
-  - `buf_next`: Prepared by the player for **future playback**.  
-- Once the **audio backend** finishes playing `buf_playing`, the buffers are **swapped** internally to ensure **gapless playback**.  
+  - `buf_ptr_playing`: Currently being played by the **audio backend** (e.g., SDL2).  
+  - `buf_ptr_next`: Prepared by the player for **future playback**.  
+- Once the **audio backend** finishes playing `buf_ptr_playing`, the buffers are **swapped** internally to ensure **gapless playback**.  
 
 <br>
 
@@ -161,10 +161,10 @@ zig build run-threaded
 #### 🎚️ **Accessing Audio Buffers**  
 - Access **audio data buffers** for **real-time manipulation**:  
   ```zig
-  const nextBuffer = ([*c]c_short) player.getPlayerContext().buf_next;
-  const playingBuffer = ([*c]c_short) player.getPlayerContext().buf_playing;
+  const nextBuffer = ([*c]c_short) player.getPlayerContext().buf_ptr_next;
+  const playingBuffer = ([*c]c_short) player.getPlayerContext().buf_ptr_playing;
   ```  
-- Modify `buf_next` during playback for **dynamic audio effects** or **custom processing**.  
+- Modify `buf_ptr_next` during playback for **dynamic audio effects** or **custom processing**.  
 
 
 <br>
@@ -218,10 +218,10 @@ const DmpPlayerContext = extern struct {
 - **🎼 Audio Buffers**:  
   - **`buf1`, `buf2`** (`[CFG_AUDIO_BUF_SIZE]i16`):  
     Double audio buffers storing **16-bit PCM audio samples**. Used alternately for continuous playback.  
-  - **`buf_playing`** (`*i16`):  
+  - **`buf_ptr_playing`** (`*i16`):  
     Pointer to the **currently playing** buffer.  
-  - **`buf_next`** (`*i16`):  
-    Pointer to the **next buffer** to be played after `buf_playing` is consumed.
+  - **`buf_ptr_next`** (`*i16`):  
+    Pointer to the **next buffer** to be played after `buf_ptr_playing` is consumed.
 
 <br>
 
@@ -390,12 +390,12 @@ player.isPlaying();
 Running `update()` in a separate thread enables **real-time audio visualization** and **manipulation**.  
 The active audio buffer can be accessed via:  
 ```zig
-([*c]c_short) player.getPlayerContext().buf_playing
+([*c]c_short) player.getPlayerContext().buf_ptr_playing
 ```
 
 The playback mechanism uses a **double-buffering strategy**:  
-- While SDL plays `player.getPlayerContext().buf_playing`,  
-- `player.getPlayerContext().buf_next` is prepared by `update()`. By modifying this buffer you can control the audio!    
+- While SDL plays `player.getPlayerContext().buf_ptr_playing`,  
+- `player.getPlayerContext().buf_ptr_next` is prepared by `update()`. By modifying this buffer you can control the audio!    
 Once the playback buffer is fully consumed, the buffers are **swapped internally** to maintain seamless playback.
 
 
