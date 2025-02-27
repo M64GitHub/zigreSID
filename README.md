@@ -188,17 +188,24 @@ The `DmpPlayerContext` struct represents the **internal state** and **buffer man
 
 #### 🧩 **Zig Struct Definition**:
 ```zig
-const CFG_AUDIO_BUF_SIZE = 4096; // Example size, adjust accordingly
+const CFG_AUDIO_BUF_SIZE = 4096; // Adjust if needed
+
+const DP_PLAYSTATE = enum(c_int) {
+    stopped = 0,
+    playing = 1,
+    paused = 2,
+};
 
 const DmpPlayerContext = extern struct {
     buf1: [CFG_AUDIO_BUF_SIZE]i16,       // First audio buffer
     buf2: [CFG_AUDIO_BUF_SIZE]i16,       // Second audio buffer
-    buf_playing: *i16,                   // Pointer to currently playing buffer
-    buf_next: *i16,                      // Pointer to next buffer
-    buf_consumed: u8,                    // Buffer consumed flag (0/1)
-    buf_lock: u8,                        // Buffer lock flag
-    play: u8,                            // Playback state flag (0 = stopped, 1 = playing)
-    updates_external: u8,                // External update control flag
+    buf_ptr_playing: *i16,               // Pointer to currently playing buffer
+    buf_ptr_next: *i16,                  // Pointer to next buffer
+    buf_consumed: bool,                  // Buffer consumed flag (true/false) (ie when written to SDL audio stream)
+    buf_lock: bool,                      // Buffer lock flag, set while calculating and writing new audio
+    buf_calculated: bool,                // Buffer calculation flag, set when update() calculated new audio
+    play_state: DP_PLAYSTATE,            // Playback state enum
+    updates_external: bool,              // External update control flag
     stat_cnt: u64,                       // Playback cycle counter
     stat_bufwrites: u64,                 // Buffer write count
     stat_buf_underruns: u64,             // Buffer underrun occurrences
