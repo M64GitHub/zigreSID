@@ -181,6 +181,65 @@ zig build run-threaded
   ```  
 
 <br>
+### 🎛️ **DmpPlayerContext Struct**  
+
+The `DmpPlayerContext` struct represents the **internal state** and **buffer management** for the `ReSIDDmpPlayer`. It manages **audio buffer double-buffering**, **playback state**, and **runtime statistics** to ensure **smooth and continuous SID sound playback**.
+
+#### 🧩 **Zig Struct Definition**:
+```zig
+const CFG_AUDIO_BUF_SIZE = 4096; // Example size, adjust accordingly
+
+const DmpPlayerContext = extern struct {
+    buf1: [CFG_AUDIO_BUF_SIZE]i16,       // First audio buffer
+    buf2: [CFG_AUDIO_BUF_SIZE]i16,       // Second audio buffer
+    buf_playing: *i16,                   // Pointer to currently playing buffer
+    buf_next: *i16,                      // Pointer to next buffer
+    buf_consumed: u8,                    // Buffer consumed flag (0/1)
+    buf_lock: u8,                        // Buffer lock flag
+    play: u8,                            // Playback state flag (0 = stopped, 1 = playing)
+    updates_external: u8,                // External update control flag
+    stat_cnt: u64,                       // Playback cycle counter
+    stat_bufwrites: u64,                 // Buffer write count
+    stat_buf_underruns: u64,             // Buffer underrun occurrences
+    stat_framectr: u64,                  // Frame counter (synchronized at 50.125 Hz)
+};
+```
+
+#### 🌟 **Fields Overview**:
+
+- **🎼 Audio Buffers**:  
+  - **`buf1`, `buf2`** (`[CFG_AUDIO_BUF_SIZE]i16`):  
+    Double audio buffers storing **16-bit PCM audio samples**. Used alternately for continuous playback.  
+  - **`buf_playing`** (`*i16`):  
+    Pointer to the **currently playing** buffer.  
+  - **`buf_next`** (`*i16`):  
+    Pointer to the **next buffer** to be played after `buf_playing` is consumed.
+
+---
+
+- **🔒 Buffer Management Flags**:  
+  - **`buf_consumed`** (`u8`):  
+    **Flag** indicating whether the **current buffer** has been fully consumed (`1`) or not (`0`).  
+  - **`buf_lock`** (`u8`):  
+    Used to **lock the buffer** during updates to prevent **race conditions**.  
+  - **`play`** (`u8`):  
+    **Playback state flag** (`1` = playing, `0` = stopped).  
+  - **`updates_external`** (`u8`):  
+    Indicates if **buffer updates** are controlled **externally** (e.g., in **threaded mode**).
+
+---
+
+- **📊 Playback Statistics**:  
+  - **`stat_cnt`** (`u64`):  
+    **Playback cycle counter**, tracking the total number of processed cycles.  
+  - **`stat_bufwrites`** (`u64`):  
+    Counts the **total buffer writes**, useful for **performance monitoring**.  
+  - **`stat_buf_underruns`** (`u64`):  
+    Tracks **buffer underruns**, which occur when buffer generation takes longer than buffer playback.  
+  - **`stat_framectr`** (`u64`):  
+    **Frame counter** number of SID audio frames played, synchronized to the **50.125 Hz** **PAL vertical sync**.
+<br>
+
 
 ## 🧬 **Demo Code**
 
