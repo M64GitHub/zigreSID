@@ -56,7 +56,7 @@ pub fn main() !void {
     }
     defer SDL.SDL_CloseAudioDevice(dev);
 
-    SDL.SDL_PauseAudioDevice(dev, 0); // Start playback
+    SDL.SDL_PauseAudioDevice(dev, 0); // Start SDL audio
     try stdout.print("[MAIN] SDL audio started at {d} Hz.\n", .{samplingRate});
 
     // -- end of SDL initialization
@@ -85,6 +85,6 @@ pub fn main() !void {
 
     player.stop();
 
-    SDL.SDL_PauseAudioDevice(dev, 1); // Stop playback
+    SDL.SDL_PauseAudioDevice(dev, 1); // Stop SDL audio
     try stdout.print("[MAIN] SDL audio stopped.\n", .{});
 }
