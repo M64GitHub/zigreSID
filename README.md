@@ -332,7 +332,7 @@ pub fn main() !void {
 
     player.play();
 
-    // print the SID registers
+    // print the SID registers, and player stats
     for (1..10) |_| {
         const regs = sid.getRegs(); // [25]u8 array
 
@@ -478,7 +478,7 @@ pub fn main() !void {
     const playerThread = try std.Thread.spawn(.{}, playerThreadFunc, .{&player});
     defer playerThread.join(); // Wait for the thread to finish (if needed)
 
-    // print the SID registers
+    // print the SID registers, and player stats
     for (1..10) |_| {
         const regs = sid.getRegs(); // [25]u8 array
 
