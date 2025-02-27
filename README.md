@@ -109,7 +109,8 @@ zig build run-threaded
 #### 🏃 **Unthreaded Mode** (Default, SDL Audio Callback Driven)  
 - The **audio buffer** is updated **automatically** within the **SDL audio thread**.  
 - The **SDL audio callback** invokes the player's internal audio generation methods, ensuring **continuous playback** without manual intervention.  
-- Suitable for **simpler use cases** where **real-time audio control** is **not required**.  
+- Suitable for **simpler use cases** where **real-time audio control** is **not required**.
+- No extra code is required. All required for audio playback is to call `player.play()`
 
 
 #### 🧵 **Threaded Mode** (Manual Audio Buffer Updates)  
