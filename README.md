@@ -82,8 +82,8 @@ zig build run-threaded
 
 <br>
   
-## 🎼 **ReSIDDmpPlayer Audio Buffer Generation**  
-
+## 🎼 **ReSIDDmpPlayer**  
+###  Audio Buffer Generation
 **`ReSIDDmpPlayer`** is currently the main method to playback whole SID tunes, or sound effects. Is designed to handle SID sound playback in the most simple way (see demo code below). Internally it operates by managing audio buffer generation and SID register updates based on reading the registers values from a dump, in repeated steps.
 
 
@@ -181,6 +181,7 @@ zig build run-threaded
   ```  
 
 <br>
+
 ### 🎛️ **DmpPlayerContext Struct**  
 
 The `DmpPlayerContext` struct represents the **internal state** and **buffer management** for the `ReSIDDmpPlayer`. It manages **audio buffer double-buffering**, **playback state**, and **runtime statistics** to ensure **smooth and continuous SID sound playback**.
@@ -215,7 +216,7 @@ const DmpPlayerContext = extern struct {
   - **`buf_next`** (`*i16`):  
     Pointer to the **next buffer** to be played after `buf_playing` is consumed.
 
----
+<br>
 
 - **🔒 Buffer Management Flags**:  
   - **`buf_consumed`** (`u8`):  
@@ -227,8 +228,7 @@ const DmpPlayerContext = extern struct {
   - **`updates_external`** (`u8`):  
     Indicates if **buffer updates** are controlled **externally** (e.g., in **threaded mode**).
 
----
-
+<br>
 - **📊 Playback Statistics**:  
   - **`stat_cnt`** (`u64`):  
     **Playback cycle counter**, tracking the total number of processed cycles.  
