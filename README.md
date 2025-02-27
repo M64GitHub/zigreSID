@@ -213,7 +213,7 @@ const DmpPlayerContext = extern struct {
 };
 ```
 
-#### 🌟 **Fields Overview**:
+#### **Fields Overview**:
 
 - **🎼 Audio Buffers**:  
   - **`buf1`, `buf2`** (`[CFG_AUDIO_BUF_SIZE]i16`):  
@@ -226,14 +226,17 @@ const DmpPlayerContext = extern struct {
 <br>
 
 - **🔒 Buffer Management Flags**:  
-  - **`buf_consumed`** (`u8`):  
-    **Flag** indicating whether the **current buffer** has been fully consumed (`1`) or not (`0`).  
-  - **`buf_lock`** (`u8`):  
+  - **`buf_consumed`** (`bool`):  
+    **Flag** indicating whether the **current buffer** has been fully consumed (ie by SDL).  
+  - **`buf_lock`** (`bool`):  
     Used to **lock the buffer** during updates to prevent **race conditions**.  
-  - **`play`** (`u8`):  
-    **Playback state flag** (`1` = playing, `0` = stopped).  
-  - **`updates_external`** (`u8`):  
+  - **`play_state`** (`DP_PLAYSTATE`):  
+    **Playback state flag** see enum `DP_PLAYSTATE`.  
+  - **`updates_external`** (`bool`):  
     Indicates if **buffer updates** are controlled **externally** (e.g., in **threaded mode**).
+  - **`buf_calculated`** (`bool`):  
+    Indicates if the last call to the `player.update()` function calculated new audio
+    
 
 <br>
 
