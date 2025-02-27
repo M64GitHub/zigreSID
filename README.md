@@ -540,6 +540,10 @@ pub fn main() !void {
 - `updateExternal(b: bool)`: Allows external control of the audio update process.
 - `isPlaying() bool`: Checks if playback is currently active.
 - `fillAudioBuffer() bool`: internal function called by `update()`. Returns true at end of dump reached.
+- `getPlayState() DP_PLAYSTATE`: Returns the **current playback state** as an enum:
+  - `DP_PLAYSTATE.stopped`
+  - `DP_PLAYSTATE.playing`
+  - `DP_PLAYSTATE.paused`
 
 <br>
 
