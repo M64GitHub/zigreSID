@@ -230,6 +230,7 @@ const DmpPlayerContext = extern struct {
     Indicates if **buffer updates** are controlled **externally** (e.g., in **threaded mode**).
 
 <br>
+
 - **📊 Playback Statistics**:  
   - **`stat_cnt`** (`u64`):  
     **Playback cycle counter**, tracking the total number of processed cycles.  
@@ -239,6 +240,7 @@ const DmpPlayerContext = extern struct {
     Tracks **buffer underruns**, which occur when buffer generation takes longer than buffer playback.  
   - **`stat_framectr`** (`u64`):  
     **Frame counter** number of SID audio frames played, synchronized to the **50.125 Hz** **PAL vertical sync**.
+    
 <br>
 
 
