@@ -3,17 +3,18 @@
 #include <stdio.h>
 #include <string.h>
 #include "resid-dmpplayer.h"
+#include "resid-dmpplayer-ctx.h"
 
 ReSIDDmpPlayer::ReSIDDmpPlayer(ReSID *r) :
     R(r), dmp(0), dmp_idx(0), dmp_len(0),samples2do(0)
 {
     D = new DmpPlayerContext();
 
-    D->buf_playing = 0;
-    D->buf_next = 0;
-    D->updates_external = 0;
-    D->buf_consumed = 0;
-    D->buf_lock = 0;
+    D->buf_ptr_playing = 0;
+    D->buf_ptr_next = 0;
+    D->updates_external = false;
+    D->buf_consumed = false;
+    D->buf_lock = false;
     D->stat_cnt = 0;
     D->stat_bufwrites = 0;
     D->stat_framectr = 0;
@@ -37,47 +38,52 @@ DmpPlayerContext *ReSIDDmpPlayer::GetPlayerContext() const
 }
 
 
+DP_PLAYSTATE ReSIDDmpPlayer::GetPlayerStatus()
+{
+    return D->play_state;
+}
+
+
 void ReSIDDmpPlayer::Play()
 {
     if(!dmp || !dmp_len) return;
 
-    D->buf_playing = 0;
-    D->buf_next = D->buf1;
+    D->buf_ptr_playing = 0;
+    D->buf_ptr_next = D->buf1;
     set_next_regs();
     samples2do = R->SAMPLES_PER_FRAME;
     FillAudioBuffer();
-    D->buf_lock = 0;
+    D->buf_lock = false;
 
     // start audio playback
-    D->play = 1;
+    D->play_state = PLAYER_PLAYING;
 }
 
 void ReSIDDmpPlayer::Stop()
 {
-    D->play = 0;
+    D->play_state = PLAYER_STOPPED;
     dmp_idx = 0;
 }
 
 void ReSIDDmpPlayer::Pause()
 {
-    D->play = 0;
+    D->play_state = PLAYER_PAUSED;
 }
 
 void ReSIDDmpPlayer::Continue()
 {
-    D->play = 1;
+    D->play_state = PLAYER_PLAYING;
 }
 
 bool ReSIDDmpPlayer::IsPlaying()
 {
-    if(D->play) return true;
+    if(D->play_state == PLAYER_PLAYING) return true;
     return false;
 }
 
 void ReSIDDmpPlayer::UpdateExternal(bool b)
 {
-    if(b) D->updates_external = 1;
-    else D->updates_external = 0;
+    D->updates_external = b;
 }
 
 int ReSIDDmpPlayer::set_next_regs()
@@ -100,11 +106,11 @@ bool ReSIDDmpPlayer::FillAudioBuffer()
     int remainder = 0;
     int cycles2do = 0;;
 
-    D->buf_lock = 1;
+    D->buf_lock = true;
 
     while( (bufpos + samples2do) < CFG_AUDIO_BUF_SIZE ) {
         cycles2do = (R->CYCLES_PER_SAMPLE * samples2do + 0.5);
-        R->Clock(cycles2do, D->buf_next + bufpos, CFG_AUDIO_BUF_SIZE);
+        R->Clock(cycles2do, D->buf_ptr_next + bufpos, CFG_AUDIO_BUF_SIZE);
         bufpos += samples2do;
         D->stat_framectr++;
         samples2do = R->SAMPLES_PER_FRAME;
@@ -113,11 +119,11 @@ bool ReSIDDmpPlayer::FillAudioBuffer()
 
     remainder = CFG_AUDIO_BUF_SIZE - bufpos;
     cycles2do = ((double) remainder * R->CYCLES_PER_SAMPLE + 0.5);
-    R->Clock(cycles2do, D->buf_next + bufpos, CFG_AUDIO_BUF_SIZE);
+    R->Clock(cycles2do, D->buf_ptr_next + bufpos, CFG_AUDIO_BUF_SIZE);
     samples2do -= remainder;
     bufpos = 0;
    
-    D->buf_lock = 0;
+    D->buf_lock = false;
     return false;
 }
 
@@ -125,17 +131,18 @@ bool ReSIDDmpPlayer::FillAudioBuffer()
 // returns true on end of playback
 bool ReSIDDmpPlayer::Update()
 {
+    D->buf_calculated = false;
     if(D->buf_consumed) {
         // switch buffers
-        if (D->buf_next == D->buf1) {
-            D->buf_next = D->buf2;
-            D->buf_playing = D->buf1;
+        if (D->buf_ptr_next == D->buf1) {
+            D->buf_ptr_next = D->buf2;
+            D->buf_ptr_playing = D->buf1;
         } else {
-            D->buf_next = D->buf1;
-            D->buf_playing = D->buf2;
+            D->buf_ptr_next = D->buf1;
+            D->buf_ptr_playing = D->buf2;
         }
         D->buf_consumed = false;
-        // fill next buffer
+        D->buf_calculated = true;
         if(FillAudioBuffer()) return false;
     }
 
@@ -147,25 +154,26 @@ void ReSIDDmpPlayer::SDL_audio_callback(void *userdata,
 {
     D->stat_cnt++;
 
-    if (!D->play) {
+    if (D->play_state != PLAYER_PLAYING) {
         memset(stream, 0, len);
         return;
     }
 
     if (D->buf_lock) {
+        // FillAuduiBuffer still running
         D->stat_buf_underruns++;
         return;
     }
 
     // play audio buffer
-    memcpy(stream, D->buf_next, len);
+    memcpy(stream, D->buf_ptr_next, len);
 
     D->stat_bufwrites++;
-    D->buf_consumed = 1;
+    D->buf_consumed = true;
 
     if(!D->updates_external) {
         if(!Update()) {
-            D->play = 0;
+            D->play_state = PLAYER_STOPPED;
             memset(stream, 0, len);
         }
     }

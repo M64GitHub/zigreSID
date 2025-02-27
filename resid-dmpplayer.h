@@ -38,6 +38,7 @@ public:
     void SDL_audio_callback(void *userdata, unsigned char *stream, int len);
 
     DmpPlayerContext *GetPlayerContext() const;
+    DP_PLAYSTATE GetPlayerStatus();
 
     short outputs[3]; // channel amplitude for visualizers, etc.
 

@@ -404,20 +404,19 @@ const SDL = @cImport({
 
 const ReSID = @import("resid.zig").ReSID;
 const ReSIDDmpPlayer = @import("resid.zig").ReSIDDmpPlayer;
+const DP_PLAYSTATE = @import("resid.zig").DP_PLAYSTATE;
+const stdout = std.io.getStdOut().writer();
 
 fn playerThreadFunc(player: *ReSIDDmpPlayer) !void {
     while (player.isPlaying()) {
         if (!player.update()) {
             player.stop();
-            const stdout = std.io.getStdOut().writer();
-            try stdout.print("[PLAYER] Player stopped!\n", .{});
         }
-        std.time.sleep(5 * std.time.ns_per_ms);
+        std.time.sleep(35 * std.time.ns_per_ms);
     }
 }
 
 pub fn main() !void {
-    const stdout = std.io.getStdOut().writer();
     const samplingRate: i32 = 44100;
 
     try stdout.print("[MAIN] zigSID audio demo threaded!\n", .{});
@@ -497,6 +496,10 @@ pub fn main() !void {
     _ = std.io.getStdIn().reader().readByte() catch null;
 
     player.stop();
+
+    if (player.getPlayState() == DP_PLAYSTATE.stopped) {
+        try stdout.print("[PLAYER] Player stopped!\n", .{});
+    }
 
     SDL.SDL_PauseAudioDevice(dev, 1); // Stop SDL audio
     try stdout.print("[MAIN] SDL audio stopped.\n", .{});

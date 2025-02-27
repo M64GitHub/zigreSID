@@ -3,12 +3,12 @@
 #define SID_WRAPPER_H
 
 #include <stdbool.h>
-#include "resid-dmpplayer-ctx.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#include "resid-dmpplayer-ctx.h"
 typedef struct ReSID ReSID;
 typedef struct ReSIDDmpPlayer ReSIDDmpPlayer;
 
@@ -44,6 +44,8 @@ void            ReSIDDmpPlayer_setdmp(ReSIDDmpPlayer* dmpply,
 void            ReSIDDmpPlayer_updateExternal(ReSIDDmpPlayer* dmpply,
                                               bool b);
 bool            ReSIDDmpPlayer_isPlaying(ReSIDDmpPlayer* dmpply);
+
+int             ReSIDDmpPlayer_getPlayerStatus(ReSIDDmpPlayer* dmpply);
 
 #ifdef __cplusplus
 }

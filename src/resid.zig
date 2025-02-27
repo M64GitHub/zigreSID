@@ -3,6 +3,12 @@ const c = @cImport({
     @cInclude("resid-c-wrapper.h");
 });
 
+pub const DP_PLAYSTATE = enum(c_int) {
+    stopped = 0,
+    playing = 1,
+    paused = 2,
+};
+
 pub const ReSID = struct {
     ptr: *c.ReSID,
 
@@ -110,5 +116,9 @@ pub const ReSIDDmpPlayer = struct {
 
     pub fn isPlaying(self: *ReSIDDmpPlayer) bool {
         return c.ReSIDDmpPlayer_isPlaying(self.ptr);
+    }
+
+    pub fn getPlayState(self: *ReSIDDmpPlayer) DP_PLAYSTATE {
+        return @as(DP_PLAYSTATE, @enumFromInt(c.ReSIDDmpPlayer_getPlayerStatus(self.ptr)));
     }
 };

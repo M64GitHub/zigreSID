@@ -123,4 +123,9 @@ extern "C" {
     {
         return dmpply->IsPlaying();
     }
+
+    int ReSIDDmpPlayer_getPlayerStatus(ReSIDDmpPlayer* dmpply)
+    {
+        return dmpply->GetPlayerContext()->play_state;
+    }
 }
