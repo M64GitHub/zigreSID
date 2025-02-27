@@ -65,7 +65,7 @@ pub fn main() !void {
 
     player.play();
 
-    // print the SID registers
+    // print the SID registers, and player stats
     for (1..10) |_| {
         const regs = sid.getRegs(); // [25]u8 array
 
