@@ -12,6 +12,12 @@ ReSIDDmpPlayer::ReSIDDmpPlayer(ReSID *r) :
     D->buf_playing = 0;
     D->buf_next = 0;
     D->updates_external = 0;
+    D->buf_consumed = 0;
+    D->buf_lock = 0;
+    D->stat_cnt = 0;
+    D->stat_bufwrites = 0;
+    D->stat_framectr = 0;
+    D->stat_buf_underruns = 0;
 }
 
 ReSIDDmpPlayer::~ReSIDDmpPlayer()
@@ -129,6 +135,7 @@ bool ReSIDDmpPlayer::Update()
             D->buf_playing = D->buf2;
         }
         D->buf_consumed = false;
+        // fill next buffer
         if(FillAudioBuffer()) return false;
     }
 

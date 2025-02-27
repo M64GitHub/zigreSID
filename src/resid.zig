@@ -80,7 +80,7 @@ pub const ReSIDDmpPlayer = struct {
     }
 
     pub fn getPlayerContext(self: *ReSIDDmpPlayer) *c.DmpPlayerContext {
-        return c.ReSIDDmpPlayer_getPBData(self.ptr);
+        return c.ReSIDDmpPlayer_getPlayerContext(self.ptr);
     }
 
     pub fn setDmp(self: *ReSIDDmpPlayer, dump: [*c]u8, len: c_uint) void {

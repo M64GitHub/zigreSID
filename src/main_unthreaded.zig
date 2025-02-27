@@ -74,6 +74,9 @@ pub fn main() !void {
             try stdout.print("{x:0>2} ", .{value});
         }
         try stdout.print("\n", .{});
+
+        try stdout.print("[MAIN] {d} buffers played, {d} buffer underruns, {d} SID frames\n", .{ player.getPlayerContext().stat_bufwrites, player.getPlayerContext().stat_buf_underruns, player.getPlayerContext().stat_framectr });
+
         std.time.sleep(0.5 * std.time.ns_per_s);
     }
 
