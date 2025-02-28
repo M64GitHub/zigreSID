@@ -44,7 +44,7 @@ DP_PLAYSTATE ReSIDDmpPlayer::GetPlayerStatus()
 
 void ReSIDDmpPlayer::Play()
 {
-    if (!dmp || !dmp_len) return;
+    if(!dmp || !dmp_len) return;
 
     D->buf_ptr_playing = 0;
     D->buf_ptr_next = D->buf1;
@@ -75,7 +75,7 @@ void ReSIDDmpPlayer::Continue()
 
 bool ReSIDDmpPlayer::IsPlaying()
 {
-    if (D->play_state == PLAYER_PLAYING) return true;
+    if(D->play_state == PLAYER_PLAYING) return true;
     return false;
 }
 
@@ -89,8 +89,8 @@ int ReSIDDmpPlayer::set_next_regs()
     // dmp format stores 25 reg vals
     int numregs = 25;
 
-    if (!dmp || !dmp_len) return 2;
-    if ((dmp_idx + numregs) > dmp_len) return 1;
+    if(!dmp || !dmp_len) return 2;
+    if((dmp_idx + numregs) > dmp_len) return 1;
 
     R->WriteRegs(dmp + dmp_idx, numregs);
     dmp_idx += numregs;
@@ -107,13 +107,13 @@ bool ReSIDDmpPlayer::FillAudioBuffer()
 
     D->buf_lock = true;
 
-    while ((bufpos + samples2do) < CFG_AUDIO_BUF_SIZE) {
+    while((bufpos + samples2do) < CFG_AUDIO_BUF_SIZE) {
         cycles2do = (R->CYCLES_PER_SAMPLE * samples2do + 0.5);
         R->Clock(cycles2do, D->buf_ptr_next + bufpos, CFG_AUDIO_BUF_SIZE);
         bufpos += samples2do;
         D->stat_framectr++;
         samples2do = R->SAMPLES_PER_FRAME;
-        if (set_next_regs()) return true; // end of dmp reached
+        if(set_next_regs()) return true; // end of dmp reached
     }
 
     remainder = CFG_AUDIO_BUF_SIZE - bufpos;
@@ -131,9 +131,9 @@ bool ReSIDDmpPlayer::FillAudioBuffer()
 bool ReSIDDmpPlayer::Update()
 {
     D->buf_calculated = false;
-    if (D->buf_consumed) {
+    if(D->buf_consumed) {
         // switch buffers
-        if (D->buf_ptr_next == D->buf1) {
+        if(D->buf_ptr_next == D->buf1) {
             D->buf_ptr_next = D->buf2;
             D->buf_ptr_playing = D->buf1;
         } else {
@@ -142,7 +142,7 @@ bool ReSIDDmpPlayer::Update()
         }
         D->buf_consumed = false;
         D->buf_calculated = true;
-        if (FillAudioBuffer()) return false;
+        if(FillAudioBuffer()) return false;
     }
 
     return true;
@@ -153,12 +153,12 @@ void ReSIDDmpPlayer::SDL_audio_callback(void *userdata, unsigned char *stream,
 {
     D->stat_cnt++;
 
-    if (D->play_state != PLAYER_PLAYING) {
+    if(D->play_state != PLAYER_PLAYING) {
         memset(stream, 0, len);
         return;
     }
 
-    if (D->buf_lock) {
+    if(D->buf_lock) {
         // FillAuduiBuffer still running
         D->stat_buf_underruns++;
         return;
@@ -170,8 +170,8 @@ void ReSIDDmpPlayer::SDL_audio_callback(void *userdata, unsigned char *stream,
     D->stat_bufwrites++;
     D->buf_consumed = true;
 
-    if (!D->updates_external) {
-        if (!Update()) {
+    if(!D->updates_external) {
+        if(!Update()) {
             D->play_state = PLAYER_STOPPED;
             memset(stream, 0, len);
         }
