@@ -1,0 +1,21 @@
+# Language setting for Clang-Format
+Language:        Cpp
+
+# Set indentation width
+IndentWidth:     4  # Use 4 spaces for indentation
+
+# Define custom brace style rules
+BreakBeforeBraces: Custom  # Use custom brace wrapping settings
+BraceWrapping:
+  AfterFunction: true  # Always place function opening braces on a new line
+  AfterClass: true     # Always place class opening braces on a new line
+
+# Control access specifier formatting (public/private/protected)
+AccessModifierOffset: -4  # Align access specifiers (public/private) at the start of the line
+
+# Keep short if-statements on a single line
+AllowShortIfStatementsOnASingleLine: Always  # Avoid breaking short if-statements into multiple lines
+
+# Keep short functions on multiple lines (except empty functions)
+AllowShortFunctionsOnASingleLine: Empty  # Allow empty functions on a single line, but force others onto multiple lines
+

@@ -6,7 +6,7 @@
 #include "resid/sid.h"
 #include "resid/siddefs.h"
 
-class ReSID 
+class ReSID
 {
 public:
     ReSID(const char *name);
@@ -18,7 +18,7 @@ public:
     void SetChipModel(chip_model m);
     bool SetChipModel(const char *m);
     void SetSamplingRate(int r);
-    int  GetSamplingRate() const;
+    int GetSamplingRate() const;
     void WriteRegs(unsigned char *regs, int len);
     unsigned char *GetRegs();
 
@@ -26,7 +26,7 @@ public:
     int Clock(unsigned int cycles, short *buf, int buflen);
 
     void SetDbgOutput(bool b);
-    
+
     // calculated CONSTANTS
     int SAMPLES_PER_FRAME;
     int CYCLES_PER_FRAME;
@@ -35,7 +35,7 @@ public:
 private:
     void precalc_constants();
     char name[1024];
-    SID  sid;
+    SID sid;
     chip_model model;
     int sampling_rate;
     bool dbg_output;
@@ -43,4 +43,3 @@ private:
 };
 
 #endif
-

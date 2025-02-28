@@ -1,12 +1,12 @@
 // resid-dmpplayer.cpp, 2023 M64
 
-#include <stdio.h>
-#include <string.h>
 #include "resid-dmpplayer.h"
 #include "resid-dmpplayer-ctx.h"
+#include <stdio.h>
+#include <string.h>
 
-ReSIDDmpPlayer::ReSIDDmpPlayer(ReSID *r) :
-    R(r), dmp(0), dmp_idx(0), dmp_len(0),samples2do(0)
+ReSIDDmpPlayer::ReSIDDmpPlayer(ReSID *r)
+    : R(r), dmp(0), dmp_idx(0), dmp_len(0), samples2do(0)
 {
     D = new DmpPlayerContext();
 
@@ -37,16 +37,14 @@ DmpPlayerContext *ReSIDDmpPlayer::GetPlayerContext() const
     return D;
 }
 
-
 DP_PLAYSTATE ReSIDDmpPlayer::GetPlayerStatus()
 {
     return D->play_state;
 }
 
-
 void ReSIDDmpPlayer::Play()
 {
-    if(!dmp || !dmp_len) return;
+    if (!dmp || !dmp_len) return;
 
     D->buf_ptr_playing = 0;
     D->buf_ptr_next = D->buf1;
@@ -77,7 +75,7 @@ void ReSIDDmpPlayer::Continue()
 
 bool ReSIDDmpPlayer::IsPlaying()
 {
-    if(D->play_state == PLAYER_PLAYING) return true;
+    if (D->play_state == PLAYER_PLAYING) return true;
     return false;
 }
 
@@ -91,8 +89,8 @@ int ReSIDDmpPlayer::set_next_regs()
     // dmp format stores 25 reg vals
     int numregs = 25;
 
-    if(!dmp || !dmp_len) return 2;
-    if( (dmp_idx + numregs) > dmp_len) return 1;
+    if (!dmp || !dmp_len) return 2;
+    if ((dmp_idx + numregs) > dmp_len) return 1;
 
     R->WriteRegs(dmp + dmp_idx, numregs);
     dmp_idx += numregs;
@@ -102,27 +100,28 @@ int ReSIDDmpPlayer::set_next_regs()
 
 bool ReSIDDmpPlayer::FillAudioBuffer()
 {
-    int bufpos    = 0;
+    int bufpos = 0;
     int remainder = 0;
-    int cycles2do = 0;;
+    int cycles2do = 0;
+    ;
 
     D->buf_lock = true;
 
-    while( (bufpos + samples2do) < CFG_AUDIO_BUF_SIZE ) {
+    while ((bufpos + samples2do) < CFG_AUDIO_BUF_SIZE) {
         cycles2do = (R->CYCLES_PER_SAMPLE * samples2do + 0.5);
         R->Clock(cycles2do, D->buf_ptr_next + bufpos, CFG_AUDIO_BUF_SIZE);
         bufpos += samples2do;
         D->stat_framectr++;
         samples2do = R->SAMPLES_PER_FRAME;
-        if(set_next_regs()) return true; // end of dmp reached
+        if (set_next_regs()) return true; // end of dmp reached
     }
 
     remainder = CFG_AUDIO_BUF_SIZE - bufpos;
-    cycles2do = ((double) remainder * R->CYCLES_PER_SAMPLE + 0.5);
+    cycles2do = ((double)remainder * R->CYCLES_PER_SAMPLE + 0.5);
     R->Clock(cycles2do, D->buf_ptr_next + bufpos, CFG_AUDIO_BUF_SIZE);
     samples2do -= remainder;
     bufpos = 0;
-   
+
     D->buf_lock = false;
     return false;
 }
@@ -132,7 +131,7 @@ bool ReSIDDmpPlayer::FillAudioBuffer()
 bool ReSIDDmpPlayer::Update()
 {
     D->buf_calculated = false;
-    if(D->buf_consumed) {
+    if (D->buf_consumed) {
         // switch buffers
         if (D->buf_ptr_next == D->buf1) {
             D->buf_ptr_next = D->buf2;
@@ -143,14 +142,14 @@ bool ReSIDDmpPlayer::Update()
         }
         D->buf_consumed = false;
         D->buf_calculated = true;
-        if(FillAudioBuffer()) return false;
+        if (FillAudioBuffer()) return false;
     }
 
     return true;
 }
 
-void ReSIDDmpPlayer::SDL_audio_callback(void *userdata, 
-                                        unsigned char *stream, int len)
+void ReSIDDmpPlayer::SDL_audio_callback(void *userdata, unsigned char *stream,
+                                        int len)
 {
     D->stat_cnt++;
 
@@ -171,8 +170,8 @@ void ReSIDDmpPlayer::SDL_audio_callback(void *userdata,
     D->stat_bufwrites++;
     D->buf_consumed = true;
 
-    if(!D->updates_external) {
-        if(!Update()) {
+    if (!D->updates_external) {
+        if (!Update()) {
             D->play_state = PLAYER_STOPPED;
             memset(stream, 0, len);
         }
@@ -181,5 +180,5 @@ void ReSIDDmpPlayer::SDL_audio_callback(void *userdata,
 
 int ReSIDDmpPlayer::LoadDmp(unsigned char *filename)
 {
-    return 0; 
+    return 0;
 }
