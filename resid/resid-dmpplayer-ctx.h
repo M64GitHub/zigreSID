@@ -9,7 +9,7 @@ typedef enum DP_PLAYSTATE {
     PLAYER_PAUSED
 } DP_PLAYSTATE;
 
-// data for the dump-player
+// context for the dump-player
 typedef struct S_DmpPlayerContext {
     short buf1[CFG_AUDIO_BUF_SIZE];
     short buf2[CFG_AUDIO_BUF_SIZE];

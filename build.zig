@@ -15,25 +15,25 @@ pub fn build(b: *std.Build) void {
     sid_lib.addIncludePath(b.path("."));
     sid_lib.addCSourceFiles(.{
         .files = &.{
-            "resid/envelope.cc",
-            "resid/extfilt.cc",
-            "resid/filter.cc",
-            "resid/pot.cc",
-            "resid/sid.cc",
-            "resid/version.cc",
-            "resid/voice.cc",
-            "resid/wave6581_PS_.cc",
-            "resid/wave6581_PST.cc",
-            "resid/wave6581_P_T.cc",
-            "resid/wave6581__ST.cc",
-            "resid/wave8580_PS_.cc",
-            "resid/wave8580_PST.cc",
-            "resid/wave8580_P_T.cc",
-            "resid/wave8580__ST.cc",
-            "resid/wave.cc",
-            "resid.cpp",
-            "resid-dmpplayer.cpp",
-            "resid-c-wrapper.cpp",
+            "resid/resid/envelope.cc",
+            "resid/resid/extfilt.cc",
+            "resid/resid/filter.cc",
+            "resid/resid/pot.cc",
+            "resid/resid/sid.cc",
+            "resid/resid/version.cc",
+            "resid/resid/voice.cc",
+            "resid/resid/wave6581_PS_.cc",
+            "resid/resid/wave6581_PST.cc",
+            "resid/resid/wave6581_P_T.cc",
+            "resid/resid/wave6581__ST.cc",
+            "resid/resid/wave8580_PS_.cc",
+            "resid/resid/wave8580_PST.cc",
+            "resid/resid/wave8580_P_T.cc",
+            "resid/resid/wave8580__ST.cc",
+            "resid/resid/wave.cc",
+            "resid/resid.cpp",
+            "resid/resid-dmpplayer.cpp",
+            "resid/resid-c-wrapper.cpp",
         },
         .flags = &.{ "-x", "c++", "-DVERSION=\"m64-000\"", "-Ofast" },
     });
@@ -51,6 +51,7 @@ pub fn build(b: *std.Build) void {
     exe_unthreaded.linkSystemLibrary("stdc++");
     exe_unthreaded.linkSystemLibrary("SDL2");
     exe_unthreaded.addIncludePath(b.path("."));
+    exe_unthreaded.addIncludePath(b.path("resid"));
     b.installArtifact(exe_unthreaded);
 
     // Build Threaded Executable
@@ -64,6 +65,7 @@ pub fn build(b: *std.Build) void {
     exe_threaded.linkSystemLibrary("stdc++");
     exe_threaded.linkSystemLibrary("SDL2");
     exe_threaded.addIncludePath(b.path("."));
+    exe_threaded.addIncludePath(b.path("resid"));
     b.installArtifact(exe_threaded);
 
     // Run steps for both
