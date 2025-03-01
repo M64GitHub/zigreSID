@@ -51,8 +51,10 @@ pub const ReSID = struct {
         std.mem.copyForwards(u8, &regs, regs_ptr[0..25]);
         return regs;
     }
-
-    // pub fn clock(self: *ReSID, cycles: i32, buf: [*:0]i16) i32 {}
+    pub fn clock(self: *ReSID, cycle_count: u32, buf: []i16) i32 {
+        const buflen: c_int = @as(c_int, buf.len);
+        return c.ReSID_clock(self.ptr, cycle_count, buf.ptr, buflen);
+    }
 };
 
 pub const ReSIDDmpPlayer = struct {
@@ -97,6 +99,10 @@ pub const ReSIDDmpPlayer = struct {
 
     pub fn fillAudioBuffer(self: *ReSIDDmpPlayer) i32 {
         return c.ReSIDDmpPlayer_fillAudioBuffer(self.ptr);
+    }
+
+    pub fn renderAudio(self: *ReSIDDmpPlayer, start_step: u32, num_steps: u32, buf_size: u32, buffer: []i16) u32 {
+        return @as(u32, c.ReSIDDmpPlayer_RenderAudio(self.ptr, start_step, num_steps, buf_size, buffer.ptr));
     }
 
     pub fn sdlAudioCallback(userdata: ?*anyopaque, stream: [*c]u8, len: c_int) callconv(.C) void {

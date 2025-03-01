@@ -23,28 +23,25 @@ pub fn main() !void {
 
     try stdout.print("[MAIN] zigSID audio demo threaded!\n", .{});
 
-    // -- create sid and configure it
+    // create a ReSID instance and configure it
     var sid = try ReSID.init("MyZIGSID");
     defer sid.deinit();
-    _ = sid.setChipModel("MOS8580"); // just demo usage, this is the default
+    _ = sid.setChipModel("MOS8580"); // just for demo purpose, this is the default
 
-    // -- create player and initialize it with a demo sound
+    // create a ReSIDDmpPlayer instance and initialize it with the ReSID instance
     var player = try ReSIDDmpPlayer.init(sid.ptr);
     defer player.deinit();
-    player.setDmp(sounddata.demo_sid, sounddata.demo_sid_len); // set buffer of demo sound
-    player.updateExternal(true); // make sure, SDL does not call the update-
-    // function
+    player.setDmp(sounddata.demo_sid, sounddata.demo_sid_len); // set dump to be played
+    player.updateExternal(true); // make sure, SDL does not call the update function
 
-    // -- init sdl with a callback to our player
-
-    // SDL2 Audio Initialization
+    // init sdl with a callback to our player
     var spec = SDL.SDL_AudioSpec{
         .freq = samplingRate,
         .format = SDL.AUDIO_S16,
         .channels = 1,
         .samples = 4096,
         .callback = &ReSIDDmpPlayer.sdlAudioCallback,
-        .userdata = @ptrCast(&player), // reference to player
+        .userdata = @ptrCast(&player),
     };
 
     if (SDL.SDL_Init(SDL.SDL_INIT_AUDIO) < 0) {
@@ -62,16 +59,14 @@ pub fn main() !void {
 
     SDL.SDL_PauseAudioDevice(dev, 0); // Start SDL audio
     try stdout.print("[MAIN] SDL audio started at {d} Hz.\n", .{samplingRate});
+    // end of SDL initialization
 
-    // -- end of SDL initialization
-
-    // all we have to do now is to call .play()
-
-    player.play(); // now player.isPlaying() will return true
+    // start the playback, and thread for calling the update function
+    player.play();
     const playerThread = try std.Thread.spawn(.{}, playerThreadFunc, .{&player});
     defer playerThread.join(); // Wait for the thread to finish (if needed)
 
-    // print the SID registers, and player stats
+    // do something in main: print the SID registers, and player stats
     for (1..10) |_| {
         const regs = sid.getRegs(); // [25]u8 array
 

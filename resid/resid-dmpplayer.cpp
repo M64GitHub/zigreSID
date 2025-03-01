@@ -125,30 +125,46 @@ bool ReSIDDmpPlayer::FillAudioBuffer()
     return false;
 }
 
-unsigned long ReSIDDmpPlayer::RenderAudio(unsigned int start_pos,
-                                          unsigned int num_steps, short *buffer)
+unsigned long ReSIDDmpPlayer::RenderAudio(unsigned int start_step,
+                                          unsigned int num_steps,
+                                          unsigned int buf_size, short *buffer)
 {
+    unsigned int steps_done = 0;
     unsigned long bufpos = 0;
     unsigned long remainder = 0;
     unsigned long cycles2do = 0;
-    ;
+    int l_samples2do = R->SAMPLES_PER_FRAME;
+
+    set_next_regs();
+
+    // skip to start_pos
+    for (int i = 0; i < ((int)start_step - 1); i++) {
+        if (set_next_regs()) return 0;
+    }
 
     D->buf_lock = true;
 
-    while ((bufpos + samples2do) < CFG_AUDIO_BUF_SIZE) {
-        cycles2do = (R->CYCLES_PER_SAMPLE * samples2do + 0.5);
-        R->Clock(cycles2do, D->buf_ptr_next + bufpos, CFG_AUDIO_BUF_SIZE);
-        bufpos += samples2do;
+    bool end_reached = false;
+    while (((bufpos + l_samples2do) < buf_size) && steps_done < num_steps) {
+        cycles2do = (R->CYCLES_PER_SAMPLE * l_samples2do + 0.5);
+        R->Clock(cycles2do, buffer + bufpos, buf_size - bufpos);
+        bufpos += l_samples2do;
         D->stat_framectr++;
-        samples2do = R->SAMPLES_PER_FRAME;
-        if (set_next_regs()) return true; // end of dmp reached
+        l_samples2do = R->SAMPLES_PER_FRAME;
+        if (set_next_regs()) {
+            end_reached = true;
+            break;
+        }; // end of dmp reached
+        steps_done++;
     }
 
+    // if end reached we do nothing but let the audio buffer be rendered to
+    // its end, while clocking the sid
     remainder = CFG_AUDIO_BUF_SIZE - bufpos;
     cycles2do = ((double)remainder * R->CYCLES_PER_SAMPLE + 0.5);
-    R->Clock(cycles2do, D->buf_ptr_next + bufpos, CFG_AUDIO_BUF_SIZE);
+    R->Clock(cycles2do, buffer + bufpos, buf_size - bufpos);
 
-    return 0;
+    return steps_done;
 }
 
 // call this frequently, to never underrun audio buffer fill

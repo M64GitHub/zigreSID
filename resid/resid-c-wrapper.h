@@ -23,7 +23,7 @@ void ReSID_setSamplingRate(ReSID *resid, int r);
 int ReSID_getSamplingRate(ReSID *resid);
 void ReSID_writeRegs(ReSID *resid, unsigned char *regs, int len);
 unsigned char *Resid_getRegs(ReSID *resid);
-int ReSID_clock(ReSID *resid, unsigned int cyc_count, short *buf, int buflen);
+int ReSID_clock(ReSID *resid, unsigned int cycle_count, short *buf, int buflen);
 
 // -- C-compatible interface for class ReSIDDmpPlayer
 
@@ -36,6 +36,10 @@ void ReSIDDmpPlayer_continue(ReSIDDmpPlayer *dmpply);
 bool ReSIDDmpPlayer_update(ReSIDDmpPlayer *dmpply);
 DmpPlayerContext *ReSIDDmpPlayer_getPlayerContext(ReSIDDmpPlayer *dmpply);
 bool ReSIDDmpPlayer_fillAudioBuffer(ReSIDDmpPlayer *dmpply);
+unsigned long ReSIDDmpPlayer_RenderAudio(ReSIDDmpPlayer *dmpply,
+                                         unsigned int start_step,
+                                         unsigned int num_steps,
+                                         unsigned int buf_size, short *buffer);
 void ReSIDDmpPlayer_SDL_audio_callback(ReSIDDmpPlayer *dmpply, void *userdata,
                                        unsigned char *stream, int len);
 void ReSIDDmpPlayer_setdmp(ReSIDDmpPlayer *dmpply, unsigned char *dump,

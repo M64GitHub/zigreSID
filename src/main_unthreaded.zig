@@ -14,19 +14,16 @@ pub fn main() !void {
 
     try stdout.print("[MAIN] zigSID audio demo unthreaded!\n", .{});
 
-    // -- create sid and configure it
+    // create sid and configure it
     var sid = try ReSID.init("MyZIGSID");
     defer sid.deinit();
-    _ = sid.setChipModel("MOS8580"); // just demo usage, this is the default
 
-    // -- create player and initialize it with a demo sound
+    // create a ReSIDDmpPlayer instance and initialize it with the ReSID instance
     var player = try ReSIDDmpPlayer.init(sid.ptr);
     defer player.deinit();
-    player.setDmp(sounddata.demo_sid, sounddata.demo_sid_len); // set buffer of demo sound
+    player.setDmp(sounddata.demo_sid, sounddata.demo_sid_len); // set dump to be played
 
-    // -- init sdl with a callback to our player
-
-    // SDL2 Audio Initialization
+    // init sdl with a callback to our player
     var spec = SDL.SDL_AudioSpec{
         .freq = samplingRate,
         .format = SDL.AUDIO_S16,
@@ -51,14 +48,12 @@ pub fn main() !void {
 
     SDL.SDL_PauseAudioDevice(dev, 0); // Start SDL audio
     try stdout.print("[MAIN] SDL audio started at {d} Hz.\n", .{samplingRate});
+    // end of SDL initialization
 
-    // -- end of SDL initialization
-
-    // all we have to do now is to call .play()
-
+    // start the playback!
     player.play();
 
-    // print the SID registers, and player stats
+    // do something in main: print the SID registers, and player stats
     for (1..10) |_| {
         const regs = sid.getRegs(); // [25]u8 array
 

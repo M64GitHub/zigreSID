@@ -105,6 +105,14 @@ bool ReSIDDmpPlayer_fillAudioBuffer(ReSIDDmpPlayer *dmpply)
     return dmpply->FillAudioBuffer();
 }
 
+unsigned long ReSIDDmpPlayer_RenderAudio(ReSIDDmpPlayer *dmpply,
+                                         unsigned int start_step,
+                                         unsigned int num_steps,
+                                         unsigned int buf_size, short *buffer)
+{
+    return dmpply->RenderAudio(start_step, num_steps, buf_size, buffer);
+}
+
 void ReSIDDmpPlayer_SDL_audio_callback(ReSIDDmpPlayer *dmpply, void *userdata,
                                        unsigned char *stream, int len)
 {

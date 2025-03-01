@@ -7,10 +7,11 @@ pub fn main() !void {
     const stdout = std.io.getStdOut().writer();
     try stdout.print("[MAIN] zigSID audio demo sdl dump player!\n", .{});
 
-    // -- create SDL sid dump player and configure it
+    // create SDL sid dump player and configure it
     var player = try SDLreSIDDmpPlayer.init("MY SID Player");
     defer player.deinit();
 
+    // set the dump to be played
     player.setDmp(sounddata.demo_sid, sounddata.demo_sid_len);
 
     player.play();
