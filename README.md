@@ -85,13 +85,15 @@ sudo apt install libsdl2-dev
 zig build
 ```
 
-Two examples are available for demonstration:
+Three examples are available for demonstration:
 
-- 🏃 **Unthreaded Playback:** `src/main_unthreaded.zig`
-- ⚡ **Threaded Playback:** `src/main_threaded.zig`
+- 🎹 **Integrated SDL Playback:** `src/main_sdlplayer.zig` - manual SDL configuration, and access to SID registers
+- 🎛️ **Unthreaded Playback:** `src/main_unthreaded.zig` - manual SDL configuration, and access to SID registers
+- ⚡ **Threaded Playback:** `src/main_threaded.zig` - manual SDL configuration, access to SID registers, and player internals, playback in custom thread
 
-Both executables will be available in `zig-out/bin/`:
+Executables will be available in `zig-out/bin/`:
 
+- `zig_sid_demo_sdl`
 - `zig_sid_demo_unthreaded`
 - `zig_sid_demo_threaded`
 
@@ -99,7 +101,12 @@ Both executables will be available in `zig-out/bin/`:
 
 ## 🎼 Running the demos
 
-### 🏃 **Run Unthreaded Playback**
+### 🎹 **Run Integrated SDL Playback**
+```bash
+zig build run-sdl
+```
+
+### 🎛️ **Run Unthreaded Playback**
 ```bash
 zig build run-unthreaded
 ```
