@@ -102,6 +102,10 @@ pub const ReSIDDmpPlayer = struct {
     }
 
     pub fn internalAudioCallback(userdata: ?*anyopaque, stream: [*c]u8, len: c_int) callconv(.C) void {
+        if (userdata == null) {
+            std.debug.print("[ERROR] SDL audio callback userdata is NULL!\n", .{});
+            return;
+        }
         const player: *ReSIDDmpPlayer = @ptrCast(@alignCast(userdata));
         player.sdlAudioCallback(userdata, stream, len);
     }

@@ -6,9 +6,9 @@ const SDL = @cImport({
     @cInclude("SDL.h");
 });
 
-const ReSID = @import("resid.zig").ReSID;
-const ReSIDDmpPlayer = @import("resid.zig").ReSIDDmpPlayer;
-const DP_PLAYSTATE = @import("resid.zig").DP_PLAYSTATE;
+const ReSID = @import("resid/resid.zig").ReSID;
+const ReSIDDmpPlayer = @import("resid/resid.zig").ReSIDDmpPlayer;
+const DP_PLAYSTATE = @import("resid/resid.zig").DP_PLAYSTATE;
 const stdout = std.io.getStdOut().writer();
 
 fn playerThreadFunc(player: *ReSIDDmpPlayer) !void {

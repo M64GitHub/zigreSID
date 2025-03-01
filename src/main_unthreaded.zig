@@ -6,8 +6,8 @@ const SDL = @cImport({
     @cInclude("SDL.h");
 });
 
-const ReSID = @import("resid.zig").ReSID;
-const ReSIDDmpPlayer = @import("resid.zig").ReSIDDmpPlayer;
+const ReSID = @import("resid/resid.zig").ReSID;
+const ReSIDDmpPlayer = @import("resid/resid.zig").ReSIDDmpPlayer;
 
 pub fn main() !void {
     const stdout = std.io.getStdOut().writer();

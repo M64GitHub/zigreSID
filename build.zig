@@ -68,13 +68,29 @@ pub fn build(b: *std.Build) void {
     exe_threaded.addIncludePath(b.path("resid"));
     b.installArtifact(exe_threaded);
 
-    // Run steps for both
+    // Build SDL Executable
+    const exe_sdl = b.addExecutable(.{
+        .name = "zig_sid_demo_sdl",
+        .root_source_file = b.path("src/main_sdlplayer.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    exe_sdl.linkLibrary(sid_lib);
+    exe_sdl.linkSystemLibrary("stdc++");
+    exe_sdl.linkSystemLibrary("SDL2");
+    exe_sdl.addIncludePath(b.path("."));
+    exe_sdl.addIncludePath(b.path("resid"));
+    b.installArtifact(exe_sdl);
+
+    // Run steps for all
     const run_unthreaded = b.addRunArtifact(exe_unthreaded);
     const run_threaded = b.addRunArtifact(exe_threaded);
+    const run_sdl = b.addRunArtifact(exe_sdl);
 
     if (b.args) |args| {
         run_unthreaded.addArgs(args);
         run_threaded.addArgs(args);
+        run_sdl.addArgs(args);
     }
 
     const run_step_unthreaded = b.step("run-unthreaded", "Run the unthreaded SID demo");
@@ -82,4 +98,7 @@ pub fn build(b: *std.Build) void {
 
     const run_step_threaded = b.step("run-threaded", "Run the threaded SID demo");
     run_step_threaded.dependOn(&run_threaded.step);
+
+    const run_step_sdl = b.step("run-sdl", "Run the SDL SID demo");
+    run_step_sdl.dependOn(&run_sdl.step);
 }
