@@ -1,10 +1,8 @@
 const std = @import("std");
-const sounddata = @cImport({
-    @cInclude("demo_sound.h");
-});
 const SDL = @cImport({
     @cInclude("SDL.h");
 });
+const sounddata = @import("demo-sound-data.zig");
 
 const ReSID = @import("resid/resid.zig").ReSID;
 const ReSIDDmpPlayer = @import("resid/resid.zig").ReSIDDmpPlayer;
