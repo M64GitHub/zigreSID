@@ -526,6 +526,14 @@ pub fn main() !void {
 
 <br>
 
+### 🎹 **SDLreSIDDmpPlayer Struct** (Simplified SDL Player)
+
+- `init(name: [*:0]const u8) !*SDLreSIDDmpPlayer`: Creates a new SDLreSIDDmpPlayer instance, initializes ReSID, ReSIDDmpPlayer, and SDL.
+- `deinit(self: *SDLreSIDDmpPlayer) void`: Cleans up the instance by stopping playback, closing SDL, and freeing memory.
+- `setDmp(self: *SDLreSIDDmpPlayer, dump: [*c]u8, len: c_uint) void`: Loads a SID dump into the player for playback.
+- `play(self: *SDLreSIDDmpPlayer) void`: Starts playing the loaded SID dump.
+- `stop(self: *SDLreSIDDmpPlayer) void`: Stops playback.
+
 ### 🎛️ **DmpPlayerContext Struct**  
 
 The `DmpPlayerContext` struct represents the **internal state** and **buffer management** for the `ReSIDDmpPlayer`. It manages **audio buffer double-buffering**, **playback state**, and **runtime statistics** to ensure **smooth and continuous SID sound playback**.
