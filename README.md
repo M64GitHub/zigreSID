@@ -534,6 +534,8 @@ pub fn main() !void {
 - `play(self: *SDLreSIDDmpPlayer) void`: Starts playing the loaded SID dump.
 - `stop(self: *SDLreSIDDmpPlayer) void`: Stops playback.
 
+<br>
+
 ### 🎛️ **DmpPlayerContext Struct**  
 
 The `DmpPlayerContext` struct represents the **internal state** and **buffer management** for the `ReSIDDmpPlayer`. It manages **audio buffer double-buffering**, **playback state**, and **runtime statistics** to ensure **smooth and continuous SID sound playback**.
