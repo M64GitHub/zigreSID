@@ -40,7 +40,7 @@ pub fn main() !void {
 <br>
 
 
-## 🚀 Features
+## 🚀 Project Features
 
 - 🎹 **SID Soundchip Emulation for Zig**: Experience the legendary SID sound directly in your Zig projects.
 - ⚡ **Powered by reSID**: Leverages the proven **reSID** C++ library for high-quality sound emulation.  
