@@ -10,7 +10,7 @@ This project is **audio-library agnostic** by design. The **core SID emulation a
 
 <br>
 
-### Minimal Example Code (SDL specific)
+### Minimal Example Playback-Code (SDL specific)
 If you’re working with SDL, the `SDLreSIDDmpPlayer` struct provides a convenient way to handle playback. It fully manages SDL initialization, audio callbacks, and buffer generation internally, making playback effortless. Since it runs in the background, playback is non-blocking. More detailed examples can be found in the sections below.
 
 ```zig
