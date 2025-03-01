@@ -23,6 +23,7 @@ void ReSID_setSamplingRate(ReSID *resid, int r);
 int ReSID_getSamplingRate(ReSID *resid);
 void ReSID_writeRegs(ReSID *resid, unsigned char *regs, int len);
 unsigned char *Resid_getRegs(ReSID *resid);
+int ReSID_clock(ReSID *resid, unsigned int cyc_count, short *buf, int buflen);
 
 // -- C-compatible interface for class ReSIDDmpPlayer
 

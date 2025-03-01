@@ -14,8 +14,6 @@ ReSID::ReSID(const char *n) : dbg_output(false)
 
     SetChipModel(MOS8580);
 
-    precalc_constants();
-
     if (dbg_output) printf("[ReSID::%s] ReSID initialized\n", name);
 }
 
@@ -77,6 +75,7 @@ void ReSID::SetSamplingRate(int r)
     sampling_rate = r;
     sid.set_sampling_parameters(985248, SAMPLE_RESAMPLE_INTERPOLATE,
                                 sampling_rate);
+    precalc_constants();
 }
 
 int ReSID::GetSamplingRate() const

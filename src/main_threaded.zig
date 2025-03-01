@@ -35,14 +35,6 @@ pub fn main() !void {
     player.updateExternal(true); // make sure, SDL does not call the update-
     // function
 
-    // -- THAT's IT! All we have to do now is to call player.play()
-    // For this SDL implementation we need SDL to callback our
-    // player.sdlAudioCallback(), it is specified below.
-    // The userdata is required to point to the player object
-    // The audio callback is not calling player.update(), so we will start
-    // our update thread directly after player.play
-    // (to make sure, player.isPlaying will return true)
-
     // -- init sdl with a callback to our player
 
     // SDL2 Audio Initialization
@@ -51,7 +43,7 @@ pub fn main() !void {
         .format = SDL.AUDIO_S16,
         .channels = 1,
         .samples = 4096,
-        .callback = ReSIDDmpPlayer.getAudioCallback(),
+        .callback = &ReSIDDmpPlayer.sdlAudioCallback,
         .userdata = @ptrCast(&player), // reference to player
     };
 

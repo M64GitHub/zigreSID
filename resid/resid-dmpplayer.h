@@ -35,6 +35,12 @@ public:
     bool Update();
 
     bool FillAudioBuffer(); // audio buffer fill: samples until next frame
+
+    unsigned long
+    RenderAudio(unsigned int start_pos, // generate stereo PCM buffer
+                unsigned int num_steps, // for wav conversion/export
+                short *buffer);         // returns size of buffer
+
     void SDL_audio_callback(void *userdata, unsigned char *stream, int len);
 
     DmpPlayerContext *GetPlayerContext() const;

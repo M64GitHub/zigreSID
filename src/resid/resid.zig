@@ -51,6 +51,8 @@ pub const ReSID = struct {
         std.mem.copyForwards(u8, &regs, regs_ptr[0..25]);
         return regs;
     }
+
+    // pub fn clock(self: *ReSID, cycles: i32, buf: [*:0]i16) i32 {}
 };
 
 pub const ReSIDDmpPlayer = struct {
@@ -97,21 +99,9 @@ pub const ReSIDDmpPlayer = struct {
         return c.ReSIDDmpPlayer_fillAudioBuffer(self.ptr);
     }
 
-    pub fn sdlAudioCallback(self: *ReSIDDmpPlayer, userdata: ?*anyopaque, stream: [*]u8, len: i32) void {
-        c.ReSIDDmpPlayer_SDL_audio_callback(self.ptr, userdata, stream, len);
-    }
-
-    pub fn internalAudioCallback(userdata: ?*anyopaque, stream: [*c]u8, len: c_int) callconv(.C) void {
-        if (userdata == null) {
-            std.debug.print("[ERROR] SDL audio callback userdata is NULL!\n", .{});
-            return;
-        }
+    pub fn sdlAudioCallback(userdata: ?*anyopaque, stream: [*c]u8, len: c_int) callconv(.C) void {
         const player: *ReSIDDmpPlayer = @ptrCast(@alignCast(userdata));
-        player.sdlAudioCallback(userdata, stream, len);
-    }
-
-    pub fn getAudioCallback() *const fn (?*anyopaque, [*c]u8, c_int) callconv(.C) void {
-        return &internalAudioCallback;
+        c.ReSIDDmpPlayer_SDL_audio_callback(player.ptr, userdata, stream, len);
     }
 
     pub fn updateExternal(self: *ReSIDDmpPlayer, b: bool) void {

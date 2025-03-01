@@ -103,7 +103,6 @@ bool ReSIDDmpPlayer::FillAudioBuffer()
     int bufpos = 0;
     int remainder = 0;
     int cycles2do = 0;
-    ;
 
     D->buf_lock = true;
 
@@ -124,6 +123,32 @@ bool ReSIDDmpPlayer::FillAudioBuffer()
 
     D->buf_lock = false;
     return false;
+}
+
+unsigned long ReSIDDmpPlayer::RenderAudio(unsigned int start_pos,
+                                          unsigned int num_steps, short *buffer)
+{
+    unsigned long bufpos = 0;
+    unsigned long remainder = 0;
+    unsigned long cycles2do = 0;
+    ;
+
+    D->buf_lock = true;
+
+    while ((bufpos + samples2do) < CFG_AUDIO_BUF_SIZE) {
+        cycles2do = (R->CYCLES_PER_SAMPLE * samples2do + 0.5);
+        R->Clock(cycles2do, D->buf_ptr_next + bufpos, CFG_AUDIO_BUF_SIZE);
+        bufpos += samples2do;
+        D->stat_framectr++;
+        samples2do = R->SAMPLES_PER_FRAME;
+        if (set_next_regs()) return true; // end of dmp reached
+    }
+
+    remainder = CFG_AUDIO_BUF_SIZE - bufpos;
+    cycles2do = ((double)remainder * R->CYCLES_PER_SAMPLE + 0.5);
+    R->Clock(cycles2do, D->buf_ptr_next + bufpos, CFG_AUDIO_BUF_SIZE);
+
+    return 0;
 }
 
 // call this frequently, to never underrun audio buffer fill

@@ -46,7 +46,7 @@ pub const SDLreSIDDmpPlayer = struct {
             .format = SDL.AUDIO_S16,
             .channels = 1,
             .samples = 4096,
-            .callback = ReSIDDmpPlayer.getAudioCallback(),
+            .callback = &ReSIDDmpPlayer.sdlAudioCallback,
             .userdata = @ptrCast(&self.player),
         };
 

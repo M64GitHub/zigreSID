@@ -24,11 +24,6 @@ pub fn main() !void {
     defer player.deinit();
     player.setDmp(sounddata.demo_sid, sounddata.demo_sid_len); // set buffer of demo sound
 
-    // -- THAT's IT! All we have to do now is to call player.play()
-    // For this SDL implementation we need SDL to callback our
-    // player.sdlAudioCallback(), it is specified below.
-    // The userdata is required to point to the player object
-
     // -- init sdl with a callback to our player
 
     // SDL2 Audio Initialization
@@ -37,7 +32,7 @@ pub fn main() !void {
         .format = SDL.AUDIO_S16,
         .channels = 1,
         .samples = 4096,
-        .callback = ReSIDDmpPlayer.getAudioCallback(),
+        .callback = &ReSIDDmpPlayer.sdlAudioCallback,
         .userdata = @ptrCast(&player), // reference to player
     };
 
