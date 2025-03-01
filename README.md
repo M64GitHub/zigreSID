@@ -101,17 +101,17 @@ Executables will be available in `zig-out/bin/`:
 
 ## 🎼 Running the demos
 
-### 🎹 **Run Integrated SDL Playback**
+### 🎹 **Run Integrated SDL Playback** demo
 ```bash
 zig build run-sdl
 ```
 
-### 🎛️ **Run Unthreaded Playback**
+### 🎛️ **Run Unthreaded Playback** demo 
 ```bash
 zig build run-unthreaded
 ```
 
-### ⚡ **Run Threaded Playback**
+### ⚡ **Run Threaded Playback** demo
 ```bash
 zig build run-threaded
 ```
