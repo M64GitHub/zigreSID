@@ -496,7 +496,7 @@ pub fn main() !void {
   - `DP_PLAYSTATE.playing`
   - `DP_PLAYSTATE.paused`
  - `renderAudio(start_step: u32, num_steps: u32, buf_size: u32, buffer: []i16) u32`:
-    Generates a mono raw PCM buffer from the set dump, or a part of it. `start_step` and `num_steps` specify the part of the dump (25 register values per step). The buffer will allways be completely filled while clocking the sid. This means when the end of dump is reached before buffer end, the sid is clocked without any register changes until the end of the buffer is reached. The function returns the number of steps.
+    Generates a mono raw PCM buffer (signed 16 bit) from the set dump, or a part of it. `start_step` and `num_steps` specify the part of the dump (25 register values per step). The buffer will allways be completely filled while clocking the sid. This means when the end of dump is reached before buffer end, the sid is clocked without any register changes until the end of the buffer is reached. The function returns the number of steps.
 
 <br>
 
