@@ -87,7 +87,7 @@ zig build
 
 Three examples are available for demonstration:
 
-- 🎹 **Integrated SDL Playback:** `src/main_sdlplayer.zig` - manual SDL configuration, and access to SID registers
+- 🎹 **Integrated SDL Playback:** `src/main_sdlplayer.zig` - automatic SDL configuration, simple playback
 - 🎛️ **Unthreaded Playback:** `src/main_unthreaded.zig` - manual SDL configuration, and access to SID registers
 - ⚡ **Threaded Playback:** `src/main_threaded.zig` - manual SDL configuration, access to SID registers, and player internals, playback in custom thread
 
