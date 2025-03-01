@@ -6,7 +6,7 @@ It is built upon the powerful **reSID** C++ library, delivering authentic SID so
 🎶 Because we love the Commodore 64 🎶
 
 ### 🎧 **Audio Library Independence**
-This project is **audio-library agnostic** by design. The **core SID emulation and playback logic** is completely independent of any audio backend. However, the **current implementation** demonstrates audio playback using **SDL2** for convenience and cross-platform support. You can easily adapt or extend the audio interface to suit other libraries or custom solutions. The playback engine supports both **automatic audio callbacks** for seamless integration and **manual audio buffer generation** for full control and customization of the audio stream.  
+This project is **audio-library agnostic** by design. The **core SID emulation and playback logic** is completely independent of any audio backend. However, the **current implementation** demonstrates audio playback using **SDL2** for convenience and cross-platform support. You can easily adapt or extend the audio interface to suit other libraries or custom solutions. The playback engine supports both **automatic audio callbacks** for seamless integration and **manual audio buffer generation** for full control and customization of the audio stream.
 
 <br>
 
