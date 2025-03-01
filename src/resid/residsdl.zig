@@ -28,15 +28,6 @@ pub const SDLreSIDDmpPlayer = struct {
         try self.initsdl();
 
         return self;
-
-        // const resid = try ReSID.init(name);
-        // const player = try ReSIDDmpPlayer.init(resid.ptr);
-        //
-        // return SDLreSIDDmpPlayer{
-        //     .resid = resid,
-        //     .player = player,
-        //     .dev = 0,
-        // };
     }
 
     pub fn deinit(self: *SDLreSIDDmpPlayer) void {
