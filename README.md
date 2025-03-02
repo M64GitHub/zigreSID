@@ -132,17 +132,21 @@ sudo apt install libsdl2-dev
 zig build
 ```
 
-Three examples are available for demonstration:
+5 examples are available for demonstration:
 
 - 🎹 **Integrated SDL Playback:** `src/main_sdlplayer.zig` - automatic SDL configuration, simple playback
 - 🎛️ **Unthreaded Playback:** `src/main_unthreaded.zig` - manual SDL configuration, and access to SID registers
 - ⚡ **Threaded Playback:** `src/main_threaded.zig` - manual SDL configuration, access to SID registers, and player internals, playback in custom thread
+- 📀 **WAV Writing Example**: `src/main_wavwriter.zig` - demonstrates how to generate a SID-based PCM buffer and save it as a .wav file
+- 🎧 **Custom PCM Buffer Generation and Playback**: `src/main_renderaudio.zig` - generates a raw SID audio PCM buffer and plays it directly (via SDL_QueueAudio())
 
 Executables will be available in `zig-out/bin/`:
 
 - `zig_sid_demo_sdl`
 - `zig_sid_demo_unthreaded`
 - `zig_sid_demo_threaded`
+- `zig_sid_demo_renderaudio`
+- `zig_sid_demo_wavwriter`
 
 <br>
 
@@ -161,6 +165,16 @@ zig build run-unthreaded
 ### ⚡ **Run Threaded Playback** demo
 ```bash
 zig build run-threaded
+```
+
+### 📀 **Run WAV Writing Example** demo
+```bash
+zig build run-wavwriter
+```
+
+### 🎧 **Custom PCM Buffer Generation and Playback** demo
+```bash
+zig build run-renderaudio
 ```
 
 <br>
