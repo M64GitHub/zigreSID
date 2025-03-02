@@ -41,9 +41,8 @@ pub fn main() !void {
     // set the dump to be rendered
     player.setDmp(sounddata.demo_sid, sounddata.demo_sid_len);
 
-    // render 50 * 10 frames into PCM audio buffer
-    // sid updates (audio frames) are made at 50.125 Hz, this will create 10 seconds audio
-    const steps_rendered = player.renderAudio(0, 50 * 10, @as(u32, pcm_buffer.len), &pcm_buffer);
+    // render the first 500 frames of the dump into the PCM audio buffer
+    const steps_rendered = player.renderAudio(0, 50 * 10, pcm_buffer.len, &pcm_buffer);
     try stdout.print("[MAIN] Steps rendered {d}\n", .{steps_rendered});
 
     // create a stereo wav file and write it to disk
