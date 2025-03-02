@@ -14,7 +14,7 @@ This project is **audio-library agnostic** by design. The **core SID emulation a
 
 - 🎹 **SID Soundchip Emulation for Zig**: Experience the legendary SID sound directly in your Zig projects.
 - 🎼 **Full Audio Buffer Rendering**: Generate high-fidelity PCM buffers from SID audio directly in Zig, allowing flexible post-processing, playback, and analysis.
-- 📀 **WAV Export (Mono & Stereo)**: Save pure SID-generated audio as .wav files in both mono and stereo, perfect for archival, visualization, music production, or integration into retro-inspired projects.
+- 📀 **WAV Export (Mono & Stereo)**: Save pure SID-generated audio as .wav files, perfect for archival, visualization, music production, or integration into retro-inspired projects.
 - ⚡ **Powered by reSID**: Leverages the proven **reSID** C++ library for high-quality sound emulation.  
 (https://github.com/daglem/reSID)
 - 🎧 **Audio Backend Flexibility**: The framework allows easy integration with different audio libraries
