@@ -7,14 +7,13 @@ pub fn build(b: *std.Build) void {
     const optimize = std.builtin.OptimizeMode.ReleaseFast;
 
     // Create reSID C++ shared library and C wrapper
-    const sid_lib = b.addSharedLibrary(.{
+    const resid_lib = b.addSharedLibrary(.{
         .name = "sid",
         .target = target,
         .optimize = optimize,
     });
-    sid_lib.linkLibCpp();
-    sid_lib.addIncludePath(b.path("."));
-    sid_lib.addCSourceFiles(.{
+    resid_lib.linkLibCpp();
+    resid_lib.addCSourceFiles(.{
         .files = &.{
             "resid/resid/envelope.cc",
             "resid/resid/extfilt.cc",
@@ -39,7 +38,7 @@ pub fn build(b: *std.Build) void {
         .flags = &.{ "-x", "c++", "-DVERSION=\"m64-000\"", "-Ofast" },
     });
 
-    sid_lib.addIncludePath(.{ .cwd_relative = "/usr/include/" });
+    resid_lib.addIncludePath(.{ .cwd_relative = "/usr/include/" });
 
     // Build Unthreaded Executable
     const exe_unthreaded = b.addExecutable(.{
@@ -48,10 +47,9 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    exe_unthreaded.linkLibrary(sid_lib);
+    exe_unthreaded.linkLibrary(resid_lib);
     exe_unthreaded.linkSystemLibrary("stdc++");
     exe_unthreaded.linkSystemLibrary("SDL2");
-    exe_unthreaded.addIncludePath(b.path("."));
     exe_unthreaded.addIncludePath(b.path("resid"));
     b.installArtifact(exe_unthreaded);
 
@@ -62,10 +60,9 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    exe_threaded.linkLibrary(sid_lib);
+    exe_threaded.linkLibrary(resid_lib);
     exe_threaded.linkSystemLibrary("stdc++");
     exe_threaded.linkSystemLibrary("SDL2");
-    exe_threaded.addIncludePath(b.path("."));
     exe_threaded.addIncludePath(b.path("resid"));
     b.installArtifact(exe_threaded);
 
@@ -76,10 +73,9 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    exe_sdl.linkLibrary(sid_lib);
+    exe_sdl.linkLibrary(resid_lib);
     exe_sdl.linkSystemLibrary("stdc++");
     exe_sdl.linkSystemLibrary("SDL2");
-    exe_sdl.addIncludePath(b.path("."));
     exe_sdl.addIncludePath(b.path("resid"));
     b.installArtifact(exe_sdl);
 
@@ -90,10 +86,9 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    exe_renderaudio.linkLibrary(sid_lib);
+    exe_renderaudio.linkLibrary(resid_lib);
     exe_renderaudio.linkSystemLibrary("stdc++");
     exe_renderaudio.linkSystemLibrary("SDL2");
-    exe_renderaudio.addIncludePath(b.path("."));
     exe_renderaudio.addIncludePath(b.path("resid"));
     b.installArtifact(exe_renderaudio);
 
@@ -104,9 +99,8 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    exe_wavwriter.linkLibrary(sid_lib);
+    exe_wavwriter.linkLibrary(resid_lib);
     exe_wavwriter.linkSystemLibrary("stdc++");
-    exe_wavwriter.addIncludePath(b.path("."));
     exe_wavwriter.addIncludePath(b.path("resid"));
     b.installArtifact(exe_wavwriter);
 
