@@ -94,6 +94,8 @@ pub fn main() !void {
 - 🎧 **Audio Backend Flexibility**: The framework allows easy integration with different audio libraries
 - ⚡ **Non-Blocking Audio Playback**: The audio playback runs in the background, so your application remains responsive and interactive while playing music.
 - 🧵 **Playback Support for a dedicated thread**: Provides two execution models—"unthreaded" for simple integration and multi threaded for performance improvements, **audio visualization** and -**modification** possibilities.
+- 🎼 **Full Audio Buffer Rendering**: Generate high-fidelity PCM buffers from SID audio directly in Zig, allowing flexible post-processing, playback, and analysis.
+- 📀 **WAV Export (Mono & Stereo)**: Save pure SID-generated audio as .wav files in both mono and stereo, perfect for archival, visualization, music production, or integration into retro-inspired projects.
 
 <br>
 
