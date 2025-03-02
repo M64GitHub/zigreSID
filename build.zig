@@ -96,17 +96,32 @@ pub fn build(b: *std.Build) void {
     exe_renderaudio.addIncludePath(b.path("resid"));
     b.installArtifact(exe_renderaudio);
 
+    // Build WavWriter Executable
+    const exe_wavwriter = b.addExecutable(.{
+        .name = "zig_sid_demo_wavwriter",
+        .root_source_file = b.path("src/main_wavwriter.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    exe_wavwriter.linkLibrary(sid_lib);
+    exe_wavwriter.linkSystemLibrary("stdc++");
+    exe_wavwriter.addIncludePath(b.path("."));
+    exe_wavwriter.addIncludePath(b.path("resid"));
+    b.installArtifact(exe_wavwriter);
+
     // Run steps for all
     const run_unthreaded = b.addRunArtifact(exe_unthreaded);
     const run_threaded = b.addRunArtifact(exe_threaded);
     const run_sdl = b.addRunArtifact(exe_sdl);
     const run_renderaudio = b.addRunArtifact(exe_renderaudio);
+    const run_wavwriter = b.addRunArtifact(exe_wavwriter);
 
     if (b.args) |args| {
         run_unthreaded.addArgs(args);
         run_threaded.addArgs(args);
         run_sdl.addArgs(args);
         run_renderaudio.addArgs(args);
+        run_wavwriter.addArgs(args);
     }
 
     const run_step_unthreaded = b.step("run-unthreaded", "Run the unthreaded SID demo");
@@ -120,4 +135,7 @@ pub fn build(b: *std.Build) void {
 
     const run_step_renderaudio = b.step("run-renderaudio", "Run the RenderAudio() SID demo");
     run_step_renderaudio.dependOn(&run_renderaudio.step);
+
+    const run_step_wavwriter = b.step("run-wavwriter", "Run the Wav-Writer SID demo");
+    run_step_wavwriter.dependOn(&run_wavwriter.step);
 }

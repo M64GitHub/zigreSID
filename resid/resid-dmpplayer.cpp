@@ -151,7 +151,7 @@ unsigned int ReSIDDmpPlayer::RenderAudio(unsigned int start_step,
     while (((bufpos + l_samples2do) < buf_size) &&
            steps_done < (num_steps - 1)) {
         cycles2do = (R->CYCLES_PER_SAMPLE * l_samples2do + 0.5);
-        R->Clock(cycles2do, buffer + bufpos, buf_size);
+        R->Clock(cycles2do, buffer + bufpos, buf_size - bufpos);
         bufpos += l_samples2do;
         l_samples2do = R->SAMPLES_PER_FRAME;
         if (my_dmp_idx + 25 > dmp_len) {
@@ -166,9 +166,9 @@ unsigned int ReSIDDmpPlayer::RenderAudio(unsigned int start_step,
     // if end reached we do nothing but let the audio buffer be rendered to
     // its end, while clocking the sid
 
-    // remainder = CFG_AUDIO_BUF_SIZE - bufpos;
-    // cycles2do = ((double)remainder * R->CYCLES_PER_SAMPLE + 0.5);
-    // R->Clock(cycles2do, buffer + bufpos, buf_size - bufpos);
+    remainder = buf_size - bufpos;
+    cycles2do = ((double)remainder * R->CYCLES_PER_SAMPLE + 0.5);
+    R->Clock(cycles2do, buffer + bufpos, buf_size - bufpos);
 
     return steps_done;
 }

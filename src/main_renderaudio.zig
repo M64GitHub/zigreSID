@@ -9,8 +9,9 @@ const ReSIDDmpPlayer = @import("resid/resid.zig").ReSIDDmpPlayer;
 
 pub fn main() !void {
     const stdout = std.io.getStdOut().writer();
+    const sampling_rate = 44100;
 
-    var pcm_buffer: [44100 * 5]i16 = undefined; // 5s mono PCM buffer
+    var pcm_buffer: [sampling_rate * 10]i16 = undefined; // 10s mono PCM buffer
 
     try stdout.print("[MAIN] zigSID audio rendering demo!\n", .{});
 
@@ -25,8 +26,8 @@ pub fn main() !void {
     // set the dump to be rendered
     player.setDmp(sounddata.demo_sid, sounddata.demo_sid_len);
 
-    // render 3 seconds audio into PCM audio buffer
-    const steps_rendered = player.renderAudio(0, 50 * 3, @as(u32, pcm_buffer.len), &pcm_buffer);
+    // render 8 seconds audio into PCM audio buffer
+    const steps_rendered = player.renderAudio(0, 50 * 8, @as(u32, pcm_buffer.len), &pcm_buffer);
 
     // write generated audio to file
     const file = try std.fs.cwd().createFile("pcm_dump.raw", .{ .truncate = true });
@@ -40,7 +41,7 @@ pub fn main() !void {
 
     // init sdl with a callback to our player
     var spec = SDL.SDL_AudioSpec{
-        .freq = 44100,
+        .freq = sampling_rate,
         .format = SDL.AUDIO_S16,
         .channels = 1,
         .samples = 4096,
