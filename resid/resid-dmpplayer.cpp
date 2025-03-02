@@ -2,7 +2,6 @@
 
 #include "resid-dmpplayer.h"
 #include "resid-dmpplayer-ctx.h"
-#include <stdio.h>
 #include <string.h>
 
 ReSIDDmpPlayer::ReSIDDmpPlayer(ReSID *r)

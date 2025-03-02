@@ -14,7 +14,7 @@ pub fn main() !void {
 
     try stdout.print("[MAIN] zigSID audio demo unthreaded!\n", .{});
 
-    // create sid and configure it
+    // create a ReSID instance and configure it
     var sid = try ReSID.init("MyZIGSID");
     defer sid.deinit();
 
