@@ -649,8 +649,8 @@ const DmpPlayerContext = extern struct {
 
 ## ✨ **Roadmap & Future Enhancements**
 
-- 🎵 **Flexible Sound Playback**: Convenience functions. (Like one for easy playback of multiple SID dumps (`player.playDump(...)`).
-- 🎚️ **Audio Rendering**: Export audio as **WAV** or **RAW** into a buffer for further processing.
+- 🎵 **Flexible Sound Playback**: Convenience functions. Like one for easy playback of multiple SID dumps (`player.playDump(...)`). .loadDump(), etc...
+- 🎵 **6 voices Stereo SID**: a dual SID setup integrated in a struct
 - 🎛️ **Real-Time Audio Mixing**: Support for mixing multiple SID streams in real time.
 - 🎚️ **Volume and Panning Control**: Add runtime **volume adjustments** and **stereo panning**.
 - **Low Level SID Access**: binding the full resid original API to zig.
