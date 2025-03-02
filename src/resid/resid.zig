@@ -102,7 +102,7 @@ pub const ReSIDDmpPlayer = struct {
     }
 
     pub fn renderAudio(self: *ReSIDDmpPlayer, start_step: u32, num_steps: u32, buf_size: u32, buffer: []i16) u32 {
-        return @as(u32, c.ReSIDDmpPlayer_RenderAudio(self.ptr, start_step, num_steps, buf_size, buffer.ptr));
+        return c.ReSIDDmpPlayer_RenderAudio(self.ptr, start_step, num_steps, buf_size, buffer.ptr);
     }
 
     pub fn sdlAudioCallback(userdata: ?*anyopaque, stream: [*c]u8, len: c_int) callconv(.C) void {

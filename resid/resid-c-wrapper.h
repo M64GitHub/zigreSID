@@ -36,10 +36,10 @@ void ReSIDDmpPlayer_continue(ReSIDDmpPlayer *dmpply);
 bool ReSIDDmpPlayer_update(ReSIDDmpPlayer *dmpply);
 DmpPlayerContext *ReSIDDmpPlayer_getPlayerContext(ReSIDDmpPlayer *dmpply);
 bool ReSIDDmpPlayer_fillAudioBuffer(ReSIDDmpPlayer *dmpply);
-unsigned long ReSIDDmpPlayer_RenderAudio(ReSIDDmpPlayer *dmpply,
-                                         unsigned int start_step,
-                                         unsigned int num_steps,
-                                         unsigned int buf_size, short *buffer);
+unsigned int ReSIDDmpPlayer_RenderAudio(ReSIDDmpPlayer *dmpply,
+                                        unsigned int start_step,
+                                        unsigned int num_steps,
+                                        unsigned int buf_size, short *buffer);
 void ReSIDDmpPlayer_SDL_audio_callback(ReSIDDmpPlayer *dmpply, void *userdata,
                                        unsigned char *stream, int len);
 void ReSIDDmpPlayer_setdmp(ReSIDDmpPlayer *dmpply, unsigned char *dump,

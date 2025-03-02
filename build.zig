@@ -82,15 +82,31 @@ pub fn build(b: *std.Build) void {
     exe_sdl.addIncludePath(b.path("resid"));
     b.installArtifact(exe_sdl);
 
+    // Build RenderAudio Executable
+    const exe_renderaudio = b.addExecutable(.{
+        .name = "zig_sid_demo_renderaudio",
+        .root_source_file = b.path("src/main_renderaudio.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    exe_renderaudio.linkLibrary(sid_lib);
+    exe_renderaudio.linkSystemLibrary("stdc++");
+    exe_renderaudio.linkSystemLibrary("SDL2");
+    exe_renderaudio.addIncludePath(b.path("."));
+    exe_renderaudio.addIncludePath(b.path("resid"));
+    b.installArtifact(exe_renderaudio);
+
     // Run steps for all
     const run_unthreaded = b.addRunArtifact(exe_unthreaded);
     const run_threaded = b.addRunArtifact(exe_threaded);
     const run_sdl = b.addRunArtifact(exe_sdl);
+    const run_renderaudio = b.addRunArtifact(exe_renderaudio);
 
     if (b.args) |args| {
         run_unthreaded.addArgs(args);
         run_threaded.addArgs(args);
         run_sdl.addArgs(args);
+        run_renderaudio.addArgs(args);
     }
 
     const run_step_unthreaded = b.step("run-unthreaded", "Run the unthreaded SID demo");
@@ -101,4 +117,7 @@ pub fn build(b: *std.Build) void {
 
     const run_step_sdl = b.step("run-sdl", "Run the SDL SID demo");
     run_step_sdl.dependOn(&run_sdl.step);
+
+    const run_step_renderaudio = b.step("run-renderaudio", "Run the RenderAudio() SID demo");
+    run_step_renderaudio.dependOn(&run_renderaudio.step);
 }

@@ -125,44 +125,50 @@ bool ReSIDDmpPlayer::FillAudioBuffer()
     return false;
 }
 
-unsigned long ReSIDDmpPlayer::RenderAudio(unsigned int start_step,
-                                          unsigned int num_steps,
-                                          unsigned int buf_size, short *buffer)
+unsigned int ReSIDDmpPlayer::RenderAudio(unsigned int start_step,
+                                         unsigned int num_steps,
+                                         unsigned int buf_size, short *buffer)
 {
     unsigned int steps_done = 0;
+    unsigned int my_dmp_idx = 0;
     unsigned long bufpos = 0;
     unsigned long remainder = 0;
     unsigned long cycles2do = 0;
     int l_samples2do = R->SAMPLES_PER_FRAME;
 
-    set_next_regs();
+    memset(buffer, 0, buf_size);
+
+    if (!dmp || !dmp_len) return 0;
+    if ((25 * (start_step + num_steps)) > dmp_len) return 0;
 
     // skip to start_pos
     for (int i = 0; i < ((int)start_step - 1); i++) {
-        if (set_next_regs()) return 0;
+        if ((my_dmp_idx + 25) > dmp_len) return 0;
+        my_dmp_idx += 25;
     }
 
-    D->buf_lock = true;
-
     bool end_reached = false;
-    while (((bufpos + l_samples2do) < buf_size) && steps_done < num_steps) {
+    while (((bufpos + l_samples2do) < buf_size) &&
+           steps_done < (num_steps - 1)) {
         cycles2do = (R->CYCLES_PER_SAMPLE * l_samples2do + 0.5);
-        R->Clock(cycles2do, buffer + bufpos, buf_size - bufpos);
+        R->Clock(cycles2do, buffer + bufpos, buf_size);
         bufpos += l_samples2do;
-        D->stat_framectr++;
         l_samples2do = R->SAMPLES_PER_FRAME;
-        if (set_next_regs()) {
+        if (my_dmp_idx + 25 > dmp_len) {
             end_reached = true;
             break;
         }; // end of dmp reached
+        R->WriteRegs(dmp + my_dmp_idx, 25);
+        my_dmp_idx += 25;
         steps_done++;
     }
 
     // if end reached we do nothing but let the audio buffer be rendered to
     // its end, while clocking the sid
-    remainder = CFG_AUDIO_BUF_SIZE - bufpos;
-    cycles2do = ((double)remainder * R->CYCLES_PER_SAMPLE + 0.5);
-    R->Clock(cycles2do, buffer + bufpos, buf_size - bufpos);
+
+    // remainder = CFG_AUDIO_BUF_SIZE - bufpos;
+    // cycles2do = ((double)remainder * R->CYCLES_PER_SAMPLE + 0.5);
+    // R->Clock(cycles2do, buffer + bufpos, buf_size - bufpos);
 
     return steps_done;
 }
