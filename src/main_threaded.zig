@@ -2,12 +2,10 @@ const std = @import("std");
 const SDL = @cImport({
     @cInclude("SDL.h");
 });
-const sounddata = @import("demo-sound-data.zig");
 
 const ReSID = @import("resid/resid.zig").ReSID;
 const ReSIDDmpPlayer = @import("resid/resid.zig").ReSIDDmpPlayer;
 const DP_PLAYSTATE = @import("resid/resid.zig").DP_PLAYSTATE;
-const stdout = std.io.getStdOut().writer();
 
 fn playerThreadFunc(player: *ReSIDDmpPlayer) !void {
     while (player.isPlaying()) {
@@ -19,6 +17,8 @@ fn playerThreadFunc(player: *ReSIDDmpPlayer) !void {
 }
 
 pub fn main() !void {
+    const allocator = std.heap.page_allocator;
+    const stdout = std.io.getStdOut().writer();
     const samplingRate: i32 = 44100;
 
     try stdout.print("[MAIN] zigSID audio demo threaded!\n", .{});
@@ -29,9 +29,12 @@ pub fn main() !void {
     _ = sid.setChipModel("MOS8580"); // just for demo purpose, this is the default
 
     // create a ReSIDDmpPlayer instance and initialize it with the ReSID instance
-    var player = try ReSIDDmpPlayer.init(sid.ptr);
+    var player = try ReSIDDmpPlayer.init(allocator, sid.ptr);
     defer player.deinit();
-    player.setDmp(sounddata.demo_sid, sounddata.demo_sid_len); // set dump to be played
+
+    // load dump
+    try player.loadDmp("data/plasmaghost.sid.dmp");
+
     player.updateExternal(true); // make sure, SDL does not call the update function
 
     // init sdl with a callback to our player

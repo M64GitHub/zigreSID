@@ -59,10 +59,12 @@ pub const ReSID = struct {
 
 pub const ReSIDDmpPlayer = struct {
     ptr: *c.ReSIDDmpPlayer,
+    dump: []u8 = &.{},
+    allocator: std.mem.Allocator,
 
-    pub fn init(resid: *c.ReSID) !ReSIDDmpPlayer {
+    pub fn init(allocator: std.mem.Allocator, resid: *c.ReSID) !ReSIDDmpPlayer {
         const player = c.ReSIDDmpPlayer_create(resid) orelse return error.FailedToCreatePlayer;
-        return ReSIDDmpPlayer{ .ptr = player };
+        return ReSIDDmpPlayer{ .ptr = player, .allocator = allocator };
     }
 
     pub fn deinit(self: *ReSIDDmpPlayer) void {
@@ -93,12 +95,28 @@ pub const ReSIDDmpPlayer = struct {
         return c.ReSIDDmpPlayer_getPlayerContext(self.ptr);
     }
 
-    pub fn setDmp(self: *ReSIDDmpPlayer, dump: [*c]u8, len: c_uint) void {
-        c.ReSIDDmpPlayer_setdmp(self.ptr, dump, len);
-    }
-
     pub fn fillAudioBuffer(self: *ReSIDDmpPlayer) i32 {
         return c.ReSIDDmpPlayer_fillAudioBuffer(self.ptr);
+    }
+
+    pub fn setDmp(self: *ReSIDDmpPlayer, dump: []u8) void {
+        self.dump = dump;
+        c.ReSIDDmpPlayer_setdmp(self.ptr, self.dump.ptr, @truncate(@as(u64, self.dump.len)));
+    }
+
+    pub fn loadDmp(self: *ReSIDDmpPlayer, filename: []const u8) !void {
+        var file = try std.fs.cwd().openFile(filename, .{});
+        defer file.close();
+
+        const stat = try file.stat();
+        const file_size = stat.size;
+
+        const buffer = try self.allocator.alloc(u8, file_size);
+
+        // Read the file into the buffer
+        _ = try file.readAll(buffer);
+
+        setDmp(self, buffer);
     }
 
     pub fn renderAudio(self: *ReSIDDmpPlayer, start_step: u32, num_steps: u32, buf_size: u32, buffer: []i16) u32 {

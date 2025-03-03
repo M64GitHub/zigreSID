@@ -1,13 +1,11 @@
 const std = @import("std");
-const sounddata = @import("demo-sound-data.zig");
 
 const ReSID = @import("resid/resid.zig").ReSID;
 const ReSIDDmpPlayer = @import("resid/resid.zig").ReSIDDmpPlayer;
 const Wav = @import("resid/wav.zig").Wav;
 
-const allocator = std.heap.page_allocator;
-
 pub fn main() !void {
+    const allocator = std.heap.page_allocator;
     const stdout = std.io.getStdOut().writer();
     const sampling_rate = 44100;
 
@@ -20,11 +18,11 @@ pub fn main() !void {
     defer sid.deinit();
 
     // create a ReSIDDmpPlayer instance and initialize it with the ReSID instance
-    var player = try ReSIDDmpPlayer.init(sid.ptr);
+    var player = try ReSIDDmpPlayer.init(allocator, sid.ptr);
     defer player.deinit();
 
-    // set the dump to be rendered
-    player.setDmp(sounddata.demo_sid, sounddata.demo_sid_len);
+    // load dump
+    try player.loadDmp("data/plasmaghost.sid.dmp");
 
     // render 50 * 10 frames into PCM audio buffer
     // sid updates (audio frames) are made at 50.125 Hz, this will create 10 seconds audio

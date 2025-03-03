@@ -2,15 +2,15 @@ const std = @import("std");
 const SDL = @cImport({
     @cInclude("SDL.h");
 });
-const sounddata = @import("demo-sound-data.zig");
 
 const ReSID = @import("resid/resid.zig").ReSID;
 const ReSIDDmpPlayer = @import("resid/resid.zig").ReSIDDmpPlayer;
 
 pub fn main() !void {
+    const allocator = std.heap.page_allocator;
     const stdout = std.io.getStdOut().writer();
-    const sampling_rate = 44100;
 
+    const sampling_rate = 44100;
     var pcm_buffer: [sampling_rate * 10]i16 = undefined; // 10s mono PCM buffer
 
     try stdout.print("[MAIN] zigSID audio rendering demo!\n", .{});
@@ -20,11 +20,11 @@ pub fn main() !void {
     defer sid.deinit();
 
     // create a ReSIDDmpPlayer instance and initialize it with the ReSID instance
-    var player = try ReSIDDmpPlayer.init(sid.ptr);
+    var player = try ReSIDDmpPlayer.init(allocator, sid.ptr);
     defer player.deinit();
 
-    // set the dump to be rendered
-    player.setDmp(sounddata.demo_sid, sounddata.demo_sid_len);
+    // load dump
+    try player.loadDmp("data/plasmaghost.sid.dmp");
 
     // render 8 seconds audio into PCM audio buffer
     const steps_rendered = player.renderAudio(0, 50 * 8, @as(u32, pcm_buffer.len), &pcm_buffer);

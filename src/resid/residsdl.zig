@@ -1,7 +1,4 @@
 const std = @import("std");
-const sounddata = @cImport({
-    @cInclude("demo_sound.h");
-});
 const SDL = @cImport({
     @cInclude("SDL.h");
 });
@@ -13,18 +10,19 @@ pub const SDLreSIDDmpPlayer = struct {
     resid: ReSID,
     player: ReSIDDmpPlayer,
     dev: SDL.SDL_AudioDeviceID = 0,
+    allocator: std.mem.Allocator,
 
     const samplingRate: i32 = 44100;
     const stdout = std.io.getStdOut().writer();
 
-    pub fn init(name: [*:0]const u8) !*SDLreSIDDmpPlayer {
+    pub fn init(allocator: std.mem.Allocator, name: [*:0]const u8) !*SDLreSIDDmpPlayer {
         var self = try std.heap.c_allocator.create(SDLreSIDDmpPlayer);
 
         self.resid = try ReSID.init(name);
-        self.player = try ReSIDDmpPlayer.init(self.resid.ptr);
+        self.player = try ReSIDDmpPlayer.init(allocator, self.resid.ptr);
         self.dev = 0;
+        self.allocator = allocator;
 
-        // Initialize SDL automatically
         try self.initsdl();
 
         return self;
@@ -64,8 +62,13 @@ pub const SDLreSIDDmpPlayer = struct {
         SDL.SDL_PauseAudioDevice(self.dev, 0);
     }
 
-    pub fn setDmp(self: *SDLreSIDDmpPlayer, dump: [*c]u8, len: c_uint) void {
-        self.player.setDmp(dump, len);
+    pub fn setDmp(self: *SDLreSIDDmpPlayer, dump: []u8) void {
+        self.dump = dump;
+        self.player.setDmp(self.player.ptr, self.dump);
+    }
+
+    pub fn loadDmp(self: *SDLreSIDDmpPlayer, filename: []const u8) !void {
+        try self.player.loadDmp(filename);
     }
 
     pub fn play(self: *SDLreSIDDmpPlayer) void {

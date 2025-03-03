@@ -1,18 +1,19 @@
 const std = @import("std");
-const sounddata = @import("demo-sound-data.zig");
 
 const SDLreSIDDmpPlayer = @import("resid/residsdl.zig").SDLreSIDDmpPlayer;
 
 pub fn main() !void {
+    const allocator = std.heap.page_allocator;
     const stdout = std.io.getStdOut().writer();
+
     try stdout.print("[MAIN] zigSID audio demo sdl dump player!\n", .{});
 
     // create SDL sid dump player and configure it
-    var player = try SDLreSIDDmpPlayer.init("MY SID Player");
+    var player = try SDLreSIDDmpPlayer.init(allocator, "MY SID Player");
     defer player.deinit();
 
-    // set the dump to be played
-    player.setDmp(sounddata.demo_sid, sounddata.demo_sid_len);
+    // load sid dump
+    try player.loadDmp("data/plasmaghost.sid.dmp");
 
     player.play();
 
