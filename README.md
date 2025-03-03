@@ -32,15 +32,13 @@ This project is **audio-library agnostic** by design. The **core SID emulation a
 
 ```zig
 const std = @import("std");
-const sounddata = @import("demo-sound-data.zig");
 
 const ReSID = @import("resid/resid.zig").ReSID;
 const ReSIDDmpPlayer = @import("resid/resid.zig").ReSIDDmpPlayer;
 const Wav = @import("resid/wav.zig").Wav;
 
-const allocator = std.heap.page_allocator;
-
 pub fn main() !void {
+    const allocator = std.heap.page_allocator;
     const stdout = std.io.getStdOut().writer();
     const sampling_rate = 44100;
 
@@ -53,13 +51,14 @@ pub fn main() !void {
     defer sid.deinit();
 
     // create a ReSIDDmpPlayer instance and initialize it with the ReSID instance
-    var player = try ReSIDDmpPlayer.init(sid.ptr);
+    var player = try ReSIDDmpPlayer.init(allocator, sid.ptr);
     defer player.deinit();
 
-    // set the dump to be rendered
-    player.setDmp(sounddata.demo_sid, sounddata.demo_sid_len);
+    // load dump
+    try player.loadDmp("data/plasmaghost.sid.dmp");
 
-    // render the first 500 frames of the dump into the PCM audio buffer
+    // render 50 * 10 frames into PCM audio buffer
+    // sid updates (audio frames) are made at 50.125 Hz, this will create 10 seconds audio
     const steps_rendered = player.renderAudio(0, 50 * 10, pcm_buffer.len, &pcm_buffer);
     try stdout.print("[MAIN] Steps rendered {d}\n", .{steps_rendered});
 
@@ -77,19 +76,21 @@ If you’re working with SDL, the `SDLreSIDDmpPlayer` struct provides a convenie
 
 ```zig
 const std = @import("std");
-const sounddata = @import("demo-sound-data.zig");
 
 const SDLreSIDDmpPlayer = @import("resid/residsdl.zig").SDLreSIDDmpPlayer;
 
 pub fn main() !void {
+    const allocator = std.heap.page_allocator;
     const stdout = std.io.getStdOut().writer();
+
     try stdout.print("[MAIN] zigSID audio demo sdl dump player!\n", .{});
 
-    // -- create SDL sid dump player and configure it
-    var player = try SDLreSIDDmpPlayer.init("MY SID Player");
+    // create SDL sid dump player and configure it
+    var player = try SDLreSIDDmpPlayer.init(allocator, "MY SID Player");
     defer player.deinit();
 
-    player.setDmp(sounddata.demo_sid, sounddata.demo_sid_len);
+    // load sid dump
+    try player.loadDmp("data/plasmaghost.sid.dmp");
 
     player.play();
 
@@ -294,9 +295,9 @@ This example demonstrates the simplest way to play a SID dump using the `ReSIDDm
 The player processes SID register values for each virtual frame, synchronized to a virtual PAL video standard vertical sync for accurate timing. That means it reads a set of SID register values from the dump and writes them to reSID, for each step.   The internal audio generation clocks the SID in the background and uses the output to fill an audio buffer. When the vertical sync frequency is reached, the next set of register values is read from the dump.
 
 You can generate your own SID dumps using a siddump utility. In this demo, the SID dump is included via a C header file generated using the `xxd -i` tool.
-- After initializing the `sid` and `player` struct instances, set the dump for the player:  
+- After initializing the `sid` and `player` struct instances, set the []u8 dump for the player:  
   ```zig
-  player.setDmp(sounddata.demo_sid, sounddata.demo_sid_len);
+  player.setDmp(sounddata);
   ```
 - And to start playback, simply call:  
   ```zig
@@ -310,26 +311,28 @@ const std = @import("std");
 const SDL = @cImport({
     @cInclude("SDL.h");
 });
-const sounddata = @import("demo-sound-data.zig");
 
 const ReSID = @import("resid/resid.zig").ReSID;
 const ReSIDDmpPlayer = @import("resid/resid.zig").ReSIDDmpPlayer;
 
 pub fn main() !void {
+    const allocator = std.heap.page_allocator;
     const stdout = std.io.getStdOut().writer();
 
     const samplingRate: i32 = 44100;
 
     try stdout.print("[MAIN] zigSID audio demo unthreaded!\n", .{});
 
-    // create sid and configure it
+    // create a ReSID instance and configure it
     var sid = try ReSID.init("MyZIGSID");
     defer sid.deinit();
 
     // create a ReSIDDmpPlayer instance and initialize it with the ReSID instance
-    var player = try ReSIDDmpPlayer.init(sid.ptr);
+    var player = try ReSIDDmpPlayer.init(allocator, sid.ptr);
     defer player.deinit();
-    player.setDmp(sounddata.demo_sid, sounddata.demo_sid_len); // set dump to be played
+
+    // load dump
+    try player.loadDmp("data/plasmaghost.sid.dmp");
 
     // init sdl with a callback to our player
     var spec = SDL.SDL_AudioSpec{
@@ -427,12 +430,10 @@ const std = @import("std");
 const SDL = @cImport({
     @cInclude("SDL.h");
 });
-const sounddata = @import("demo-sound-data.zig");
 
 const ReSID = @import("resid/resid.zig").ReSID;
 const ReSIDDmpPlayer = @import("resid/resid.zig").ReSIDDmpPlayer;
 const DP_PLAYSTATE = @import("resid/resid.zig").DP_PLAYSTATE;
-const stdout = std.io.getStdOut().writer();
 
 fn playerThreadFunc(player: *ReSIDDmpPlayer) !void {
     while (player.isPlaying()) {
@@ -444,6 +445,8 @@ fn playerThreadFunc(player: *ReSIDDmpPlayer) !void {
 }
 
 pub fn main() !void {
+    const allocator = std.heap.page_allocator;
+    const stdout = std.io.getStdOut().writer();
     const samplingRate: i32 = 44100;
 
     try stdout.print("[MAIN] zigSID audio demo threaded!\n", .{});
@@ -454,9 +457,12 @@ pub fn main() !void {
     _ = sid.setChipModel("MOS8580"); // just for demo purpose, this is the default
 
     // create a ReSIDDmpPlayer instance and initialize it with the ReSID instance
-    var player = try ReSIDDmpPlayer.init(sid.ptr);
+    var player = try ReSIDDmpPlayer.init(allocator, sid.ptr);
     defer player.deinit();
-    player.setDmp(sounddata.demo_sid, sounddata.demo_sid_len); // set dump to be played
+
+    // load dump
+    try player.loadDmp("data/plasmaghost.sid.dmp");
+
     player.updateExternal(true); // make sure, SDL does not call the update function
 
     // init sdl with a callback to our player
@@ -527,7 +533,7 @@ pub fn main() !void {
 
 ### 🎹 **ReSID Struct** (SID Emulation)
 
-- `init(name: [*:0]const u8) !ReSID`: Initializes a **SID instance** with a given name.
+- `init(allocator: std.mem.Allocator, name: [*:0]const u8) !ReSID`: Initializes a **SID instance** with a given name.
 - `deinit()`: Frees the **SID instance**.
 - `getName() [*:0]const u8`: Returns the **name** of the SID instance.
 - `setDBGOutput(enable: bool)`: Enables (**true**) or disables (**false**) **debug output**.
@@ -542,14 +548,15 @@ pub fn main() !void {
 
 ### 🎛️ **ReSIDDmpPlayer Struct** (Playback Controller)
 
-- `init(resid: *c.ReSID) !ReSIDDmpPlayer`: Creates a **player instance** linked to a **SID instance**.
+- `init(allocator: std.mem.Allocator, resid: *c.ReSID) !ReSIDDmpPlayer`: Creates a **player instance** linked to a **SID instance**.
 - `deinit()`: Frees the **player instance**.
 - `play()`: Starts **playback** from the beginning.
 - `stop()`: **Stops** and **resets** playback.
 - `pause()`: **Pauses** playback (audio generation stops).
 - `continue_play()`: **Continues** playback after pausing.
 - `update()`: **Updates** the **audio buffer**; call this when not using callbacks. Returns false when playback ends.
-- `setDmp(dump: [*c]u8, len: c_uint)`: Loads a **SID dump** for playback (**must be called before** `play()`).
+- `setDmp(dump: []u8)`: Loads a **SID dump** for playback (**must be called before** `play()`).
+- `loadDmp(filename: []const u8) !void`: **load dump** from file.
 - `getPlayerContext() *c.DmpPlayerContext`: Returns a **pointer to playback data**.
 - `updateExternal(b: bool)`: Allows external control of the audio update process.
 - `isPlaying() bool`: Checks if playback is currently active.
@@ -565,11 +572,12 @@ pub fn main() !void {
 
 ### 🎹 **SDLreSIDDmpPlayer Struct** (Simplified SDL Player)
 
-- `init(name: [*:0]const u8) !*SDLreSIDDmpPlayer`: Creates a new SDLreSIDDmpPlayer instance, initializes ReSID, ReSIDDmpPlayer, and SDL.
+- `init(allocator: std.mem.Allocator, name: [*:0]const u8) !*SDLreSIDDmpPlayer`: Creates a new SDLreSIDDmpPlayer instance, initializes ReSID, ReSIDDmpPlayer, and SDL.
 - `deinit(self: *SDLreSIDDmpPlayer) void`: Cleans up the instance by stopping playback, closing SDL, and freeing memory.
-- `setDmp(self: *SDLreSIDDmpPlayer, dump: [*c]u8, len: c_uint) void`: Loads a SID dump into the player for playback.
-- `play(self: *SDLreSIDDmpPlayer) void`: Starts playing the loaded SID dump.
-- `stop(self: *SDLreSIDDmpPlayer) void`: Stops playback.
+- `setDmp(dump: []u8)`: Loads a **SID dump** for playback (**must be called before** `play()`).
+- `loadDmp(filename: []const u8) !void`: **load dump** from file.
+- `play() void`: Starts playing the loaded SID dump.
+- `stop() void`: Stops playback.
 
 <br>
 
