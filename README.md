@@ -81,13 +81,13 @@ const std = @import("std");
 const SDLreSIDDmpPlayer = @import("resid/residsdl.zig").SDLreSIDDmpPlayer;
 
 pub fn main() !void {
-    const allocator = std.heap.page_allocator;
+    const gpa = std.heap.page_allocator;
     const stdout = std.io.getStdOut().writer();
 
     try stdout.print("[MAIN] zigSID audio demo sdl dump player!\n", .{});
 
     // create SDL sid dump player and configure it
-    var player = try SDLreSIDDmpPlayer.init(allocator, "MY SID Player");
+    var player = try SDLreSIDDmpPlayer.init(gpa, "MY SID Player");
     defer player.deinit();
 
     // load sid dump
@@ -317,10 +317,8 @@ const ReSID = @import("resid/resid.zig").ReSID;
 const ReSIDDmpPlayer = @import("resid/resid.zig").ReSIDDmpPlayer;
 
 pub fn main() !void {
-    const allocator = std.heap.page_allocator;
+    const gpa = std.heap.page_allocator;
     const stdout = std.io.getStdOut().writer();
-
-    const samplingRate: i32 = 44100;
 
     try stdout.print("[MAIN] zigSID audio demo unthreaded!\n", .{});
 
@@ -329,7 +327,7 @@ pub fn main() !void {
     defer sid.deinit();
 
     // create a ReSIDDmpPlayer instance and initialize it with the ReSID instance
-    var player = try ReSIDDmpPlayer.init(allocator, sid.ptr);
+    var player = try ReSIDDmpPlayer.init(gpa, sid.ptr);
     defer player.deinit();
 
     // load dump
@@ -337,7 +335,7 @@ pub fn main() !void {
 
     // init sdl with a callback to our player
     var spec = SDL.SDL_AudioSpec{
-        .freq = samplingRate,
+        .freq = sid.getSamplingRate(),
         .format = SDL.AUDIO_S16,
         .channels = 1,
         .samples = 4096,
@@ -359,10 +357,9 @@ pub fn main() !void {
     defer SDL.SDL_CloseAudioDevice(dev);
 
     SDL.SDL_PauseAudioDevice(dev, 0); // Start SDL audio
-    try stdout.print("[MAIN] SDL audio started at {d} Hz.\n", .{samplingRate});
+    try stdout.print("[MAIN] SDL audio started at {d} Hz.\n", .{sid.getSamplingRate()});
     // end of SDL initialization
 
-    // start the playback!
     player.play();
 
     // do something in main: print the SID registers, and player stats
@@ -446,19 +443,17 @@ fn playerThreadFunc(player: *ReSIDDmpPlayer) !void {
 }
 
 pub fn main() !void {
-    const allocator = std.heap.page_allocator;
+    const gpa = std.heap.page_allocator;
     const stdout = std.io.getStdOut().writer();
-    const samplingRate: i32 = 44100;
 
     try stdout.print("[MAIN] zigSID audio demo threaded!\n", .{});
 
     // create a ReSID instance and configure it
     var sid = try ReSID.init("MyZIGSID");
     defer sid.deinit();
-    _ = sid.setChipModel("MOS8580"); // just for demo purpose, this is the default
 
     // create a ReSIDDmpPlayer instance and initialize it with the ReSID instance
-    var player = try ReSIDDmpPlayer.init(allocator, sid.ptr);
+    var player = try ReSIDDmpPlayer.init(gpa, sid.ptr);
     defer player.deinit();
 
     // load dump
@@ -468,7 +463,7 @@ pub fn main() !void {
 
     // init sdl with a callback to our player
     var spec = SDL.SDL_AudioSpec{
-        .freq = samplingRate,
+        .freq = sid.getSamplingRate(),
         .format = SDL.AUDIO_S16,
         .channels = 1,
         .samples = 4096,
@@ -490,7 +485,7 @@ pub fn main() !void {
     defer SDL.SDL_CloseAudioDevice(dev);
 
     SDL.SDL_PauseAudioDevice(dev, 0); // Start SDL audio
-    try stdout.print("[MAIN] SDL audio started at {d} Hz.\n", .{samplingRate});
+    try stdout.print("[MAIN] SDL audio started at {d} Hz.\n", .{sid.getSamplingRate()});
     // end of SDL initialization
 
     // start the playback, and thread for calling the update function
@@ -537,7 +532,6 @@ pub fn main() !void {
 - `init(allocator: std.mem.Allocator, name: [*:0]const u8) !ReSID`: Initializes a **SID instance** with a given name.
 - `deinit()`: Frees the **SID instance**.
 - `getName() [*:0]const u8`: Returns the **name** of the SID instance.
-- `setDBGOutput(enable: bool)`: Enables (**true**) or disables (**false**) **debug output**.
 - `setChipModel(model: [*:0]const u8) bool`: Sets the **SID chip model** (**"MOS6581"** or **"MOS8580"**, default is MOS8580).
 - `setSamplingRate(rate: c_int)`: Sets the **sampling rate** (default **44100 Hz**).
 - `getSamplingRate() c_int`: Returns the **current sampling rate**.
