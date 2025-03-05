@@ -23,11 +23,6 @@ const char *ReSID_getName(ReSID *resid)
     return resid->GetName();
 }
 
-void ReSID_setDBGOutput(ReSID *resid, bool b)
-{
-    resid->SetDbgOutput(b);
-}
-
 bool ReSID_setChipModel(ReSID *resid, const char *m)
 {
     return resid->SetChipModel(m);

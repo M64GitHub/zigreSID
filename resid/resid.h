@@ -19,15 +19,15 @@ public:
     bool SetChipModel(const char *m);
     void SetSamplingRate(int r);
     int GetSamplingRate() const;
+
     void WriteRegs(unsigned char *regs, int len);
     unsigned char *GetRegs();
 
     // dumb audio rendering, not frame aware
     int Clock(unsigned int cycles, short *buf, int buflen);
 
-    void SetDbgOutput(bool b);
-
     // calculated CONSTANTS
+    // no getters for fast access
     int SAMPLES_PER_FRAME;
     int CYCLES_PER_FRAME;
     double CYCLES_PER_SAMPLE;
@@ -38,7 +38,6 @@ private:
     SID sid;
     chip_model model;
     int sampling_rate;
-    bool dbg_output;
     unsigned char shadow_regs[32];
 };
 

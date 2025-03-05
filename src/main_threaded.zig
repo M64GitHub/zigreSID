@@ -17,19 +17,17 @@ fn playerThreadFunc(player: *ReSIDDmpPlayer) !void {
 }
 
 pub fn main() !void {
-    const allocator = std.heap.page_allocator;
+    const gpa = std.heap.page_allocator;
     const stdout = std.io.getStdOut().writer();
-    const samplingRate: i32 = 44100;
 
     try stdout.print("[MAIN] zigSID audio demo threaded!\n", .{});
 
     // create a ReSID instance and configure it
     var sid = try ReSID.init("MyZIGSID");
     defer sid.deinit();
-    _ = sid.setChipModel("MOS8580"); // just for demo purpose, this is the default
 
     // create a ReSIDDmpPlayer instance and initialize it with the ReSID instance
-    var player = try ReSIDDmpPlayer.init(allocator, sid.ptr);
+    var player = try ReSIDDmpPlayer.init(gpa, sid.ptr);
     defer player.deinit();
 
     // load dump
@@ -39,7 +37,7 @@ pub fn main() !void {
 
     // init sdl with a callback to our player
     var spec = SDL.SDL_AudioSpec{
-        .freq = samplingRate,
+        .freq = sid.getSamplingRate(),
         .format = SDL.AUDIO_S16,
         .channels = 1,
         .samples = 4096,
@@ -61,7 +59,7 @@ pub fn main() !void {
     defer SDL.SDL_CloseAudioDevice(dev);
 
     SDL.SDL_PauseAudioDevice(dev, 0); // Start SDL audio
-    try stdout.print("[MAIN] SDL audio started at {d} Hz.\n", .{samplingRate});
+    try stdout.print("[MAIN] SDL audio started at {d} Hz.\n", .{sid.getSamplingRate()});
     // end of SDL initialization
 
     // start the playback, and thread for calling the update function

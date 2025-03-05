@@ -16,31 +16,31 @@ pub const WavHeader = extern struct {
     subchunk2_size: u32, // Number of bytes in the audio data
 };
 
-pub const Wav = struct {
+pub const WavWriter = struct {
     allocator: std.mem.Allocator,
     filename: []const u8,
     buffer: []i16 = &.{}, // Empty by default
     sample_rate: u32 = 44100,
     num_channels: u16 = 1,
 
-    pub fn init(allocator: std.mem.Allocator, filename: []const u8) Wav {
-        return Wav{
+    pub fn init(allocator: std.mem.Allocator, filename: []const u8) WavWriter {
+        return WavWriter{
             .allocator = allocator,
             .filename = filename,
         };
     }
 
-    pub fn setMonoBuffer(self: *Wav, buffer: []i16) void {
+    pub fn setMonoBuffer(self: *WavWriter, buffer: []i16) void {
         self.buffer = buffer;
     }
 
-    pub fn write(self: *Wav) !void {
+    pub fn write(self: *WavWriter) !void {
         const wav_data = try self.createWavBuffer();
         defer self.allocator.free(wav_data);
         try self.writeToFile(wav_data);
     }
 
-    pub fn writeStereo(self: *Wav) !void {
+    pub fn writeStereo(self: *WavWriter) !void {
         const stereo_buffer = try self.convertMonoToStereo();
         defer self.allocator.free(stereo_buffer);
         const wav_data = try self.createWavBufferWithBuffer(stereo_buffer, 2);
@@ -48,11 +48,11 @@ pub const Wav = struct {
         try self.writeToFile(wav_data);
     }
 
-    fn createWavBuffer(self: *Wav) ![]u8 {
+    fn createWavBuffer(self: *WavWriter) ![]u8 {
         return self.createWavBufferWithBuffer(self.buffer, self.num_channels);
     }
 
-    fn createWavBufferWithBuffer(self: *Wav, pcm_buffer: []i16, num_channels: u16) ![]u8 {
+    fn createWavBufferWithBuffer(self: *WavWriter, pcm_buffer: []i16, num_channels: u16) ![]u8 {
         const bits_per_sample: u16 = 16;
         const block_align: u16 = num_channels * (bits_per_sample / 8);
         const byte_rate: u32 = self.sample_rate * @as(u32, block_align);
@@ -79,7 +79,7 @@ pub const Wav = struct {
         return wav_buffer;
     }
 
-    fn convertMonoToStereo(self: *Wav) ![]i16 {
+    fn convertMonoToStereo(self: *WavWriter) ![]i16 {
         const stereo_pcm = try self.allocator.alloc(i16, self.buffer.len * 2);
         for (self.buffer, 0..) |sample, i| {
             stereo_pcm[i * 2] = sample; // Left
@@ -88,7 +88,7 @@ pub const Wav = struct {
         return stereo_pcm;
     }
 
-    fn writeToFile(self: *Wav, wav_data: []u8) !void {
+    fn writeToFile(self: *WavWriter, wav_data: []u8) !void {
         var file = try std.fs.cwd().createFile(self.filename, .{ .truncate = true });
         defer file.close();
         try file.writeAll(wav_data);

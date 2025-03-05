@@ -25,10 +25,6 @@ pub const ReSID = struct {
         return c.ReSID_getName(self.ptr);
     }
 
-    pub fn setDBGOutput(self: *ReSID, enable: bool) void {
-        c.ReSID_setDBGOutput(self.ptr, enable);
-    }
-
     pub fn setChipModel(self: *ReSID, model: [*:0]const u8) bool {
         return c.ReSID_setChipModel(self.ptr, model);
     }
@@ -119,8 +115,9 @@ pub const ReSIDDmpPlayer = struct {
         setDmp(self, buffer);
     }
 
-    pub fn renderAudio(self: *ReSIDDmpPlayer, start_step: u32, num_steps: u32, buf_size: u32, buffer: []i16) u32 {
-        return c.ReSIDDmpPlayer_RenderAudio(self.ptr, start_step, num_steps, buf_size, buffer.ptr);
+    pub fn renderAudio(self: *ReSIDDmpPlayer, start_step: u32, num_steps: u32, buffer: []i16) u32 {
+        const buf_len: u32 = @truncate(buffer.len);
+        return c.ReSIDDmpPlayer_RenderAudio(self.ptr, start_step, num_steps, buf_len, buffer.ptr);
     }
 
     pub fn sdlAudioCallback(userdata: ?*anyopaque, stream: [*c]u8, len: c_int) callconv(.C) void {

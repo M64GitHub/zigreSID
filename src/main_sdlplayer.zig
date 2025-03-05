@@ -3,13 +3,13 @@ const std = @import("std");
 const SDLreSIDDmpPlayer = @import("resid/residsdl.zig").SDLreSIDDmpPlayer;
 
 pub fn main() !void {
-    const allocator = std.heap.page_allocator;
+    const gpa = std.heap.page_allocator;
     const stdout = std.io.getStdOut().writer();
 
     try stdout.print("[MAIN] zigSID audio demo sdl dump player!\n", .{});
 
     // create SDL sid dump player and configure it
-    var player = try SDLreSIDDmpPlayer.init(allocator, "MY SID Player");
+    var player = try SDLreSIDDmpPlayer.init(gpa, "MY SID Player");
     defer player.deinit();
 
     // load sid dump

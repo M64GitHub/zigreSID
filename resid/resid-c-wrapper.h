@@ -17,7 +17,6 @@ typedef struct ReSIDDmpPlayer ReSIDDmpPlayer;
 ReSID *ReSID_create(const char *name);
 void ReSID_destroy(ReSID *resid);
 const char *ReSID_getName(ReSID *resid);
-void ReSID_setDBGOutput(ReSID *resid, bool b);
 bool ReSID_setChipModel(ReSID *resid, const char *m);
 void ReSID_setSamplingRate(ReSID *resid, int r);
 int ReSID_getSamplingRate(ReSID *resid);

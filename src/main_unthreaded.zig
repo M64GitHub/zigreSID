@@ -7,10 +7,8 @@ const ReSID = @import("resid/resid.zig").ReSID;
 const ReSIDDmpPlayer = @import("resid/resid.zig").ReSIDDmpPlayer;
 
 pub fn main() !void {
-    const allocator = std.heap.page_allocator;
+    const gpa = std.heap.page_allocator;
     const stdout = std.io.getStdOut().writer();
-
-    const samplingRate: i32 = 44100;
 
     try stdout.print("[MAIN] zigSID audio demo unthreaded!\n", .{});
 
@@ -19,7 +17,7 @@ pub fn main() !void {
     defer sid.deinit();
 
     // create a ReSIDDmpPlayer instance and initialize it with the ReSID instance
-    var player = try ReSIDDmpPlayer.init(allocator, sid.ptr);
+    var player = try ReSIDDmpPlayer.init(gpa, sid.ptr);
     defer player.deinit();
 
     // load dump
@@ -27,7 +25,7 @@ pub fn main() !void {
 
     // init sdl with a callback to our player
     var spec = SDL.SDL_AudioSpec{
-        .freq = samplingRate,
+        .freq = sid.getSamplingRate(),
         .format = SDL.AUDIO_S16,
         .channels = 1,
         .samples = 4096,
@@ -49,10 +47,9 @@ pub fn main() !void {
     defer SDL.SDL_CloseAudioDevice(dev);
 
     SDL.SDL_PauseAudioDevice(dev, 0); // Start SDL audio
-    try stdout.print("[MAIN] SDL audio started at {d} Hz.\n", .{samplingRate});
+    try stdout.print("[MAIN] SDL audio started at {d} Hz.\n", .{sid.getSamplingRate()});
     // end of SDL initialization
 
-    // start the playback!
     player.play();
 
     // do something in main: print the SID registers, and player stats

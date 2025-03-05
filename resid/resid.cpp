@@ -4,17 +4,11 @@
 #include <stdio.h>
 #include <string.h>
 
-ReSID::ReSID(const char *n) : dbg_output(false)
+ReSID::ReSID(const char *n) : sampling_rate(44100)
 {
     strncpy(name, n, 1024);
-    if (dbg_output) printf("[ReSID::%s] ReSID initializing ...\n", name);
-    sampling_rate = 44100;
-
     SetSamplingRate(sampling_rate);
-
     SetChipModel(MOS8580);
-
-    if (dbg_output) printf("[ReSID::%s] ReSID initialized\n", name);
 }
 
 ReSID::~ReSID() {}
@@ -31,25 +25,10 @@ const char *ReSID::GetModel() const
     return "UNKNOWN";
 }
 
-void ReSID::SetDbgOutput(bool b)
-{
-    if (dbg_output && !b) printf("[ReSID::%s] debug messages off\n", name);
-    if (!dbg_output && b) printf("[ReSID::%s] debug messages on\n", name);
-    dbg_output = b;
-}
-
 void ReSID::SetChipModel(enum chip_model m)
 {
     sid.set_chip_model(m);
     model = m;
-    switch (m) {
-    case MOS8580:
-        if (dbg_output) printf("[ReSID::%s] setting model MOS8580\n", name);
-        break;
-    case MOS6581:
-        if (dbg_output) printf("[ReSID::%s] setting model MOS6581\n", name);
-        break;
-    }
 }
 
 bool ReSID::SetChipModel(const char *m)
@@ -64,8 +43,6 @@ bool ReSID::SetChipModel(const char *m)
         SetChipModel(MOS8580);
         model_known = true;
     }
-    if (dbg_output && !model_known)
-        printf("[ReSID::%s] unknown model %s\n", name, m);
 
     return model_known;
 }
@@ -136,13 +113,4 @@ void ReSID::precalc_constants()
     for (int i = 0; i < 32; i++) {
         shadow_regs[i] = 0;
     }
-
-    if (dbg_output)
-        printf("[ReSID::%s] samples per frame : %d (%f)\n", name,
-               SAMPLES_PER_FRAME, d1);
-    if (dbg_output)
-        printf("[ReSID::%s] cycles  per frame : %d (%f)\n", name,
-               CYCLES_PER_FRAME, d2 - 0.5);
-    if (dbg_output)
-        printf("[ReSID::%s] cycles  per sample: %f\n", name, CYCLES_PER_SAMPLE);
 }
