@@ -9,7 +9,7 @@ It is built upon the powerful **reSID** C++ library, delivering authentic SID so
 
 ## 🚀 Project Features
 
-- 🎹 **SID Soundchip Emulation for Zig**: Experience the legendary SID sound directly in your Zig projects.
+- 🎹 **SID Soundchip Emulation for Zig**: Experience the legendary SID retro sound directly in your Zig projects.
 - ⚡ **Powered by reSID**: Leverages the proven **reSID** C++ library for high-quality sound emulation.  
 (https://github.com/daglem/reSID)
 - 🎼 **Full Audio Buffer Rendering**: Generate high-fidelity PCM buffers from SID audio directly in Zig, allowing flexible post-processing, playback, and analysis.
