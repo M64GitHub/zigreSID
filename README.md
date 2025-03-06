@@ -120,7 +120,7 @@ This project bridges the gap between C++, C, and Zig:
 
 1. **reSID C++ Library**: Handles low-level SID emulation.
 2. **Simplified C++ Framework**: A custom wrapper that manages timing, buffer generation, and playback logic, so you don’t have to.
-3. **C Bindings**: Exposes the simpliefied framework functionalities through a clean C interface.
+3. **C Bindings**: Exposes the simpliefied framework through a clean C interface.
 4. **Zig Wrapper**: A clear and explicit Zig interface built with structs and associated methods, wrapping C bindings for seamless SID playback and control.
 
 <br>
