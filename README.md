@@ -56,7 +56,7 @@ pub fn main() !void {
 
     // render 10 * 50 frames into PCM audio buffer
     // sid updates (audio frames) are executed at virtually 50.125 Hz
-    // this will create 10 seconds audio
+    // this will create 10 seconds of audio
     const steps_rendered = player.renderAudio(0, 10 * 50, pcm_buffer);
     try stdout.print("[MAIN] Steps rendered {d}\n", .{steps_rendered});
 
