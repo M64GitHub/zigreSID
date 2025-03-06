@@ -54,10 +54,10 @@ pub fn main() !void {
 
     try player.loadDmp("data/plasmaghost.sid.dmp");
 
-    // render 50 * 10 frames into PCM audio buffer
+    // render 10 * 50 frames into PCM audio buffer
     // sid updates (audio frames) are executed at virtually 50.125 Hz
     // this will create 10 seconds audio
-    const steps_rendered = player.renderAudio(0, 50 * 10, pcm_buffer);
+    const steps_rendered = player.renderAudio(0, 10 * 50, pcm_buffer);
     try stdout.print("[MAIN] Steps rendered {d}\n", .{steps_rendered});
 
     // create a stereo wav file and write it to disk
