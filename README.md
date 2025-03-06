@@ -17,8 +17,6 @@ This project provides **SID soundchip emulation** for **Zig**, enabling you to g
 - ⚡ **Non-Blocking Audio Playback**: The audio playback runs in the background, so your application remains responsive and interactive while playing music.
 - 🧵 **Playback Support for a dedicated thread**: Provides two execution models — one for simple integration, and an advanced and multi threaded one for performance improvements, **realtime audio visualization** and -**modification** possibilities.
 - 🔧 **Simplified API**: All complex timing calculations and internal audio buffer management are handled automatically, allowing you to focus solely on the high-level API.
-- 🔗 **C Bindings for Zig**: Provides clean **reSID C bindings** and integrates a clear and explicit Zig interface making **SID sound playback in Zig** straightforward and seamless.
-
 
 <br>
 
@@ -121,7 +119,7 @@ This project bridges the gap between C++, C, and Zig:
 1. **reSID C++ Library**: Handles low-level SID emulation.
 2. **Simplified C++ Framework**: A custom wrapper that manages timing, buffer generation, and playback logic, so you don’t have to.
 3. **C Bindings**: Exposes the simpliefied framework through a clean C interface.
-4. **Zig Wrapper**: A clear and explicit Zig interface built with structs and associated methods, wrapping C bindings for seamless SID playback and control.
+4. **Zig Wrapper**: A clear and explicit Zig interface built with structs and associated methods, wrapping C bindings for seamless SID playback and control. 
 
 <br>
 
