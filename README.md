@@ -9,15 +9,15 @@ It is built upon the powerful **reSID** C++ library, delivering authentic SID so
 
 ## 🚀 Project Features
 
-- 🎹 **SID Soundchip Emulation for Zig**: Experience the legendary SID retro sound directly in your Zig projects.
+- 🎹 **SID Soundchip Emulation for Zig**: Experience the legendary SID retro sound directly in your Zig projects!
 - ⚡ **Powered by reSID**: Leverages the proven **reSID** C++ library for high-quality sound emulation.  
 (https://github.com/daglem/reSID)
-- 🎼 **Full Audio Buffer Rendering**: Generate high-fidelity PCM buffers from SID audio directly in Zig, allowing flexible post-processing, playback, and analysis.
-- 📀 **WAV Export (Mono & Stereo)**: Save pure SID-generated audio as .wav files, perfect for archival, visualization, music production, or integration into retro-inspired projects.
+- 🎼 **Dynamic Audio Buffer Rendering**: Generate high-fidelity PCM buffers from SID audio directly in Zig, allowing flexible post-processing, playback, and analysis.
+- 📀 **WAV Export (Mono & Stereo)**: Save your pure SID-generated audio as .wav files, perfect for archival, visualization, music production, or integration into retro-inspired projects.
 - 🎧 **Audio Backend Flexibility**: The framework allows easy integration with different audio libraries
 - ⚡ **Non-Blocking Audio Playback**: The audio playback runs in the background, so your application remains responsive and interactive while playing music.
-- 🧵 **Playback Support for a dedicated thread**: Provides two execution models—"unthreaded" for simple integration and multi threaded for performance improvements, **audio visualization** and -**modification** possibilities.
-- 🔧 **Simplified Framework**: All complex timing calculations and internal audio buffer management are handled automatically, allowing you to focus solely on the high-level API.
+- 🧵 **Playback Support for a dedicated thread**: Provides two execution models— one for simple integration and multi threaded for performance improvements, **realtime audio visualization** and -**modification** possibilities.
+- 🔧 **Simplified API**: All complex timing calculations and internal audio buffer management are handled automatically, allowing you to focus solely on the high-level API.
 - 🔗 **C Bindings for Zig**: Provides clean **reSID C bindings** and integrates a clear and explicit Zig interface making **SID sound playback in Zig** straightforward and seamless.
 
 
