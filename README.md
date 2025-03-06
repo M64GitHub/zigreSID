@@ -243,7 +243,7 @@ zig build run-renderaudio
                 const stdout = std.io.getStdOut().writer();
                 try stdout.print("[PLAYER] Player stopped!\n", .{});
             }
-            std.time.sleep(5 * std.time.ns_per_ms);
+            std.time.sleep(30 * std.time.ns_per_ms);
         }
     }
   ```
