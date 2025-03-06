@@ -645,22 +645,6 @@ const DmpPlayerContext = extern struct {
     
 <br>
 
-## 💾 **Status**
-
-🔊 **Current Status:** The non-blocking background playback for sid-dumps is fully operational.
-
-<br>
-
-## ✨ **Roadmap & Future Enhancements**
-
-- 🎵 **Flexible Sound Playback**: Convenience functions. Like one for easy playback of multiple SID dumps (`player.playDump(...)`). .loadDump(), etc...
-- 🎵 **6 voices Stereo SID**: a dual SID setup integrated in a struct
-- 🎛️ **Real-Time Audio Mixing**: Support for mixing multiple SID streams in real time.
-- 🎚️ **Volume and Panning Control**: Add runtime **volume adjustments** and **stereo panning**.
-- **Low Level SID Access**: binding the full resid original API to zig.
-
-<br>
-
 ## 🎧 License
 
 This project uses the **reSID** library and follows its licensing terms. The Zig and C bindings code is provided under the **MIT License**.
