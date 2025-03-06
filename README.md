@@ -185,11 +185,11 @@ zig build run-renderaudio
 <br>
   
 ## 🎼 About the **ReSIDDmpPlayer**  
-###  Audio Buffer Generation
-**`ReSIDDmpPlayer`** is currently the main method to playback whole SID tunes, or sound effects. Is designed to handle SID sound playback in the most simple way (see demo code below). Internally it operates by managing audio buffer generation and SID register updates based on reading the registers values from a dump, in repeated steps.
+###  Realtime Audio Buffer Generation via Callback
+**`ReSIDDmpPlayer`**  is the primary method for playing back complete SID tunes or sound effects. It provides a simple way to handle SID sound playback (see demo code below). Internally, it manages audio buffer generation and SID register updates, continuously reading and processing register values from a dump file in steps triggered by the audio-callback.
 
 
-### 🧬 **How Audio Buffer Generation Works**  
+### 🧬 **How Realtime Audio Buffer Generation Works**  
 
 #### 🔄 **Frame-Based SID Register Processing**  
 - **SID dumps** contain **SID register values** representing audio frames.
