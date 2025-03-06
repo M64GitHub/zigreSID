@@ -83,11 +83,9 @@ pub fn main() !void {
 
     try stdout.print("[MAIN] zigSID audio demo sdl dump player!\n", .{});
 
-    // create SDL sid dump player and configure it
     var player = try SDLreSIDDmpPlayer.init(gpa, "MY SID Player");
     defer player.deinit();
 
-    // load sid dump
     try player.loadDmp("data/plasmaghost.sid.dmp");
 
     player.play();
