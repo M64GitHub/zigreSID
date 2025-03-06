@@ -122,7 +122,6 @@ This project bridges the gap between C++, C, and Zig:
 2. **Simplified C++ Framework**: A custom wrapper that manages timing, buffer generation, and playback logic, so you don’t have to.
 3. **C Bindings**: Exposes the simpliefied framework functionalities through a clean C interface.
 4. **Zig Wrapper**: A clear and explicit Zig interface built with structs and associated methods, wrapping C bindings for seamless SID playback and control.
-6. 🧵 **Threaded and Unthreaded Execution**: Use the threaded variant to move audio buffer generation out of SDL into its own thread.
 
 <br>
 
@@ -137,11 +136,16 @@ zig build
 
 5 examples are available for demonstration:
 
-- 🎹 **Integrated SDL Playback:** `src/main_sdlplayer.zig` - automatic SDL configuration, simple playback
-- 🎛️ **Unthreaded Playback:** `src/main_unthreaded.zig` - manual SDL configuration, and access to SID registers
-- ⚡ **Threaded Playback:** `src/main_threaded.zig` - manual SDL configuration, access to SID registers, and player internals, playback in custom thread
-- 📀 **WAV Writing Example**: `src/main_wavwriter.zig` - demonstrates how to generate a SID-based PCM buffer and save it as a .wav file
-- 🎧 **Custom PCM Buffer Generation and Playback**: `src/main_renderaudio.zig` - generates a raw SID audio PCM buffer and plays it directly (via SDL_QueueAudio())
+- 🎹 **Integrated SDL Playback:** `src/main_sdlplayer.zig`
+     automatic SDL configuration, simple playback
+- 🎛️ **Unthreaded Playback:** `src/main_unthreaded.zig`
+     manual SDL configuration, and access to SID registers
+- ⚡ **Threaded Playback:** `src/main_threaded.zig`
+     manual SDL configuration, access to SID registers, and player internals, playback in custom thread
+- 📀 **WAV Writing Example**: `src/main_wavwriter.zig`
+     demonstrates how to generate a SID-based PCM buffer and save it as a .wav file
+- 🎧 **Custom PCM Buffer Generation and Playback**: `src/main_renderaudio.zig`
+     generates a raw SID audio PCM buffer and plays it directly (via SDL_QueueAudio())
 
 Executables will be available in `zig-out/bin/`:
 
