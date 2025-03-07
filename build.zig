@@ -1,12 +1,13 @@
 // build.zig
 const std = @import("std");
+const resid_include_path = "resid-cpp/";
 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     // const optimize = b.standardOptimizeOption(.{});
     const optimize = std.builtin.OptimizeMode.ReleaseFast;
 
-    // Create reSID C++ shared library and C wrapper
+    // Build reSID C++ shared library and C wrapper
     const resid_lib = b.addSharedLibrary(.{
         .name = "sid",
         .target = target,
@@ -50,7 +51,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    exe_unthreaded.addIncludePath(.{ .cwd_relative = "resid-cpp/" });
+    exe_unthreaded.addIncludePath(.{ .cwd_relative = resid_include_path });
     exe_unthreaded.linkLibrary(resid_lib);
     exe_unthreaded.linkSystemLibrary("SDL2");
     b.installArtifact(exe_unthreaded);
@@ -62,7 +63,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    exe_threaded.addIncludePath(.{ .cwd_relative = "resid-cpp/" });
+    exe_threaded.addIncludePath(.{ .cwd_relative = resid_include_path });
     exe_threaded.linkLibrary(resid_lib);
     exe_threaded.linkSystemLibrary("SDL2");
     b.installArtifact(exe_threaded);
@@ -74,7 +75,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    exe_sdl.addIncludePath(.{ .cwd_relative = "resid-cpp/" });
+    exe_sdl.addIncludePath(.{ .cwd_relative = resid_include_path });
     exe_sdl.linkLibrary(resid_lib);
     exe_sdl.linkSystemLibrary("SDL2");
     b.installArtifact(exe_sdl);
@@ -86,7 +87,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    exe_renderaudio.addIncludePath(.{ .cwd_relative = "resid-cpp/" });
+    exe_renderaudio.addIncludePath(.{ .cwd_relative = resid_include_path });
     exe_renderaudio.linkLibrary(resid_lib);
     exe_renderaudio.linkSystemLibrary("SDL2");
     b.installArtifact(exe_renderaudio);
@@ -98,7 +99,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    exe_wavwriter.addIncludePath(.{ .cwd_relative = "resid-cpp/" });
+    exe_wavwriter.addIncludePath(.{ .cwd_relative = resid_include_path });
     exe_wavwriter.linkLibrary(resid_lib);
     b.installArtifact(exe_wavwriter);
 
