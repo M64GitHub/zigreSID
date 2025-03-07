@@ -42,8 +42,8 @@ pub fn build(b: *std.Build) void {
 
     // Build Unthreaded Executable
     const exe_unthreaded = b.addExecutable(.{
-        .name = "zig_sid_demo_unthreaded",
-        .root_source_file = b.path("src/main_unthreaded.zig"),
+        .name = "zigReSID-dump-play",
+        .root_source_file = b.path("src/main_dump-play.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -55,8 +55,8 @@ pub fn build(b: *std.Build) void {
 
     // Build Threaded Executable
     const exe_threaded = b.addExecutable(.{
-        .name = "zig_sid_demo_threaded",
-        .root_source_file = b.path("src/main_threaded.zig"),
+        .name = "zigReSID-dump-play-threaded",
+        .root_source_file = b.path("src/main_dump-play-threaded.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -68,8 +68,8 @@ pub fn build(b: *std.Build) void {
 
     // Build SDL Executable
     const exe_sdl = b.addExecutable(.{
-        .name = "zig_sid_demo_sdl",
-        .root_source_file = b.path("src/main_sdlplayer.zig"),
+        .name = "zigReSID-sdl-player",
+        .root_source_file = b.path("src/main_sdl-player.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -81,8 +81,8 @@ pub fn build(b: *std.Build) void {
 
     // Build RenderAudio Executable
     const exe_renderaudio = b.addExecutable(.{
-        .name = "zig_sid_demo_renderaudio",
-        .root_source_file = b.path("src/main_renderaudio.zig"),
+        .name = "zigReSID-render-audio",
+        .root_source_file = b.path("src/main_render-audio.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -94,8 +94,8 @@ pub fn build(b: *std.Build) void {
 
     // Build WavWriter Executable
     const exe_wavwriter = b.addExecutable(.{
-        .name = "zig_sid_demo_wavwriter",
-        .root_source_file = b.path("src/main_wavwriter.zig"),
+        .name = "zigReSID-wav-writer",
+        .root_source_file = b.path("src/main_wav-writer.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -119,18 +119,18 @@ pub fn build(b: *std.Build) void {
         run_wavwriter.addArgs(args);
     }
 
-    const run_step_unthreaded = b.step("run-unthreaded", "Run the unthreaded SID demo");
+    const run_step_unthreaded = b.step("run-dump-play", "Run the unthreaded dump player");
     run_step_unthreaded.dependOn(&run_unthreaded.step);
 
-    const run_step_threaded = b.step("run-threaded", "Run the threaded SID demo");
+    const run_step_threaded = b.step("run-dump-play-threaded", "Run the threaded dump player");
     run_step_threaded.dependOn(&run_threaded.step);
 
-    const run_step_sdl = b.step("run-sdl", "Run the SDL SID demo");
+    const run_step_sdl = b.step("run-sdl-player", "Run the SDL dump player");
     run_step_sdl.dependOn(&run_sdl.step);
 
-    const run_step_renderaudio = b.step("run-renderaudio", "Run the RenderAudio() SID demo");
+    const run_step_renderaudio = b.step("run-render-audio", "Run the RenderAudio() demo");
     run_step_renderaudio.dependOn(&run_renderaudio.step);
 
-    const run_step_wavwriter = b.step("run-wavwriter", "Run the Wav-Writer SID demo");
+    const run_step_wavwriter = b.step("run-wav-writer", "Run the Wav-Writer demo");
     run_step_wavwriter.dependOn(&run_wavwriter.step);
 }
