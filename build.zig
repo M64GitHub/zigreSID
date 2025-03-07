@@ -12,7 +12,12 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+
+    resid_lib.addIncludePath(.{ .cwd_relative = "/usr/include/" });
+    resid_lib.addIncludePath(.{ .cwd_relative = "resid-cpp/" });
+
     resid_lib.linkLibCpp();
+
     resid_lib.addCSourceFiles(.{
         .files = &.{
             "resid-cpp/resid/envelope.cc",
@@ -38,8 +43,6 @@ pub fn build(b: *std.Build) void {
         .flags = &.{ "-x", "c++", "-DVERSION=\"m64-000\"", "-Ofast" },
     });
 
-    resid_lib.addIncludePath(.{ .cwd_relative = "/usr/include/" });
-
     // Build Unthreaded Executable
     const exe_unthreaded = b.addExecutable(.{
         .name = "zigReSID-dump-play",
@@ -47,10 +50,9 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+    exe_unthreaded.addIncludePath(.{ .cwd_relative = "resid-cpp/" });
     exe_unthreaded.linkLibrary(resid_lib);
-    exe_unthreaded.linkSystemLibrary("stdc++");
     exe_unthreaded.linkSystemLibrary("SDL2");
-    exe_unthreaded.addIncludePath(b.path("resid-cpp"));
     b.installArtifact(exe_unthreaded);
 
     // Build Threaded Executable
@@ -60,10 +62,9 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+    exe_threaded.addIncludePath(.{ .cwd_relative = "resid-cpp/" });
     exe_threaded.linkLibrary(resid_lib);
-    exe_threaded.linkSystemLibrary("stdc++");
     exe_threaded.linkSystemLibrary("SDL2");
-    exe_threaded.addIncludePath(b.path("resid-cpp"));
     b.installArtifact(exe_threaded);
 
     // Build SDL Executable
@@ -73,10 +74,9 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+    exe_sdl.addIncludePath(.{ .cwd_relative = "resid-cpp/" });
     exe_sdl.linkLibrary(resid_lib);
-    exe_sdl.linkSystemLibrary("stdc++");
     exe_sdl.linkSystemLibrary("SDL2");
-    exe_sdl.addIncludePath(b.path("resid-cpp"));
     b.installArtifact(exe_sdl);
 
     // Build RenderAudio Executable
@@ -86,10 +86,9 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+    exe_renderaudio.addIncludePath(.{ .cwd_relative = "resid-cpp/" });
     exe_renderaudio.linkLibrary(resid_lib);
-    exe_renderaudio.linkSystemLibrary("stdc++");
     exe_renderaudio.linkSystemLibrary("SDL2");
-    exe_renderaudio.addIncludePath(b.path("resid-cpp"));
     b.installArtifact(exe_renderaudio);
 
     // Build WavWriter Executable
@@ -99,10 +98,18 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+    exe_wavwriter.addIncludePath(.{ .cwd_relative = "resid-cpp/" });
     exe_wavwriter.linkLibrary(resid_lib);
-    exe_wavwriter.linkSystemLibrary("stdc++");
-    exe_wavwriter.addIncludePath(b.path("resid-cpp"));
     b.installArtifact(exe_wavwriter);
+
+    // Build 6510 Emulator Test Executable
+    const exe_6510_cputest = b.addExecutable(.{
+        .name = "zigReSID-dump-play",
+        .root_source_file = b.path("src/main_6510-cpu-test.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    b.installArtifact(exe_6510_cputest);
 
     // Run steps for all
     const run_unthreaded = b.addRunArtifact(exe_unthreaded);
@@ -111,12 +118,15 @@ pub fn build(b: *std.Build) void {
     const run_renderaudio = b.addRunArtifact(exe_renderaudio);
     const run_wavwriter = b.addRunArtifact(exe_wavwriter);
 
+    const run_6510_cputest = b.addRunArtifact(exe_6510_cputest);
+
     if (b.args) |args| {
         run_unthreaded.addArgs(args);
         run_threaded.addArgs(args);
         run_sdl.addArgs(args);
         run_renderaudio.addArgs(args);
         run_wavwriter.addArgs(args);
+        run_6510_cputest.addArgs(args);
     }
 
     const run_step_unthreaded = b.step("run-dump-play", "Run the unthreaded dump player");
@@ -133,4 +143,7 @@ pub fn build(b: *std.Build) void {
 
     const run_step_wavwriter = b.step("run-wav-writer", "Run the Wav-Writer demo");
     run_step_wavwriter.dependOn(&run_wavwriter.step);
+
+    const run_step_6510_cputest = b.step("run-6510-cpu-test", "Run the 6510 cpu test");
+    run_step_6510_cputest.dependOn(&run_6510_cputest.step);
 }
