@@ -265,7 +265,7 @@ zig build run-renderaudio
   const nextBuffer = ([*c]c_short) player.getPlayerContext().buf_ptr_next;
   const playingBuffer = ([*c]c_short) player.getPlayerContext().buf_ptr_playing;
   ```  
-- Modify `buf_ptr_next` during playback for **dynamic audio effects** or **custom processing**.  
+- Modify the buffer at `buf_ptr_next` during playback for **dynamic audio effects** or **custom processing**.  
 
 
 <br>
@@ -559,8 +559,8 @@ pub fn main() !void {
   - `DP_PLAYSTATE.stopped`
   - `DP_PLAYSTATE.playing`
   - `DP_PLAYSTATE.paused`
- - `renderAudio(start_step: u32, num_steps: u32, buf_size: u32, buffer: []i16) u32`:
-    Generates a mono raw PCM buffer (signed 16 bit) from the set dump, or a part of it. `start_step` and `num_steps` specify the part of the dump (25 register values per step). The buffer will allways be completely filled while clocking the sid. This means when the end of dump is reached before buffer end, the sid is clocked without any register changes until the end of the buffer is reached. The function returns the number of steps.
+ - `renderAudio(start_step: u32, num_steps: u32, buffer: []i16) u32`:
+    Generates a mono raw PCM buffer (signed 16 bit) from the dump, or a part of it. `start_step` and `num_steps` specify the part of the dump (25 register values per step). The buffer will allways be completely filled while clocking the sid. This means when the end of dump is reached before buffer end, the sid is clocked without any register changes until the end of the buffer is reached. It also stops at the end of the buffer in case the steps would not fit into the buffer. The function returns the number of steps processed.
 
 <br>
 
@@ -643,22 +643,6 @@ const DmpPlayerContext = extern struct {
   - **`stat_framectr`** (`u64`):  
     **Frame counter** number of SID audio frames played, synchronized to the **50.125 Hz** **PAL vertical sync**.
     
-<br>
-
-## 💾 **Status**
-
-🔊 **Current Status:** The non-blocking background playback for sid-dumps is fully operational.
-
-<br>
-
-## ✨ **Roadmap & Future Enhancements**
-
-- 🎵 **Flexible Sound Playback**: Convenience functions. Like one for easy playback of multiple SID dumps (`player.playDump(...)`). .loadDump(), etc...
-- 🎵 **6 voices Stereo SID**: a dual SID setup integrated in a struct
-- 🎛️ **Real-Time Audio Mixing**: Support for mixing multiple SID streams in real time.
-- 🎚️ **Volume and Panning Control**: Add runtime **volume adjustments** and **stereo panning**.
-- **Low Level SID Access**: binding the full resid original API to zig.
-
 <br>
 
 ## 🎧 License
