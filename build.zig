@@ -15,25 +15,25 @@ pub fn build(b: *std.Build) void {
     resid_lib.linkLibCpp();
     resid_lib.addCSourceFiles(.{
         .files = &.{
-            "resid/resid/envelope.cc",
-            "resid/resid/extfilt.cc",
-            "resid/resid/filter.cc",
-            "resid/resid/pot.cc",
-            "resid/resid/sid.cc",
-            "resid/resid/version.cc",
-            "resid/resid/voice.cc",
-            "resid/resid/wave6581_PS_.cc",
-            "resid/resid/wave6581_PST.cc",
-            "resid/resid/wave6581_P_T.cc",
-            "resid/resid/wave6581__ST.cc",
-            "resid/resid/wave8580_PS_.cc",
-            "resid/resid/wave8580_PST.cc",
-            "resid/resid/wave8580_P_T.cc",
-            "resid/resid/wave8580__ST.cc",
-            "resid/resid/wave.cc",
-            "resid/resid.cpp",
-            "resid/resid-dmpplayer.cpp",
-            "resid/resid-c-wrapper.cpp",
+            "resid-cpp/resid/envelope.cc",
+            "resid-cpp/resid/extfilt.cc",
+            "resid-cpp/resid/filter.cc",
+            "resid-cpp/resid/pot.cc",
+            "resid-cpp/resid/sid.cc",
+            "resid-cpp/resid/version.cc",
+            "resid-cpp/resid/voice.cc",
+            "resid-cpp/resid/wave6581_PS_.cc",
+            "resid-cpp/resid/wave6581_PST.cc",
+            "resid-cpp/resid/wave6581_P_T.cc",
+            "resid-cpp/resid/wave6581__ST.cc",
+            "resid-cpp/resid/wave8580_PS_.cc",
+            "resid-cpp/resid/wave8580_PST.cc",
+            "resid-cpp/resid/wave8580_P_T.cc",
+            "resid-cpp/resid/wave8580__ST.cc",
+            "resid-cpp/resid/wave.cc",
+            "resid-cpp/resid.cpp",
+            "resid-cpp/resid-dmpplayer.cpp",
+            "resid-cpp/resid-c-wrapper.cpp",
         },
         .flags = &.{ "-x", "c++", "-DVERSION=\"m64-000\"", "-Ofast" },
     });
@@ -50,7 +50,7 @@ pub fn build(b: *std.Build) void {
     exe_unthreaded.linkLibrary(resid_lib);
     exe_unthreaded.linkSystemLibrary("stdc++");
     exe_unthreaded.linkSystemLibrary("SDL2");
-    exe_unthreaded.addIncludePath(b.path("resid"));
+    exe_unthreaded.addIncludePath(b.path("resid-cpp"));
     b.installArtifact(exe_unthreaded);
 
     // Build Threaded Executable
@@ -63,7 +63,7 @@ pub fn build(b: *std.Build) void {
     exe_threaded.linkLibrary(resid_lib);
     exe_threaded.linkSystemLibrary("stdc++");
     exe_threaded.linkSystemLibrary("SDL2");
-    exe_threaded.addIncludePath(b.path("resid"));
+    exe_threaded.addIncludePath(b.path("resid-cpp"));
     b.installArtifact(exe_threaded);
 
     // Build SDL Executable
@@ -76,7 +76,7 @@ pub fn build(b: *std.Build) void {
     exe_sdl.linkLibrary(resid_lib);
     exe_sdl.linkSystemLibrary("stdc++");
     exe_sdl.linkSystemLibrary("SDL2");
-    exe_sdl.addIncludePath(b.path("resid"));
+    exe_sdl.addIncludePath(b.path("resid-cpp"));
     b.installArtifact(exe_sdl);
 
     // Build RenderAudio Executable
@@ -89,7 +89,7 @@ pub fn build(b: *std.Build) void {
     exe_renderaudio.linkLibrary(resid_lib);
     exe_renderaudio.linkSystemLibrary("stdc++");
     exe_renderaudio.linkSystemLibrary("SDL2");
-    exe_renderaudio.addIncludePath(b.path("resid"));
+    exe_renderaudio.addIncludePath(b.path("resid-cpp"));
     b.installArtifact(exe_renderaudio);
 
     // Build WavWriter Executable
@@ -101,7 +101,7 @@ pub fn build(b: *std.Build) void {
     });
     exe_wavwriter.linkLibrary(resid_lib);
     exe_wavwriter.linkSystemLibrary("stdc++");
-    exe_wavwriter.addIncludePath(b.path("resid"));
+    exe_wavwriter.addIncludePath(b.path("resid-cpp"));
     b.installArtifact(exe_wavwriter);
 
     // Run steps for all

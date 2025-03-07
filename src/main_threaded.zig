@@ -5,7 +5,7 @@ const SDL = @cImport({
 
 const ReSID = @import("resid/resid.zig").ReSID;
 const ReSIDDmpPlayer = @import("resid/resid.zig").ReSIDDmpPlayer;
-const DP_PLAYSTATE = @import("resid/resid.zig").DP_PLAYSTATE;
+const Playstate = @import("resid/resid.zig").ReSIDDmpPlayer.Playstate;
 
 fn playerThreadFunc(player: *ReSIDDmpPlayer) !void {
     while (player.isPlaying()) {
@@ -87,7 +87,7 @@ pub fn main() !void {
 
     player.stop();
 
-    if (player.getPlayState() == DP_PLAYSTATE.stopped) {
+    if (player.getPlayState() == Playstate.stopped) {
         try stdout.print("[PLAYER] Player stopped!\n", .{});
     }
 
