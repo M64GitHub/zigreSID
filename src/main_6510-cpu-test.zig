@@ -23,5 +23,5 @@ pub fn main() !void {
     try stdout.print("a: {d}\n", .{cpu.a});
     try stdout.print("x: {d}\n", .{cpu.x});
 
-    std.debug.print("Execution finished.\n", .{});
+    try stdout.print("Execution finished.\n", .{});
 }
