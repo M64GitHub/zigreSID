@@ -65,9 +65,9 @@ pub const CPU = struct {
 
     fn setFlags(self: *CPU, data: u8) void {
         if (data == 0) {
-            self.flags = (self.flags & ~0x80) | 0x02;
+            self.flags = (self.flags & ~@as(u8, 0x80)) | 0x02;
         } else {
-            self.flags = (self.flags & ~(0x80 | 0x02)) | (data & 0x80);
+            self.flags = (self.flags & ~@as(u8, (0x80 | 0x02))) | (data & 0x80);
         }
     }
 
@@ -87,7 +87,7 @@ pub const CPU = struct {
 
     fn cmp(self: *CPU, src: u8, data: u8) void {
         const temp = src - data;
-        self.flags = (self.flags & ~(0x01 | 0x80 | 0x02)) | (temp & 0x80);
+        self.flags = (self.flags & ~(@as(u8, 0x01 | 0x80 | 0x02))) | (temp & 0x80);
         if (temp == 0) self.flags |= 0x02;
         if (src >= data) self.flags |= 0x01;
     }
