@@ -36,8 +36,7 @@ pub const CPU = struct {
         var temp: c_uint = undefined;
 
         const op: u8 = self.mem[self.pc];
-        try stdout.print("op: {d}\n", .{op});
-        try stdout.print("pc: {d}\n", .{self.pc});
+        try stdout.print("[CPU] pc: {x:0>4} op: {x:0>2} a: {x:0>2} x: {x:0>2}\n", .{ self.pc, op, self.a, self.x });
 
         self.pc +%= 1;
 
