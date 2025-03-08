@@ -105,7 +105,7 @@ pub fn build(b: *std.Build) void {
 
     // Build 6510 Emulator Test Executable
     const exe_6510_cputest = b.addExecutable(.{
-        .name = "zigReSID-dump-play",
+        .name = "zigReSID-6510-cpu-test",
         .root_source_file = b.path("src/main_6510-cpu-test.zig"),
         .target = target,
         .optimize = optimize,

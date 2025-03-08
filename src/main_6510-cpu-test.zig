@@ -7,7 +7,7 @@ pub fn main() void {
     cpu.init(0x0800, 0x00, 0x00, 0x00);
 
     std.debug.print("Running CPU...\n", .{});
-    cpu.run();
+    _ = cpu.run();
 
     std.debug.print("Execution finished.\n", .{});
 }
