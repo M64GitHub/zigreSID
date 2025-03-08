@@ -1,4 +1,5 @@
 const std = @import("std");
+const stdout = std.io.getStdOut().writer();
 
 pub const CPU = struct {
     pc: u16 = 0,
@@ -23,22 +24,23 @@ pub const CPU = struct {
         self.pc = arg_newpc;
     }
 
-    fn getMem(self: *CPU, address: u16) u8 {
+    pub fn readByte(self: *CPU, address: u16) u8 {
         return self.mem[address];
     }
 
-    pub export fn run(self: *CPU) c_int {
+    pub fn writeByte(self: *CPU, address: u16, val: u8) void {
+        self.mem[address] = val;
+    }
+
+    pub fn run(self: *CPU) !c_int {
         var temp: c_uint = undefined;
-        _ = &temp;
-        var op: u8 = self.mem[
-            blk: {
-                const ref = &self.pc;
-                const tmp = ref.*;
-                ref.* +%= 1;
-                break :blk tmp;
-            }
-        ];
-        _ = &op;
+
+        const op: u8 = self.mem[self.pc];
+        try stdout.print("op: {d}\n", .{op});
+        try stdout.print("pc: {d}\n", .{self.pc});
+
+        self.pc +%= 1;
+
         self.cpucycles +%= @as(c_uint, @bitCast(cpucycles_table[op]));
         while (true) {
             switch (@as(c_int, @bitCast(@as(c_uint, op)))) {
