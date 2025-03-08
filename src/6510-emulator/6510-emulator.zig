@@ -40,7 +40,7 @@ pub const CPU = struct {
 
         self.pc +%= 1;
 
-        self.cpucycles +%= @as(c_uint, @bitCast(cpucycles_table[op]));
+        self.cpucycles +%= cpucycles_table[op];
         switch (@as(c_int, @bitCast(@as(c_uint, op)))) {
             @as(c_int, 167) => {
                 {
@@ -2917,7 +2917,7 @@ pub const CPU = struct {
         return 1;
     }
 
-    const cpucycles_table: [256]c_int = [256]c_int{
+    const cpucycles_table: [256]u32 = [256]u32{
         7,
         6,
         0,
