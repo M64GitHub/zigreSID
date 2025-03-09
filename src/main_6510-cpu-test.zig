@@ -2,10 +2,11 @@ const std = @import("std");
 const CPU = @import("6510/6510.zig").CPU;
 
 pub fn main() !void {
+    const gpa = std.heap.page_allocator;
     const stdout = std.io.getStdOut().writer();
-    try stdout.print("[MAIN] Initializing CPU\n", .{});
 
-    var cpu = CPU.Init(0x800);
+    try stdout.print("[MAIN] Initializing CPU\n", .{});
+    var cpu = CPU.Init(gpa, 0x800);
     cpu.PrintStatus();
 
     try stdout.print("[MAIN] Writing program ...\n", .{});
@@ -48,6 +49,4 @@ pub fn main() !void {
                 try stdout.print("[MAIN] SID volume changed: {X:0>2}\n", .{sid_registers[24]});
         }
     }
-
-    cpu.HardReset();
 }

@@ -112,6 +112,18 @@ pub fn build(b: *std.Build) void {
     });
     b.installArtifact(exe_6510_cputest);
 
+    // Build .sid-file Test Executable
+    const exe_sidfile = b.addExecutable(.{
+        .name = "zigReSID-play-sidfile",
+        .root_source_file = b.path("src/main_sidfile.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    exe_sidfile.addIncludePath(.{ .cwd_relative = resid_include_path });
+    exe_sidfile.linkLibrary(resid_lib);
+    exe_sidfile.linkSystemLibrary("SDL2");
+    b.installArtifact(exe_sidfile);
+
     // Run steps for all
     const run_unthreaded = b.addRunArtifact(exe_unthreaded);
     const run_threaded = b.addRunArtifact(exe_threaded);
@@ -120,6 +132,7 @@ pub fn build(b: *std.Build) void {
     const run_wavwriter = b.addRunArtifact(exe_wavwriter);
 
     const run_6510_cputest = b.addRunArtifact(exe_6510_cputest);
+    const run_sidfile = b.addRunArtifact(exe_sidfile);
 
     if (b.args) |args| {
         run_unthreaded.addArgs(args);
@@ -128,6 +141,7 @@ pub fn build(b: *std.Build) void {
         run_renderaudio.addArgs(args);
         run_wavwriter.addArgs(args);
         run_6510_cputest.addArgs(args);
+        run_sidfile.addArgs(args);
     }
 
     const run_step_unthreaded = b.step("run-dump-play", "Run the unthreaded dump player");
@@ -147,4 +161,7 @@ pub fn build(b: *std.Build) void {
 
     const run_step_6510_cputest = b.step("run-6510-cpu-test", "Run the 6510 cpu test");
     run_step_6510_cputest.dependOn(&run_6510_cputest.step);
+
+    const run_step_sidfile = b.step("run-sidfile", "Run the .sid file player test");
+    run_step_sidfile.dependOn(&run_sidfile.step);
 }
