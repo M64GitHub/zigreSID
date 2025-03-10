@@ -71,11 +71,12 @@ pub fn main() !void {
 
     try stdout.print("[MAIN] Initializing CPU\n", .{});
     var cpu = CPU.Init(gpa, 0x800); // address does not matter here
-    cpu.mem.Data[0] = 0x37;
+    cpu.mem.Data[0x01] = 0x37;
 
     // write the sid player routine and data into the emulator memory
     if (is_prg) {
-        _ = cpu.SetPrg(sid_rawmem, false);
+        const loaded_addr = cpu.SetPrg(sid_rawmem, false);
+        try stdout.print("[MAIN] Loaded address : {X:0>4}\n", .{loaded_addr});
     } else {
         cpu.WriteMem(sid_rawmem, mem_address);
     }
@@ -91,7 +92,6 @@ pub fn main() !void {
     // -- Loop Call SID Play
     try stdout.print("[MAIN] Calling SID Play\n", .{});
     for (0..max_frames) |i| {
-        cpu.ext_sid_reg_written = false;
         cpu.cycles_executed = 0;
         cpu.A = 0;
         cpu.X = 0;

@@ -145,6 +145,7 @@ pub const CPU = struct {
 
     pub fn Call(cpu: *CPU, Address: u16) void {
         cpu.PC = Address;
+        cpu.ext_sid_reg_written = false;
         while (cpu.RunStep() != 0) {}
     }
 
