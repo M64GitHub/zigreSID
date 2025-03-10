@@ -1,6 +1,6 @@
 # Zig SID Soundchip Emulation
 
-This project provides **SID soundchip emulation** for **Zig**, enabling you to generate and play SID audio with ease. It is built upon the powerful **reSID** C++ library, delivering authentic SID sound emulation combined with the simplicity and safety of **Zig**. `.sid` tune files are supported as well, including playback!  
+This project provides **SID soundchip emulation** for **Zig**, enabling you to generate and play SID audio with ease. It is built upon the powerful **reSID** C++ library, delivering authentic SID sound emulation combined with the simplicity and safety of **Zig**.  
 
 🎶🎵 **Reviving the Commodore 64 SID sound with the power of Zig!** 🎵🎶
 
@@ -9,7 +9,6 @@ This project provides **SID soundchip emulation** for **Zig**, enabling you to g
 ## 🚀 Project Features
 
 - 🎹 **SID Soundchip Emulation for Zig**: Experience the legendary SID retro sound directly in your Zig projects!
-- 💾 **`.sid` File Format Support**: Play your favorite tunes directly in your Zig projects!
 - ⚡ **Powered by reSID**: Leverages the proven **reSID** C++ library for high-quality sound emulation.  
 (https://github.com/daglem/reSID)
 - 🎼 **Dynamic Audio Buffer Rendering**: Generate high-fidelity PCM buffers from SID audio directly in Zig, allowing flexible post-processing, playback, and analysis.
