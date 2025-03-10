@@ -93,9 +93,7 @@ pub fn main() !void {
     try stdout.print("[MAIN] Calling SID Play\n", .{});
     for (0..max_frames) |i| {
         cpu.cycles_executed = 0;
-        cpu.A = 0;
-        cpu.X = 0;
-        cpu.Y = 0;
+        cpu.Reset();
         cpu.Call(sidfile.header.play_address);
         if (cpu.ext_sid_reg_written) {
             try stdout.print("{d}: ", .{i});
