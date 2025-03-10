@@ -21,7 +21,9 @@ pub const CPU = struct {
     frame_ctr_PAL: u32,
     frame_ctr_NTSC: u32,
     sid_reg_written: bool,
+    ext_sid_reg_written: bool,
     dbg_enabled: bool,
+    sid_dbg_enabled: bool,
 
     pub const MEM64K = struct {
         Data: [0x10000]u8,
@@ -58,7 +60,7 @@ pub const CPU = struct {
     pub fn Init(allocator: std.mem.Allocator, PC_init: u16) CPU {
         return CPU{
             .PC = PC_init,
-            .SP = 0xFD,
+            .SP = 0xFF,
             .A = 0,
             .X = 0,
             .Y = 0,
@@ -78,9 +80,11 @@ pub const CPU = struct {
             .cycles_last_step = 0,
             .opcode_last = 0x00, // No opcode executed yet
             .sid_reg_written = false,
+            .ext_sid_reg_written = false,
             .frame_ctr_PAL = 0,
             .frame_ctr_NTSC = 0,
             .dbg_enabled = false,
+            .sid_dbg_enabled = false,
             .allocator = allocator,
         };
     }
@@ -144,69 +148,6 @@ pub const CPU = struct {
         while (cpu.RunStep() != 0) {}
     }
 
-    pub fn PrintStatus(cpu: *CPU) void {
-        stdout.print("[CPU ] PC: {X:0>4} | A: {X:0>2} | X: {X:0>2} | Y: {X:0>2} | Last Opc: {X:0>2} | Last Cycl: {d} | Cycl-TT: {d} | ", .{
-            cpu.PC,
-            cpu.A,
-            cpu.X,
-            cpu.Y,
-            cpu.opcode_last,
-            cpu.cycles_last_step,
-            cpu.cycles_executed,
-        }) catch {};
-        PrintFlags(cpu);
-        stdout.print("\n", .{}) catch {};
-    }
-
-    pub fn PrintFlags(cpu: *CPU) void {
-        cpu.CPU_FlagsToPS();
-        stdout.print("F: {b:0>8}", .{cpu.Status}) catch {};
-    }
-
-    pub fn ReadByte(cpu: *CPU, Address: u16) u8 {
-        cpu.cycles_executed +%= 1;
-        return cpu.mem.Data[Address];
-    }
-
-    pub fn ReadWord(cpu: *CPU, Address: u16) u16 {
-        const LoByte: u8 = ReadByte(cpu, Address);
-        const HiByte: u8 = ReadByte(cpu, Address + 1);
-        return @as(u16, LoByte) | (@as(u16, HiByte) << 8);
-    }
-
-    pub fn WriteByte(cpu: *CPU, Value: u8, Address: u16) void {
-        cpu.mem.Data[Address] = Value;
-        cpu.cycles_executed +%= 1;
-        if ((Address >= SIDBase) and (Address <= (SIDBase + 25))) {
-            cpu.sid_reg_written = true;
-        }
-    }
-
-    pub fn WriteWord(cpu: *CPU, Value: u16, Address: u16) void {
-        cpu.mem.Data[Address] = @truncate(Value & 0xFF);
-        cpu.mem.Data[Address + 1] = @truncate(Value >> 8);
-        cpu.cycles_executed +%= 2;
-    }
-
-    pub fn SIDRegWritten(cpu: *CPU) bool {
-        return cpu.sid_reg_written;
-    }
-
-    pub fn GetSIDRegisters(cpu: *CPU) [25]u8 {
-        var sid_registers: [25]u8 = undefined;
-        @memcpy(&sid_registers, cpu.mem.Data[SIDBase .. SIDBase + 25]);
-        return sid_registers;
-    }
-
-    pub fn PrintSIDRegisters(cpu: *CPU) void {
-        stdout.print("[CPU ] SID Registers: ", .{}) catch {};
-        const sid_registers = cpu.GetSIDRegisters();
-        for (sid_registers) |v| {
-            stdout.print("{X:0>2} ", .{v}) catch {};
-        }
-        stdout.print("\n", .{}) catch {};
-    }
-
     pub fn LoadPrg(cpu: *CPU, Filename: []const u8, setPC: bool) !u16 {
         var file = try std.fs.cwd().openFile(Filename, .{});
         defer file.close();
@@ -239,6 +180,82 @@ pub const CPU = struct {
         }
         if (setPC) cpu.PC = LoadAddress;
         return LoadAddress;
+    }
+
+    pub fn WriteMem(cpu: *CPU, data: []const u8, Address: u16) void {
+        var offs: u32 = 0;
+        var i: u16 = Address;
+        while (offs < data.len) : (i +%= 1) {
+            cpu.mem.Data[i] = data[offs];
+            offs += 1;
+        }
+    }
+
+    pub fn PrintStatus(cpu: *CPU) void {
+        stdout.print("[CPU ] PC: {X:0>4} | A: {X:0>2} | X: {X:0>2} | Y: {X:0>2} | Last Opc: {X:0>2} | Last Cycl: {d} | Cycl-TT: {d} | ", .{
+            cpu.PC,
+            cpu.A,
+            cpu.X,
+            cpu.Y,
+            cpu.opcode_last,
+            cpu.cycles_last_step,
+            cpu.cycles_executed,
+        }) catch {};
+        PrintFlags(cpu);
+        stdout.print("\n", .{}) catch {};
+    }
+
+    pub fn PrintFlags(cpu: *CPU) void {
+        cpu.CPU_FlagsToPS();
+        stdout.print("F: {b:0>8}", .{cpu.Status}) catch {};
+    }
+
+    pub fn ReadByte(cpu: *CPU, Address: u16) u8 {
+        cpu.cycles_executed +%= 1;
+        return cpu.mem.Data[Address];
+    }
+
+    pub fn ReadWord(cpu: *CPU, Address: u16) u16 {
+        const LoByte: u8 = ReadByte(cpu, Address);
+        const HiByte: u8 = ReadByte(cpu, Address + 1);
+        return @as(u16, LoByte) | (@as(u16, HiByte) << 8);
+    }
+
+    pub fn WriteByte(cpu: *CPU, Value: u8, Address: u16) void {
+        if ((Address >= SIDBase) and (Address <= (SIDBase + 25))) {
+            cpu.sid_reg_written = true;
+            // ext flag only when value changed
+            if (cpu.mem.Data[Address] != Value) {
+                cpu.ext_sid_reg_written = true;
+            }
+        }
+        cpu.mem.Data[Address] = Value;
+        cpu.cycles_executed +%= 1;
+    }
+
+    pub fn WriteWord(cpu: *CPU, Value: u16, Address: u16) void {
+        cpu.mem.Data[Address] = @truncate(Value & 0xFF);
+        cpu.mem.Data[Address + 1] = @truncate(Value >> 8);
+        cpu.cycles_executed +%= 2;
+    }
+
+    pub fn SIDRegWritten(cpu: *CPU) bool {
+        return cpu.sid_reg_written;
+    }
+
+    pub fn GetSIDRegisters(cpu: *CPU) [25]u8 {
+        var sid_registers: [25]u8 = undefined;
+        @memcpy(&sid_registers, cpu.mem.Data[SIDBase .. SIDBase + 25]);
+        return sid_registers;
+    }
+
+    pub fn PrintSIDRegisters(cpu: *CPU) void {
+        stdout.print("[CPU ] SID Registers: ", .{}) catch {};
+        const sid_registers = cpu.GetSIDRegisters();
+        for (sid_registers) |v| {
+            stdout.print("{X:0>2} ", .{v}) catch {};
+        }
+        stdout.print("\n", .{}) catch {};
     }
 
     fn CPU_FlagsToPS(cpu: *CPU) void {
@@ -536,11 +553,24 @@ pub const CPU = struct {
         cpu.Flags.C = @intFromBool(RegisterValue >= Operand);
     }
 
+    pub fn EmulateD012(cpu: *CPU) void {
+        cpu.mem.Data[0xD012] = cpu.mem.Data[0xD012] +% 1;
+        if ((cpu.mem.Data[0xD012] == 0) or (((cpu.mem.Data[0xD011] & 0x80) != 0) and
+            (cpu.mem.Data[0xD012] >= 0x38)))
+        {
+            cpu.mem.Data[0xD011] ^= 0x80;
+            cpu.mem.Data[0xD012] = 0x00;
+        }
+    }
+
     pub fn RunStep(cpu: *CPU) u8 {
         const cycles_now: u32 = cpu.cycles_executed;
         const opcode: u8 = CPU_FetchUByte(cpu);
         cpu.opcode_last = opcode;
         cpu.sid_reg_written = false;
+
+        cpu.EmulateD012();
+
         switch (opcode) {
             41 => {
                 cpu.A &= CPU_FetchUByte(cpu);
@@ -1546,7 +1576,14 @@ pub const CPU = struct {
 
         if (cpu.cycles_executed % FramesPerVsyncPAL == 0) cpu.frame_ctr_PAL += 1;
         if (cpu.cycles_executed % FramesPerVsyncNTSC == 0) cpu.frame_ctr_NTSC += 1;
-        if (cpu.dbg_enabled) cpu.PrintStatus();
+
+        if (cpu.dbg_enabled) {
+            cpu.PrintStatus();
+        }
+
+        if (cpu.sid_dbg_enabled and cpu.sid_reg_written) {
+            cpu.PrintSIDRegisters();
+        }
 
         return @as(u8, @truncate(cpu.cycles_last_step));
     }

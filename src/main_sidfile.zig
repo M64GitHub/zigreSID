@@ -10,10 +10,13 @@ pub fn main() !void {
     const gpa = std.heap.page_allocator;
     const stdout = std.io.getStdOut().writer();
 
-    try stdout.print("[MAIN] Initializing CPU\n", .{});
-    // var cpu = CPU.Init(gpa, 0x800);
+    const max_frames = 100000;
 
-    const file_name = "data/plasmaghost.sid";
+    // -- read and parse the .sid file
+
+    // const file_name = "data/Cybernoid_II.sid";
+    const file_name = "data/Club64.sid";
+
     try stdout.print("[MAIN] Loading SID tune '{s}'\n", .{file_name});
 
     var sidfile = SIDFile.init(gpa);
@@ -44,4 +47,60 @@ pub fn main() !void {
     try stdout.print("[MAIN] Speed          : {X:0>8}\n", .{
         sidfile.header.speed,
     });
+    try stdout.print("[MAIN] Filesize       : {X:0>8}\n", .{
+        sidfile.filesize,
+    });
+
+    const sid_rawmem = sidfile.getSIDDataSlice();
+
+    var mem_address: u16 = 0;
+    var is_prg: bool = false;
+
+    if (sidfile.header.load_address == 0) {
+        mem_address = @as(u16, sid_rawmem[1]) * 256 +
+            @as(u16, sid_rawmem[0]);
+        try stdout.print("[MAIN] 0 Load Address!: {X:0>4}\n", .{
+            mem_address,
+        });
+        is_prg = true;
+    } else {
+        mem_address = sidfile.header.load_address;
+    }
+
+    // -- initialize CPU
+
+    try stdout.print("[MAIN] Initializing CPU\n", .{});
+    var cpu = CPU.Init(gpa, 0x800); // address does not matter here
+    cpu.mem.Data[0] = 0x37;
+
+    // write the sid player routine and data into the emulator memory
+    if (is_prg) {
+        _ = cpu.SetPrg(sid_rawmem, false);
+    } else {
+        cpu.WriteMem(sid_rawmem, mem_address);
+    }
+
+    // -- Call SID Init
+    try stdout.print("[MAIN] Calling SID Init\n", .{});
+    cpu.A = 0;
+    cpu.X = 0;
+    cpu.Y = 0;
+    cpu.Call(sidfile.header.init_address);
+    try stdout.print("CYCLES: {d}\n", .{cpu.cycles_executed});
+
+    // -- Loop Call SID Play
+    try stdout.print("[MAIN] Calling SID Play\n", .{});
+    for (0..max_frames) |i| {
+        cpu.ext_sid_reg_written = false;
+        cpu.cycles_executed = 0;
+        cpu.A = 0;
+        cpu.X = 0;
+        cpu.Y = 0;
+        cpu.Call(sidfile.header.play_address);
+        if (cpu.ext_sid_reg_written) {
+            try stdout.print("{d}: ", .{i});
+            try stdout.print("CYCLES: {d}\n", .{cpu.cycles_executed});
+            cpu.PrintSIDRegisters();
+        }
+    }
 }

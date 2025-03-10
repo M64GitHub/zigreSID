@@ -23,12 +23,14 @@ pub const SIDFile = struct {
     allocator: std.mem.Allocator,
     data: []u8,
     header: SIDHeader,
+    filesize: u32,
 
     pub fn init(allocator: std.mem.Allocator) SIDFile {
         return SIDFile{
             .allocator = allocator,
             .data = &[_]u8{},
             .header = undefined,
+            .filesize = 0,
         };
     }
 
@@ -38,6 +40,7 @@ pub const SIDFile = struct {
 
         const file_size = (try file.stat()).size;
         self.data = try self.allocator.alloc(u8, file_size);
+        self.filesize = @as(u32, @truncate(file_size));
         _ = try file.readAll(self.data);
         try self.parseHeader();
         // need to convert from little to big endian
@@ -61,6 +64,10 @@ pub const SIDFile = struct {
         {
             return error.InvalidSID;
         }
+    }
+
+    pub fn getSIDDataSlice(self: *SIDFile) []const u8 {
+        return self.data[self.header.data_offset..];
     }
 
     pub fn getId(self: *SIDFile) []const u8 {
