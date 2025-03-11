@@ -1,111 +1,249 @@
-const std = @import("std"); // for printing status
+const std = @import("std");
+const stdout = std.io.getStdOut().writer();
 
-const SIDBase = 0xD400;
-const FramesPerVsyncPAL = 19656;
-const FramesPerVsyncNTSC = 17734;
-
-pub const CPU = struct {
+pub const Emulator = struct {
     allocator: std.mem.Allocator,
+    cpu: Cpu,
+    mem: Ram64K,
+    vic: VicType,
+    sid: VSid,
+    resid: ?*opaque {}, // optional resid integration
+    dbg_enabled: bool,
 
-    PC: u16,
-    SP: u8,
-    A: u8,
-    X: u8,
-    Y: u8,
-    Status: u8,
-    Flags: CPUFlags,
-    mem: MEM64K,
+    pub const VicType = enum {
+        pal,
+        ntsc,
+    };
+
+    pub fn init(allocator: std.mem.Allocator, vic: VicType, init_addr: u16) *Emulator {
+        var emulator = allocator.create(Emulator) catch unreachable;
+        emulator.* = Emulator{
+            .allocator = allocator,
+            .cpu = Cpu.init(init_addr),
+            .mem = Ram64K.init(),
+            .vic = vic,
+            .sid = VSid.init(VSid.std_base),
+            .resid = null,
+            .dbg_enabled = false,
+        };
+        emulator.cpu.emu = emulator;
+        emulator.mem.data[0x01] = 0x37;
+        return emulator;
+    }
+
+    pub fn call(emu: *Emulator, address: u16) void {
+        emu.cpu.ext_sid_reg_written = false;
+        emu.cpu.pushW(0x0000);
+        emu.cpu.pc = address;
+        if (emu.dbg_enabled) {
+            stdout.print("[EMU ] calling address: {X:0>4}\n", .{
+                address,
+            }) catch {};
+        }
+        while (emu.cpu.runStep() != 0) {}
+    }
+
+    pub fn loadPrg(emu: *Emulator, file_name: []const u8, pc_to_loadaddr: bool) !u16 {
+        var file = try std.fs.cwd().openFile(file_name, .{});
+        defer file.close();
+
+        if (emu.dbg_enabled) {
+            try stdout.print("[EMU ] loading file: '{s}'\n", .{
+                file_name,
+            });
+            emu.cpu.printStatus();
+        }
+        const stat = try file.stat();
+        const file_size = stat.size;
+
+        const buffer = try emu.allocator.alloc(u8, file_size);
+
+        _ = try file.readAll(buffer);
+
+        return emu.setPrg(buffer, pc_to_loadaddr);
+    }
+
+    pub fn runFrames(emu: *Emulator, frame_count: u32) u32 {
+        if (frame_count == 0) return;
+        var frames_executed: u32 = 0;
+        var cycles_max: u32 = 0;
+        var cycles: u32 = 0;
+        if (emu.vic == VicType.pal) cycles_max = Cpu.Timing.cyclesVsyncPAL;
+        if (emu.vic == VicType.ntsc) cycles_max = Cpu.Timing.cyclesVsyncNTSC;
+
+        while (frames_executed < frame_count) {
+            cycles += emu.cpu.runStep();
+            if (cycles >= cycles_max) {
+                frames_executed += 1;
+                cycles = 0;
+            }
+        }
+        emu.cpu.frame_ctr += frames_executed;
+        return frames_executed;
+    }
+
+    pub fn setPrg(emu: *Emulator, program: []const u8, pc_to_loadaddr: bool) u16 {
+        var load_address: u16 = 0;
+        if ((program.len != 0) and (program.len > 2)) {
+            var offs: u32 = 0;
+            const lo: u16 = program[offs];
+            offs += 1;
+            const hi: u16 = @as(u16, program[offs]) << 8;
+            offs += 1;
+            load_address = @as(u16, lo) | @as(u16, hi);
+
+            var i: u16 = load_address;
+            while (i < (load_address +% program.len -% 2)) : (i +%= 1) {
+                emu.mem.data[i] = program[offs];
+                if (emu.dbg_enabled)
+                    stdout.print("[EMU ] writing mem: {X:0>4} offs: {X:0>4} data: {X:0>2}\n", .{
+                        i,
+                        offs,
+                        program[offs],
+                    }) catch {};
+                offs += 1;
+            }
+        }
+        if (pc_to_loadaddr) emu.cpu.pc = load_address;
+        return load_address;
+    }
+};
+
+// virtual SID
+const VSid = struct {
+    base_address: u16,
+    registers: [25]u8,
+
+    pub const std_base = 0xD400;
+
+    pub fn init(base_address: u16) VSid {
+        return VSid{
+            .base_address = base_address,
+            .registers = [_]u8{0} ** 25,
+        };
+    }
+
+    pub fn getRegisters(sid: *VSid) [25]u8 {
+        return sid.registers;
+    }
+
+    pub fn printRegisters(sid: *VSid) void {
+        stdout.print("[Sid ] Registers: ", .{}) catch {};
+        for (sid.registers) |v| {
+            stdout.print("{X:0>2} ", .{v}) catch {};
+        }
+        stdout.print("\n", .{}) catch {};
+    }
+};
+
+// virtual mem
+pub const Ram64K = struct {
+    data: [0x10000]u8,
+
+    pub fn init() Ram64K {
+        return Ram64K{
+            .data = [_]u8{0} ** 65536,
+        };
+    }
+
+    pub fn clear(self: *Ram64K) void {
+        @memset(&self.data, 0);
+    }
+};
+
+// virtual cpu
+pub const Cpu = struct {
+    pc: u16,
+    sp: u8,
+    a: u8,
+    x: u8,
+    y: u8,
+    status: u8,
+    flags: CpuFlags,
     cycles_executed: u32,
     cycles_last_step: u32,
     opcode_last: u8,
-    frame_ctr_PAL: u32,
-    frame_ctr_NTSC: u32,
+    frame_ctr: u32,
     sid_reg_written: bool,
     ext_sid_reg_written: bool,
     dbg_enabled: bool,
     sid_dbg_enabled: bool,
+    emu: *Emulator,
 
-    pub const MEM64K = struct {
-        Data: [0x10000]u8,
-
-        pub fn clear(self: *MEM64K) void {
-            for (0..0x10000) |i| {
-                self.Data[i] = 0x00;
-            }
-        }
+    const CpuFlags = struct {
+        c: u1,
+        z: u1,
+        i: u1,
+        d: u1,
+        b: u1,
+        unused: u1,
+        v: u1,
+        n: u1,
     };
 
-    const CPUFlags = struct {
-        C: u1,
-        Z: u1,
-        I: u1,
-        D: u1,
-        B: u1,
-        Unused: u1,
-        V: u1,
-        N: u1,
+    pub const FlagBit = enum(u8) {
+        negative = 0b10000000,
+        overflow = 0b01000000,
+        unused = 0b000100000,
+        brk = 0b000010000,
+        decimal = 0b000001000,
+        intDisable = 0b000000100,
+        zero = 0b000000010,
+        carry = 0b000000001,
     };
 
-    const FB_Negative = 0b10000000;
-    const FB_Overflow = 0b01000000;
-    const FB_Unused = 0b000100000;
-    const FB_Break = 0b000010000;
-    const FB_Decimal = 0b000001000;
-    const FB_InterruptDisable = 0b000000100;
-    const FB_Zero = 0b000000010;
-    const FB_Carry = 0b000000001;
+    pub const Timing = struct {
+        const cyclesVsyncPAL = 19656;
+        const cyclesVsyncNTSC = 17734;
+    };
 
-    const stdout = std.io.getStdOut().writer();
-
-    pub fn Init(allocator: std.mem.Allocator, PC_init: u16) CPU {
-        return CPU{
-            .PC = PC_init,
-            .SP = 0xFD,
-            .A = 0,
-            .X = 0,
-            .Y = 0,
-            .Status = 0x24, // Default status flags (Interrupt disable set)
-            .Flags = CPUFlags{
-                .C = 0,
-                .Z = 0,
-                .I = 1, // Interrupt Disable set on boot
-                .D = 0,
-                .B = 0,
-                .Unused = 1, // Always 1 in 6502
-                .V = 0,
-                .N = 0,
+    pub fn init(pc_start: u16) Cpu {
+        return Cpu{
+            .pc = pc_start,
+            .sp = 0xFD,
+            .a = 0,
+            .x = 0,
+            .y = 0,
+            .status = 0x24, // Default status flags (Interrupt disable set)
+            .flags = CpuFlags{
+                .c = 0,
+                .z = 0,
+                .i = 1, // Interrupt Disable set on boot
+                .d = 0,
+                .b = 0,
+                .unused = 1, // Always 1 in 6502
+                .v = 0,
+                .n = 0,
             },
-            .mem = MEM64K{ .Data = [_]u8{0} ** 65536 }, // Clear memory
             .cycles_executed = 0,
             .cycles_last_step = 0,
             .opcode_last = 0x00, // No opcode executed yet
             .sid_reg_written = false,
             .ext_sid_reg_written = false,
-            .frame_ctr_PAL = 0,
-            .frame_ctr_NTSC = 0,
+            .frame_ctr = 0,
             .dbg_enabled = false,
             .sid_dbg_enabled = false,
-            .allocator = allocator,
+            .emu = undefined,
         };
     }
 
-    pub fn Reset(cpu: *CPU) void {
+    pub fn reset(cpu: *Cpu) void {
         // leaves memory unchanged
-        cpu.A = 0;
-        cpu.X = 0;
-        cpu.Y = 0;
-        cpu.SP = 0xFD;
-        cpu.Status = 0x24;
-        cpu.PC = 0xFFFC;
-        cpu.Flags = CPUFlags{
-            .C = 0,
-            .Z = 0,
-            .I = 0,
-            .D = 0,
-            .B = 0,
-            .Unused = 1,
-            .V = 0,
-            .N = 0,
+        cpu.a = 0;
+        cpu.x = 0;
+        cpu.y = 0;
+        cpu.sp = 0xFD;
+        cpu.status = 0x24;
+        cpu.pc = 0xFFFC;
+        cpu.flags = CpuFlags{
+            .c = 0,
+            .z = 0,
+            .i = 0,
+            .d = 0,
+            .b = 0,
+            .unused = 1,
+            .v = 0,
+            .n = 0,
         };
 
         cpu.cycles_executed = 0;
@@ -113,1492 +251,1166 @@ pub const CPU = struct {
         cpu.opcode_last = 0x00;
     }
 
-    // Reset CPU and clear memory
-    pub fn HardReset(cpu: *CPU) void {
-        cpu.Reset();
-        cpu.mem.clear();
+    // Reset Cpu and clear memory
+    pub fn hardReset(cpu: *Cpu) void {
+        cpu.reset();
+        cpu.emu.mem.clear();
     }
 
-    pub fn RunPALFrames(cpu: *CPU, frame_count: u32) u32 {
-        var frames_now = cpu.frame_ctr_PAL;
-        var frames_executed: u32 = 0;
-
-        while (cpu.RunStep() != 0) {
-            if (cpu.frame_ctr_PAL > frames_now) frames_executed += 1;
-            if (frames_executed == frame_count) break;
-            frames_now = cpu.frame_ctr_PAL;
-        }
-        return frames_executed;
-    }
-
-    pub fn RunNTSCFrames(cpu: *CPU, frame_count: u32) u32 {
-        var frames_now = cpu.frame_ctr_NTSC;
-        var frames_executed = 0;
-
-        while (cpu.RunStep() != 0) {
-            if (cpu.frame_ctr_NTSC > frames_now) frames_executed += 1;
-            if (frames_executed == frame_count) break;
-            frames_now = cpu.frame_ctr_NTSC;
-        }
-        return frames_executed;
-    }
-
-    pub fn Call(cpu: *CPU, Address: u16) void {
-        cpu.PC = Address;
-        cpu.ext_sid_reg_written = false;
-        cpu.CPU_PushWordToStack(0x0000);
-        while (cpu.RunStep() != 0) {}
-    }
-
-    pub fn LoadPrg(cpu: *CPU, Filename: []const u8, setPC: bool) !u16 {
-        var file = try std.fs.cwd().openFile(Filename, .{});
-        defer file.close();
-
-        const stat = try file.stat();
-        const file_size = stat.size;
-
-        const buffer = try cpu.allocator.alloc(u8, file_size);
-
-        _ = try file.readAll(buffer);
-
-        return SetPrg(cpu, buffer, setPC);
-    }
-
-    pub fn SetPrg(cpu: *CPU, Program: []const u8, setPC: bool) u16 {
-        var LoadAddress: u16 = 0;
-        if ((Program.len != 0) and (Program.len > 2)) {
-            var offs: u32 = 0;
-            const Lo: u16 = Program[offs];
-            offs += 1;
-            const Hi: u16 = @as(u16, Program[offs]) << 8;
-            offs += 1;
-            LoadAddress = @as(u16, Lo) | @as(u16, Hi);
-
-            var i: u16 = LoadAddress;
-            while (i < (LoadAddress +% Program.len -% 2)) : (i +%= 1) {
-                cpu.mem.Data[i] = Program[offs];
-                offs += 1;
-            }
-        }
-        if (setPC) cpu.PC = LoadAddress;
-        return LoadAddress;
-    }
-
-    pub fn WriteMem(cpu: *CPU, data: []const u8, Address: u16) void {
+    pub fn writeMem(cpu: *Cpu, data: []const u8, addr: u16) void {
         var offs: u32 = 0;
-        var i: u16 = Address;
+        var i: u16 = addr;
         while (offs < data.len) : (i +%= 1) {
-            cpu.mem.Data[i] = data[offs];
+            cpu.emu.mem.data[i] = data[offs];
             offs += 1;
         }
     }
 
-    pub fn PrintStatus(cpu: *CPU) void {
-        stdout.print("[CPU ] PC: {X:0>4} | A: {X:0>2} | X: {X:0>2} | Y: {X:0>2} | Last Opc: {X:0>2} | Last Cycl: {d} | Cycl-TT: {d} | ", .{
-            cpu.PC,
-            cpu.A,
-            cpu.X,
-            cpu.Y,
+    pub fn printStatus(cpu: *Cpu) void {
+        stdout.print("[Cpu ] PC: {X:0>4} | A: {X:0>2} | X: {X:0>2} | Y: {X:0>2} | Last Opc: {X:0>2} | Last Cycl: {d} | Cycl-TT: {d} | ", .{
+            cpu.pc,
+            cpu.a,
+            cpu.x,
+            cpu.y,
             cpu.opcode_last,
             cpu.cycles_last_step,
             cpu.cycles_executed,
         }) catch {};
-        PrintFlags(cpu);
+        printFlags(cpu);
         stdout.print("\n", .{}) catch {};
     }
 
-    pub fn PrintFlags(cpu: *CPU) void {
-        cpu.CPU_FlagsToPS();
-        stdout.print("F: {b:0>8}", .{cpu.Status}) catch {};
+    pub fn printFlags(cpu: *Cpu) void {
+        cpu.flagsToPS();
+        stdout.print("F: {b:0>8}", .{cpu.status}) catch {};
     }
 
-    pub fn ReadByte(cpu: *CPU, Address: u16) u8 {
+    pub fn readByte(cpu: *Cpu, addr: u16) u8 {
         cpu.cycles_executed +%= 1;
-        return cpu.mem.Data[Address];
+        return cpu.emu.mem.data[addr];
     }
 
-    pub fn ReadWord(cpu: *CPU, Address: u16) u16 {
-        const LoByte: u8 = ReadByte(cpu, Address);
-        const HiByte: u8 = ReadByte(cpu, Address + 1);
+    pub fn readWord(cpu: *Cpu, addr: u16) u16 {
+        const LoByte: u8 = cpu.readByte(addr);
+        const HiByte: u8 = cpu.readByte(addr + 1);
         return @as(u16, LoByte) | (@as(u16, HiByte) << 8);
     }
 
-    pub fn WriteByte(cpu: *CPU, Value: u8, Address: u16) void {
-        if ((Address >= SIDBase) and (Address <= (SIDBase + 25))) {
+    pub fn writeByte(cpu: *Cpu, val: u8, addr: u16) void {
+        const sid_base = cpu.emu.sid.base_address;
+        if ((addr >= sid_base) and (addr <= (sid_base + 25))) {
             cpu.sid_reg_written = true;
             // ext flag only when value changed
-            if (cpu.mem.Data[Address] != Value) {
+            if (cpu.emu.mem.data[addr] != val) {
+                cpu.emu.sid.registers[addr - sid_base] = val;
                 cpu.ext_sid_reg_written = true;
             }
         }
-        cpu.mem.Data[Address] = Value;
+        cpu.emu.mem.data[addr] = val;
         cpu.cycles_executed +%= 1;
     }
 
-    pub fn WriteWord(cpu: *CPU, Value: u16, Address: u16) void {
-        cpu.mem.Data[Address] = @truncate(Value & 0xFF);
-        cpu.mem.Data[Address + 1] = @truncate(Value >> 8);
+    pub fn writeWord(cpu: *Cpu, val: u16, addr: u16) void {
+        cpu.emu.mem.data[addr] = @truncate(val & 0xFF);
+        cpu.emu.mem.data[addr + 1] = @truncate(val >> 8);
         cpu.cycles_executed +%= 2;
     }
 
-    pub fn SIDRegWritten(cpu: *CPU) bool {
+    pub fn sidRegWritten(cpu: *Cpu) bool {
         return cpu.sid_reg_written;
     }
 
-    pub fn GetSIDRegisters(cpu: *CPU) [25]u8 {
-        var sid_registers: [25]u8 = undefined;
-        @memcpy(&sid_registers, cpu.mem.Data[SIDBase .. SIDBase + 25]);
-        return sid_registers;
-    }
-
-    pub fn PrintSIDRegisters(cpu: *CPU) void {
-        stdout.print("[CPU ] SID Registers: ", .{}) catch {};
-        const sid_registers = cpu.GetSIDRegisters();
-        for (sid_registers) |v| {
-            stdout.print("{X:0>2} ", .{v}) catch {};
-        }
-        stdout.print("\n", .{}) catch {};
-    }
-
-    fn CPU_FlagsToPS(cpu: *CPU) void {
+    fn flagsToPS(cpu: *Cpu) void {
         var ps: u8 = 0;
-        if (cpu.Flags.Unused != 0) {
-            ps |= FB_Unused;
+        if (cpu.flags.unused != 0) {
+            ps |= @intFromEnum(Cpu.FlagBit.unused);
         }
-        if (cpu.Flags.C != 0) {
-            ps |= FB_Carry;
+        if (cpu.flags.c != 0) {
+            ps |= @intFromEnum(Cpu.FlagBit.carry);
         }
-        if (cpu.Flags.Z != 0) {
-            ps |= FB_Zero;
+        if (cpu.flags.z != 0) {
+            ps |= @intFromEnum(Cpu.FlagBit.zero);
         }
-        if (cpu.Flags.I != 0) {
-            ps |= FB_InterruptDisable;
+        if (cpu.flags.i != 0) {
+            ps |= @intFromEnum(Cpu.FlagBit.intDisable);
         }
-        if (cpu.Flags.D != 0) {
-            ps |= FB_Decimal;
+        if (cpu.flags.d != 0) {
+            ps |= @intFromEnum(Cpu.FlagBit.decimal);
         }
-        if (cpu.Flags.B != 0) {
-            ps |= FB_Break;
+        if (cpu.flags.b != 0) {
+            ps |= @intFromEnum(Cpu.FlagBit.brk);
         }
-        if (cpu.Flags.V != 0) {
-            ps |= FB_Overflow;
+        if (cpu.flags.v != 0) {
+            ps |= @intFromEnum(Cpu.FlagBit.overflow);
         }
-        if (cpu.Flags.N != 0) {
-            ps |= FB_Negative;
+        if (cpu.flags.n != 0) {
+            ps |= @intFromEnum(Cpu.FlagBit.negative);
         }
-        cpu.Status = ps;
+        cpu.status = ps;
     }
 
-    fn CPU_PSToFlags(cpu: *CPU) void {
-        cpu.Flags.Unused = @intFromBool((cpu.Status & FB_Unused) != 0);
-        cpu.Flags.C = @intFromBool((cpu.Status & FB_Carry) != 0);
-        cpu.Flags.Z = @intFromBool((cpu.Status & FB_Zero) != 0);
-        cpu.Flags.I = @intFromBool((cpu.Status & FB_InterruptDisable) != 0);
-        cpu.Flags.D = @intFromBool((cpu.Status & FB_Decimal) != 0);
-        cpu.Flags.B = @intFromBool((cpu.Status & FB_Break) != 0);
-        cpu.Flags.V = @intFromBool((cpu.Status & FB_Overflow) != 0);
-        cpu.Flags.N = @intFromBool((cpu.Status & FB_Negative) != 0);
+    fn psToFlags(cpu: *Cpu) void {
+        cpu.flags.unused = @intFromBool((cpu.status & @intFromEnum(Cpu.FlagBit.unused)) != 0);
+        cpu.flags.c = @intFromBool((cpu.status & @intFromEnum(Cpu.FlagBit.carry)) != 0);
+        cpu.flags.z = @intFromBool((cpu.status & @intFromEnum(Cpu.FlagBit.zero)) != 0);
+        cpu.flags.i = @intFromBool((cpu.status & @intFromEnum(Cpu.FlagBit.intDisable)) != 0);
+        cpu.flags.d = @intFromBool((cpu.status & @intFromEnum(Cpu.FlagBit.decimal)) != 0);
+        cpu.flags.b = @intFromBool((cpu.status & @intFromEnum(Cpu.FlagBit.brk)) != 0);
+        cpu.flags.v = @intFromBool((cpu.status & @intFromEnum(Cpu.FlagBit.overflow)) != 0);
+        cpu.flags.n = @intFromBool((cpu.status & @intFromEnum(Cpu.FlagBit.negative)) != 0);
     }
 
-    fn CPU_FetchByte(cpu: *CPU) i8 {
-        return @as(i8, @bitCast(CPU_FetchUByte(cpu)));
+    fn fetchByte(cpu: *Cpu) i8 {
+        return @as(i8, @bitCast(fetchUByte(cpu)));
     }
 
-    fn CPU_FetchUByte(cpu: *CPU) u8 {
-        const Data: u8 = cpu.mem.Data[cpu.PC];
-        cpu.PC +%= 1;
+    fn fetchUByte(cpu: *Cpu) u8 {
+        const data: u8 = cpu.emu.mem.data[cpu.pc];
+        cpu.pc +%= 1;
         cpu.cycles_executed +%= 1;
-        return Data;
+        return data;
     }
 
-    fn CPU_FetchWord(cpu: *CPU) u16 {
-        var Data: u16 = cpu.mem.Data[cpu.PC];
-        cpu.PC +%= 1;
-        Data |= @as(u16, cpu.mem.Data[cpu.PC]) << 8;
-        cpu.PC +%= 1;
+    fn fetchWord(cpu: *Cpu) u16 {
+        var data: u16 = cpu.emu.mem.data[cpu.pc];
+        cpu.pc +%= 1;
+        data |= @as(u16, cpu.emu.mem.data[cpu.pc]) << 8;
+        cpu.pc +%= 1;
         cpu.cycles_executed +%= 2;
-        return Data;
+        return data;
     }
 
-    fn CPU_SPToAddress(cpu: *CPU) u16 {
-        return @as(u16, cpu.SP) | 0x100;
+    fn spToAddr(cpu: *Cpu) u16 {
+        return @as(u16, cpu.sp) | 0x100;
     }
 
-    fn CPU_PushWordToStack(cpu: *CPU, Value: u16) void {
-        WriteByte(cpu, @truncate(Value >> 8), CPU_SPToAddress(cpu));
-        cpu.SP -%= 1;
-        WriteByte(cpu, @truncate(Value & 0xff), CPU_SPToAddress(cpu));
-        cpu.SP -%= 1;
+    fn pushW(cpu: *Cpu, val: u16) void {
+        cpu.writeByte(@truncate(val >> 8), spToAddr(cpu));
+        cpu.sp -%= 1;
+        cpu.writeByte(@truncate(val & 0xff), spToAddr(cpu));
+        cpu.sp -%= 1;
     }
 
-    fn CPU_PushPCToStack(cpu: *CPU) void {
-        CPU_PushWordToStack(cpu, cpu.PC);
-    }
-
-    fn CPU_PushByteOntoStack(cpu: *CPU, Value: u8) void {
-        const SPWord: u16 = CPU_SPToAddress(cpu);
-        cpu.mem.Data[SPWord] = Value;
+    fn pushB(cpu: *Cpu, val: u8) void {
+        const sp_word: u16 = spToAddr(cpu);
+        cpu.emu.mem.data[sp_word] = val;
         cpu.cycles_executed +%= 1;
-        cpu.SP -%= 1;
+        cpu.sp -%= 1;
         cpu.cycles_executed +%= 1;
     }
 
-    fn CPU_PopByteFromStack(cpu: *CPU) u8 {
-        cpu.SP +%= 1;
+    fn popB(cpu: *Cpu) u8 {
+        cpu.sp +%= 1;
         cpu.cycles_executed +%= 1;
-        const SPWord: u16 = CPU_SPToAddress(cpu);
-        const Value: u8 = cpu.mem.Data[SPWord];
+        const sp_word: u16 = spToAddr(cpu);
+        const val: u8 = cpu.emu.mem.data[sp_word];
         cpu.cycles_executed +%= 1;
-        return Value;
+        return val;
     }
 
-    fn CPU_PopWordFromStack(cpu: *CPU) u16 {
-        const ValueFromStack: u16 = ReadWord(cpu, CPU_SPToAddress(cpu) + 1);
-        cpu.SP +%= 2;
+    fn popW(cpu: *Cpu) u16 {
+        const val_stack: u16 = cpu.readWord(spToAddr(cpu) + 1);
+        cpu.sp +%= 2;
         cpu.cycles_executed +%= 1;
-        return ValueFromStack;
+        return val_stack;
     }
 
-    fn CPU_UpdateFlags(cpu: *CPU, Register: u8) void {
-        cpu.Flags.Z = 0;
-        if (Register == 0) cpu.Flags.Z = 1;
-        cpu.Flags.N = 0;
-        if ((Register & FB_Negative) != 0) cpu.Flags.N = 1;
+    fn updateFlags(cpu: *Cpu, reg: u8) void {
+        cpu.flags.z = 0;
+        if (reg == 0) cpu.flags.z = 1;
+        cpu.flags.n = 0;
+        if ((reg & @intFromEnum(Cpu.FlagBit.negative)) != 0) cpu.flags.n = 1;
     }
 
-    fn CPU_LoadRegister(cpu: *CPU, Address: u16, Register: *u8) void {
-        Register.* = ReadByte(cpu, Address);
-        CPU_UpdateFlags(cpu, Register.*);
+    fn loadReg(cpu: *Cpu, addr: u16, reg: *u8) void {
+        reg.* = cpu.readByte(addr);
+        cpu.updateFlags(reg.*);
     }
 
-    fn CPU_And(cpu: *CPU, Address: u16) void {
-        cpu.A &= ReadByte(cpu, Address);
-        CPU_UpdateFlags(cpu, cpu.A);
+    fn bitAnd(cpu: *Cpu, addr: u16) void {
+        cpu.a &= cpu.readByte(addr);
+        cpu.updateFlags(cpu.a);
     }
 
-    fn CPU_Ora(cpu: *CPU, Address: u16) void {
-        cpu.A |= ReadByte(cpu, Address);
-        CPU_UpdateFlags(cpu, cpu.A);
+    fn bitOra(cpu: *Cpu, addr: u16) void {
+        cpu.a |= cpu.readByte(addr);
+        cpu.updateFlags(cpu.a);
     }
 
-    fn CPU_Xor(cpu: *CPU, Address: u16) void {
-        cpu.A ^= ReadByte(cpu, Address);
-        CPU_UpdateFlags(cpu, cpu.A);
+    fn bitXor(cpu: *Cpu, addr: u16) void {
+        cpu.a ^= cpu.readByte(addr);
+        cpu.updateFlags(cpu.a);
     }
 
-    fn CPU_Branch(cpu: *CPU, Test: u8, Expected: u8) void {
-        const offs: i8 = CPU_FetchByte(cpu);
-        if (Test == Expected) {
-            const PCOld: u16 = cpu.PC;
-            var sPC = @as(i32, cpu.PC);
-            sPC += @as(i32, offs);
-            const uPC = @as(u32, @bitCast(sPC));
-            cpu.PC = @as(u16, @truncate(uPC));
+    fn branch(cpu: *Cpu, t1: u8, t2: u8) void {
+        const offs: i8 = fetchByte(cpu);
+        if (t1 == t2) {
+            const old_pc: u16 = cpu.pc;
+            var s_pc = @as(i32, cpu.pc);
+            s_pc += @as(i32, offs);
+            const u_pc = @as(u32, @bitCast(s_pc));
+            cpu.pc = @as(u16, @truncate(u_pc));
             cpu.cycles_executed +%= 1;
-            if ((cpu.PC >> 8) != (PCOld >> 8)) {
+            if ((cpu.pc >> 8) != (old_pc >> 8)) {
                 cpu.cycles_executed +%= 1;
             }
         }
     }
 
-    fn CPU_ADC(cpu: *CPU, Operand: u8) void {
-        const AreSignBitsTheSame: bool = ((cpu.A ^ Operand) & FB_Negative) == 0;
-        var Sum: u16 = @as(u16, @bitCast(@as(u16, cpu.A)));
-        Sum +%= @as(u16, Operand);
-        Sum +%= @as(u16, cpu.Flags.C);
-        cpu.A = @as(u8, @truncate(Sum & 0xff));
-        CPU_UpdateFlags(cpu, cpu.A);
-        cpu.Flags.C = @intFromBool(Sum > 0xff);
-        const x: bool = AreSignBitsTheSame and (((cpu.A ^ Operand) & FB_Negative) == 0);
-        cpu.Flags.V = @intFromBool(x);
+    pub fn adc(cpu: *Cpu, op: u8) void {
+        const signs_equ: bool = (cpu.a ^ op) &
+            @intFromEnum(Cpu.FlagBit.negative) == 0;
+        const old_sign: bool = (cpu.a &
+            @as(u8, @intFromEnum(Cpu.FlagBit.negative))) != 0;
+        const sum: u16 = @as(u16, cpu.a) + @as(u16, op) +
+            @as(u16, cpu.flags.c);
+        cpu.a = @truncate(sum & 0xFF);
+        cpu.flags.c = @intFromBool(sum > 0xFF);
+        cpu.flags.z = @intFromBool(cpu.a == 0);
+        cpu.flags.n = @intFromBool((cpu.a &
+            @intFromEnum(Cpu.FlagBit.negative)) != 0);
+        const new_sign: bool = (cpu.a &
+            @as(u8, @intFromEnum(Cpu.FlagBit.negative))) != 0;
+        cpu.flags.v = @intFromBool(signs_equ and (old_sign != new_sign));
     }
 
-    fn CPU_SBC(cpu: *CPU, Operand: u8) void {
-        CPU_ADC(cpu, ~Operand);
+    pub fn sbc(cpu: *Cpu, op: u8) void {
+        const old_sign: bool = (cpu.a &
+            @as(u8, @intFromEnum(Cpu.FlagBit.negative))) != 0;
+
+        const result: i16 =
+            @as(i16, cpu.a) -
+            @as(i16, op) -
+            @as(i16, 1 - cpu.flags.c);
+
+        if (cpu.a > op) cpu.flags.c = 1;
+        cpu.a = @as(u8, @truncate(@as(u16, @bitCast(result & 0xFF))));
+
+        const new_sign: bool = (cpu.a &
+            @as(u8, @intFromEnum(Cpu.FlagBit.negative))) != 0;
+
+        cpu.flags.v = @intFromBool(old_sign != new_sign);
+
+        cpu.updateFlags(cpu.a);
     }
 
-    fn CPU_ASL(cpu: *CPU, Operand: u8) u8 {
-        cpu.Flags.C = @as(u1, @intFromBool(Operand & FB_Negative > 0));
-        const Result: u8 = Operand << 1;
-        CPU_UpdateFlags(cpu, Result);
+    fn asl(cpu: *Cpu, op: u8) u8 {
+        cpu.flags.c = @as(u1, @intFromBool(op &
+            @intFromEnum(Cpu.FlagBit.negative) > 0));
+        const res: u8 = op << 1;
+        cpu.updateFlags(res);
         cpu.cycles_executed +%= 1;
-        return Result;
+        return res;
     }
 
-    fn CPU_LSR(cpu: *CPU, Operand: u8) u8 {
-        cpu.Flags.C = @as(u1, @intFromBool(Operand & FB_Carry > 0));
-        const Result: u8 = Operand >> 1;
-        CPU_UpdateFlags(cpu, Result);
+    fn lsr(cpu: *Cpu, op: u8) u8 {
+        cpu.flags.c = @as(u1, @intFromBool(op &
+            @intFromEnum(Cpu.FlagBit.carry) > 0));
+        const res: u8 = op >> 1;
+        cpu.updateFlags(res);
         cpu.cycles_executed +%= 1;
-        return Result;
+        return res;
     }
 
-    fn CPU_ROL(cpu: *CPU, Operand: u8) u8 {
-        const OldCarry: u8 = cpu.Flags.C;
-        cpu.Flags.C = @intFromBool((Operand & FB_Negative) != 0); // Store bit 7 in Carry flag
-        const Result: u8 = (Operand << 1) | OldCarry; // Rotate left, inserting old Carry
-        CPU_UpdateFlags(cpu, Result);
+    fn rol(cpu: *Cpu, op: u8) u8 {
+        const old_carry: u8 = cpu.flags.c;
+        cpu.flags.c = @intFromBool((op &
+            @intFromEnum(Cpu.FlagBit.negative)) != 0); // Store bit 7 in carry flag
+        const res: u8 = (op << 1) | old_carry; // Rotate left, inserting old carry
+        cpu.updateFlags(res);
         cpu.cycles_executed +%= 1;
-        return Result;
+        return res;
     }
 
-    fn CPU_ROR(cpu: *CPU, Operand: u8) u8 {
-        const OldCarry: u8 = cpu.Flags.C; // Store the old carry bit before shifting
-        cpu.Flags.C = @intFromBool((Operand & FB_Carry) != 0); // Store bit 0 in Carry flag
-        const Result: u8 = (Operand >> 1) | (OldCarry << 7); // Rotate right, inserting old Carry
-        CPU_UpdateFlags(cpu, Result);
+    fn ror(cpu: *Cpu, op: u8) u8 {
+        const old_carry: u8 = cpu.flags.c; // Store the old carry bit before shifting
+        cpu.flags.c = @intFromBool((op &
+            @intFromEnum(Cpu.FlagBit.carry)) != 0); // Store bit 0 in carry flag
+        const res: u8 = (op >> 1) | (old_carry << 7); // Rotate right, inserting old carry
+        cpu.updateFlags(res);
         cpu.cycles_executed +%= 1;
-        return Result;
+        return res;
     }
 
-    fn CPU_PushPSToStack(cpu: *CPU) void {
-        CPU_FlagsToPS(cpu);
-        const PSStack: u8 = cpu.Status | FB_Break | FB_Unused;
-        CPU_PushByteOntoStack(cpu, @as(u8, @bitCast(PSStack)));
+    fn pushPs(cpu: *Cpu) void {
+        flagsToPS(cpu);
+        const ps_stack: u8 = cpu.status |
+            @intFromEnum(Cpu.FlagBit.brk) | @intFromEnum(Cpu.FlagBit.unused);
+        cpu.pushB(@as(u8, @bitCast(ps_stack)));
     }
 
-    fn CPU_PopPSFromStack(cpu: *CPU) void {
-        cpu.Status = CPU_PopByteFromStack(cpu);
-        CPU_PSToFlags(cpu);
-        cpu.Flags.B = 0;
-        cpu.Flags.Unused = 0;
+    fn popPs(cpu: *Cpu) void {
+        cpu.status = popB(cpu);
+        psToFlags(cpu);
+        cpu.flags.b = 0;
+        cpu.flags.unused = 0;
     }
 
-    fn CPU_AddrZeroPage(cpu: *CPU) u16 {
-        const ZeroPageAddr = CPU_FetchUByte(cpu);
-        return @as(u16, ZeroPageAddr);
+    fn addrZp(cpu: *Cpu) u16 {
+        const zp_addr = fetchUByte(cpu);
+        return @as(u16, zp_addr);
     }
 
-    fn CPU_AddrZeroPageX(cpu: *CPU) u16 {
-        var ZeroPageAddr: u8 = CPU_FetchUByte(cpu);
-        ZeroPageAddr +%= cpu.X;
+    fn addrZpX(cpu: *Cpu) u16 {
+        var zp_addr: u8 = fetchUByte(cpu);
+        zp_addr +%= cpu.x;
         cpu.cycles_executed +%= 1;
-        return @as(u16, ZeroPageAddr);
+        return @as(u16, zp_addr);
     }
 
-    fn CPU_AddrZeroPageY(cpu: *CPU) u16 {
-        var ZeroPageAddr: u8 = CPU_FetchUByte(cpu);
-        ZeroPageAddr +%= cpu.Y;
+    fn addrZpY(cpu: *Cpu) u16 {
+        var zp_addr: u8 = fetchUByte(cpu);
+        zp_addr +%= cpu.y;
         cpu.cycles_executed +%= 1;
-        return @as(u16, ZeroPageAddr);
+        return @as(u16, zp_addr);
     }
 
-    fn CPU_AddrAbsolute(cpu: *CPU) u16 {
-        const AbsAddress: u16 = CPU_FetchWord(cpu);
-        return AbsAddress;
+    fn addrAbs(cpu: *Cpu) u16 {
+        const abs_addr: u16 = fetchWord(cpu);
+        return abs_addr;
     }
 
-    fn CPU_AddrAbsoluteX(cpu: *CPU) u16 {
-        const AbsAddress: u16 = CPU_FetchWord(cpu);
-        const AbsAddressX: u16 = AbsAddress + cpu.X;
-        const CrossedPageBoundary: u16 = (AbsAddress ^ AbsAddressX) >> 8;
-        if (CrossedPageBoundary != 0) {
+    fn addrAbsX(cpu: *Cpu) u16 {
+        const abs_addr: u16 = fetchWord(cpu);
+        const abs_addr_x: u16 = abs_addr + cpu.x;
+        const pg_boundary: u16 = (abs_addr ^ abs_addr_x) >> 8;
+        if (pg_boundary != 0) {
             cpu.cycles_executed +%= 1;
         }
-        return AbsAddressX;
+        return abs_addr_x;
     }
 
-    pub export fn CPU_AddrAbsoluteX_5(cpu: *CPU) u16 {
-        const AbsAddress: u16 = CPU_FetchWord(cpu);
-        const AbsAddressX: u16 = AbsAddress + cpu.X;
+    fn addrAbsX5(cpu: *Cpu) u16 {
+        const abs_addr: u16 = fetchWord(cpu);
+        const abs_addr_x: u16 = abs_addr + cpu.x;
         cpu.cycles_executed +%= 1;
-        return AbsAddressX;
+        return abs_addr_x;
     }
 
-    fn CPU_AddrAbsoluteY(cpu: *CPU) u16 {
-        const AbsAddress: u16 = CPU_FetchWord(cpu);
-        const AbsAddressY: u16 = AbsAddress + cpu.Y;
-        const CrossedPageBoundary: u16 = (AbsAddress ^ AbsAddressY) >> 8;
-        if (CrossedPageBoundary != 0) {
+    fn addrAbsY(cpu: *Cpu) u16 {
+        const abs_addr: u16 = fetchWord(cpu);
+        const abs_addr_y: u16 = abs_addr + cpu.y;
+        const pg_boundary: u16 = (abs_addr ^ abs_addr_y) >> 8;
+        if (pg_boundary != 0) {
             cpu.cycles_executed +%= 1;
         }
-        return AbsAddressY;
+        return abs_addr_y;
     }
 
-    fn CPU_AddrAbsoluteY_5(cpu: *CPU) u16 {
-        const AbsAddress: u16 = CPU_FetchWord(cpu);
-        const AbsAddressY: u16 = AbsAddress + cpu.Y;
+    fn addrAbsY5(cpu: *Cpu) u16 {
+        const abs_addr: u16 = fetchWord(cpu);
+        const abs_addr_y: u16 = abs_addr + cpu.y;
         cpu.cycles_executed +%= 1;
-        return AbsAddressY;
+        return abs_addr_y;
     }
 
-    fn CPU_AddrIndirectX(cpu: *CPU) u16 {
-        var ZPAddress: u8 = CPU_FetchUByte(cpu);
-        ZPAddress +%= cpu.X;
+    fn addrIndX(cpu: *Cpu) u16 {
+        var zp_addr: u8 = fetchUByte(cpu);
+        zp_addr +%= cpu.x;
         cpu.cycles_executed +%= 1;
-        const EffectiveAddr: u16 = ReadWord(cpu, ZPAddress);
-        return EffectiveAddr;
+        const eff_addr: u16 = cpu.readWord(zp_addr);
+        return eff_addr;
     }
 
-    fn CPU_AddrIndirectY(cpu: *CPU) u16 {
-        const ZPAddress: u8 = CPU_FetchUByte(cpu);
-        const EffectiveAddr: u16 = ReadWord(cpu, ZPAddress);
-        const EffectiveAddrY: u16 = EffectiveAddr + cpu.Y;
-        const CrossedPageBoundary: u16 = (EffectiveAddr ^ EffectiveAddrY) >> 8;
-        if (CrossedPageBoundary != 0) {
+    fn addrIndY(cpu: *Cpu) u16 {
+        const zp_addr: u8 = fetchUByte(cpu);
+        const eff_addr: u16 = cpu.readWord(zp_addr);
+        const eff_addr_y: u16 = eff_addr + cpu.y;
+        const pg_boundary: u16 = (eff_addr ^ eff_addr_y) >> 8;
+        if (pg_boundary != 0) {
             cpu.cycles_executed +%= 1;
         }
-        return EffectiveAddrY;
+        return eff_addr_y;
     }
 
-    fn CPU_AddrIndirectY_6(cpu: *CPU) u16 {
-        const ZPAddress: u8 = CPU_FetchUByte(cpu);
-        const EffectiveAddr: u16 = ReadWord(cpu, ZPAddress);
-        const EffectiveAddrY: u16 = EffectiveAddr + cpu.Y;
-        return EffectiveAddrY;
+    fn addrIndY6(cpu: *Cpu) u16 {
+        const zp_addr: u8 = fetchUByte(cpu);
+        const eff_addr: u16 = cpu.readWord(zp_addr);
+        const eff_addr_y: u16 = eff_addr + cpu.y;
+        return eff_addr_y;
     }
 
-    fn CPU_RegisterCompare(cpu: *CPU, Operand: u8, RegisterValue: u8) void {
-        const Temp: i8 = @as(i8, @bitCast(RegisterValue -% Operand));
-        cpu.Flags.N = @intFromBool((@as(u8, @bitCast(Temp)) & FB_Negative) != 0);
-        cpu.Flags.Z = @intFromBool(RegisterValue == Operand);
-        cpu.Flags.C = @intFromBool(RegisterValue >= Operand);
+    fn cmpReg(cpu: *Cpu, op: u8, reg_val: u8) void {
+        const tmp: i8 = @as(i8, @bitCast(reg_val -% op));
+        cpu.flags.n = @intFromBool((@as(u8, @bitCast(tmp)) &
+            @intFromEnum(Cpu.FlagBit.negative)) != 0);
+        cpu.flags.z = @intFromBool(reg_val == op);
+        cpu.flags.c = @intFromBool(reg_val >= op);
     }
 
-    pub fn EmulateD012(cpu: *CPU) void {
-        cpu.mem.Data[0xD012] = cpu.mem.Data[0xD012] +% 1;
-        if ((cpu.mem.Data[0xD012] == 0) or (((cpu.mem.Data[0xD011] & 0x80) != 0) and
-            (cpu.mem.Data[0xD012] >= 0x38)))
+    pub fn emulateD012(cpu: *Cpu) void {
+        cpu.emu.mem.data[0xD012] = cpu.emu.mem.data[0xD012] +% 1;
+        if ((cpu.emu.mem.data[0xD012] == 0) or
+            (((cpu.emu.mem.data[0xD011] & 0x80) != 0) and
+                (cpu.emu.mem.data[0xD012] >= 0x38)))
         {
-            cpu.mem.Data[0xD011] ^= 0x80;
-            cpu.mem.Data[0xD012] = 0x00;
+            cpu.emu.mem.data[0xD011] ^= 0x80;
+            cpu.emu.mem.data[0xD012] = 0x00;
         }
     }
 
-    pub fn RunStep(cpu: *CPU) u8 {
+    pub fn runStep(cpu: *Cpu) u8 {
         const cycles_now: u32 = cpu.cycles_executed;
-        const opcode: u8 = CPU_FetchUByte(cpu);
+        const old_pc = cpu.pc;
+        const opcode: u8 = fetchUByte(cpu);
         cpu.opcode_last = opcode;
         cpu.sid_reg_written = false;
 
-        cpu.EmulateD012();
+        if (cpu.dbg_enabled)
+            stdout.print("[Cpu ] runStep: {X:0>4}, opcode: {X:0>2}\n", .{
+                old_pc,
+                opcode,
+            }) catch {};
+
+        cpu.emulateD012();
 
         switch (opcode) {
-            41 => {
-                cpu.A &= CPU_FetchUByte(cpu);
-                CPU_UpdateFlags(cpu, cpu.A);
+            0x29 => {
+                cpu.a &= fetchUByte(cpu);
+                cpu.updateFlags(cpu.a);
             },
-            9 => {
-                cpu.A |= CPU_FetchUByte(cpu);
-                CPU_UpdateFlags(cpu, cpu.A);
+            0x9 => {
+                cpu.a |= fetchUByte(cpu);
+                cpu.updateFlags(cpu.a);
             },
-            73 => {
-                cpu.A ^= CPU_FetchUByte(cpu);
-                CPU_UpdateFlags(cpu, cpu.A);
+            0x49 => {
+                cpu.a ^= fetchUByte(cpu);
+                cpu.updateFlags(cpu.a);
             },
-            37 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPage(cpu);
-                    CPU_And(cpu, Address);
+            0x25 => {
+                const addr: u16 = addrZp(cpu);
+                cpu.bitAnd(addr);
+            },
+            0x5 => {
+                const addr: u16 = addrZp(cpu);
+                cpu.bitOra(addr);
+            },
+            0x45 => {
+                const addr: u16 = addrZp(cpu);
+                cpu.bitXor(addr);
+            },
+            0x35 => {
+                const addr: u16 = addrZpX(cpu);
+                cpu.bitAnd(addr);
+            },
+            0x15 => {
+                const addr: u16 = addrZpX(cpu);
+                cpu.bitOra(addr);
+            },
+            0x55 => {
+                const addr: u16 = addrZpX(cpu);
+                cpu.bitXor(addr);
+            },
+            0x2D => {
+                const addr: u16 = addrAbs(cpu);
+                cpu.bitAnd(addr);
+            },
+            0xD => {
+                const addr: u16 = addrAbs(cpu);
+                cpu.bitOra(addr);
+            },
+            0x4D => {
+                const addr: u16 = addrAbs(cpu);
+                cpu.bitXor(addr);
+            },
+            0x3D => {
+                const addr: u16 = addrAbsX(cpu);
+                cpu.bitAnd(addr);
+            },
+            0x1D => {
+                const addr: u16 = addrAbsX(cpu);
+                cpu.bitOra(addr);
+            },
+            0x5D => {
+                const addr: u16 = addrAbsX(cpu);
+                cpu.bitXor(addr);
+            },
+            0x39 => {
+                const addr: u16 = addrAbsY(cpu);
+                cpu.bitAnd(addr);
+            },
+            0x19 => {
+                const addr: u16 = addrAbsY(cpu);
+                cpu.bitOra(addr);
+            },
+            0x59 => {
+                const addr: u16 = addrAbsY(cpu);
+                cpu.bitXor(addr);
+            },
+            0x21 => {
+                const addr: u16 = addrIndX(cpu);
+                cpu.bitAnd(addr);
+            },
+            0x1 => {
+                const addr: u16 = addrIndX(cpu);
+                cpu.bitOra(addr);
+            },
+            0x41 => {
+                const addr: u16 = addrIndX(cpu);
+                cpu.bitXor(addr);
+            },
+            0x31 => {
+                const addr: u16 = addrIndY(cpu);
+                cpu.bitAnd(addr);
+            },
+            0x11 => {
+                const addr: u16 = addrIndY(cpu);
+                cpu.bitOra(addr);
+            },
+            0x51 => {
+                const addr: u16 = addrIndY(cpu);
+                cpu.bitXor(addr);
+            },
+            0x24 => {
+                const addr: u16 = addrZp(cpu);
+                const val: u8 = cpu.readByte(addr);
+                cpu.flags.z = @intFromBool(!((cpu.a & val) != 0));
+                cpu.flags.n = @intFromBool((val & 128) != 0);
+                cpu.flags.v = @intFromBool((val & 64) != 0);
+            },
+            0x2C => {
+                const addr: u16 = addrAbs(cpu);
+                const val: u8 = cpu.readByte(addr);
+                cpu.flags.z = @intFromBool(!((cpu.a & val) != 0));
+                cpu.flags.n = @intFromBool((val & 128) != 0);
+                cpu.flags.v = @intFromBool((val & 64) != 0);
+            },
+            0xA9 => {
+                cpu.a = fetchUByte(cpu);
+                cpu.updateFlags(cpu.a);
+            },
+            0xA2 => {
+                cpu.x = fetchUByte(cpu);
+                cpu.updateFlags(cpu.x);
+            },
+            0xA0 => {
+                cpu.y = fetchUByte(cpu);
+                cpu.updateFlags(cpu.y);
+            },
+            0xA5 => {
+                const addr: u16 = addrZp(cpu);
+                cpu.loadReg(addr, &cpu.a);
+            },
+            0xA6 => {
+                const addr: u16 = addrZp(cpu);
+                cpu.loadReg(addr, &cpu.x);
+            },
+            0xB6 => {
+                const addr: u16 = addrZpY(cpu);
+                cpu.loadReg(addr, &cpu.x);
+            },
+            0xA4 => {
+                const addr: u16 = addrZp(cpu);
+                cpu.loadReg(addr, &cpu.y);
+            },
+            0xB5 => {
+                const addr: u16 = addrZpX(cpu);
+                cpu.loadReg(addr, &cpu.a);
+            },
+            0xB4 => {
+                const addr: u16 = addrZpX(cpu);
+                cpu.loadReg(addr, &cpu.y);
+            },
+            0xAD => {
+                const addr: u16 = addrAbs(cpu);
+                cpu.loadReg(addr, &cpu.a);
+            },
+            0xAE => {
+                const addr: u16 = addrAbs(cpu);
+                cpu.loadReg(addr, &cpu.x);
+            },
+            0xAC => {
+                const addr: u16 = addrAbs(cpu);
+                cpu.loadReg(addr, &cpu.y);
+            },
+            0xBD => {
+                const addr: u16 = addrAbsX(cpu);
+                cpu.loadReg(addr, &cpu.a);
+            },
+            0xBC => {
+                const addr: u16 = addrAbsX(cpu);
+                cpu.loadReg(addr, &cpu.y);
+            },
+            0xB9 => {
+                const addr: u16 = addrAbsY(cpu);
+                cpu.loadReg(addr, &cpu.a);
+            },
+            0xBE => {
+                const addr: u16 = addrAbsY(cpu);
+                cpu.loadReg(addr, &cpu.x);
+            },
+            0xA1 => {
+                const addr: u16 = addrIndX(cpu);
+                cpu.loadReg(addr, &cpu.a);
+            },
+            0x81 => {
+                const addr: u16 = addrIndX(cpu);
+                cpu.writeByte(cpu.a, addr);
+            },
+            0xB1 => {
+                const addr: u16 = addrIndY(cpu);
+                cpu.loadReg(addr, &cpu.a);
+            },
+            0x91 => {
+                const addr: u16 = addrIndY6(cpu);
+                cpu.writeByte(cpu.a, addr);
+            },
+            0x85 => {
+                const addr: u16 = addrZp(cpu);
+                cpu.writeByte(cpu.a, addr);
+            },
+            0x86 => {
+                const addr: u16 = addrZp(cpu);
+                cpu.writeByte(cpu.x, addr);
+            },
+            0x96 => {
+                const addr: u16 = addrZpY(cpu);
+                cpu.writeByte(cpu.x, addr);
+            },
+            0x84 => {
+                const addr: u16 = addrZp(cpu);
+                cpu.writeByte(cpu.y, addr);
+            },
+            0x8D => {
+                const addr: u16 = addrAbs(cpu);
+                cpu.writeByte(cpu.a, addr);
+            },
+            0x8E => {
+                const addr: u16 = addrAbs(cpu);
+                cpu.writeByte(cpu.x, addr);
+            },
+            0x8C => {
+                const addr: u16 = addrAbs(cpu);
+                cpu.writeByte(cpu.y, addr);
+            },
+            0x95 => {
+                const addr: u16 = addrZpX(cpu);
+                cpu.writeByte(cpu.a, addr);
+            },
+            0x94 => {
+                const addr: u16 = addrZpX(cpu);
+                cpu.writeByte(cpu.y, addr);
+            },
+            0x9D => {
+                const addr: u16 = addrAbsX5(cpu);
+                cpu.writeByte(cpu.a, addr);
+            },
+            0x99 => {
+                const addr: u16 = addrAbsY5(cpu);
+                cpu.writeByte(cpu.a, addr);
+            },
+            0x20 => {
+                const jsr_addr: u16 = fetchWord(cpu);
+                const ret_addr: u16 = cpu.pc - 1;
+                cpu.pushW(cpu.pc - 1);
+                cpu.pc = jsr_addr;
+                cpu.cycles_executed +%= 1;
+                if (cpu.dbg_enabled) {
+                    stdout.print("[Cpu ] Calling {X:0>4}, return to {X:0>4}\n", .{
+                        jsr_addr,
+                        ret_addr,
+                    }) catch {};
                 }
             },
-            5 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPage(cpu);
-                    CPU_Ora(cpu, Address);
+            0x60 => {
+                const ret_addr: u16 = popW(cpu);
+                cpu.pc = ret_addr + 1;
+                cpu.cycles_executed +%= 2;
+                if (cpu.dbg_enabled) {
+                    stdout.print("[Cpu ] Return to {X:0>4}\n", .{
+                        ret_addr,
+                    }) catch {};
                 }
-            },
-            69 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPage(cpu);
-                    CPU_Xor(cpu, Address);
-                }
-            },
-            53 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPageX(cpu);
-                    CPU_And(cpu, Address);
-                }
-            },
-            21 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPageX(cpu);
-                    CPU_Ora(cpu, Address);
-                }
-            },
-            85 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPageX(cpu);
-                    CPU_Xor(cpu, Address);
-                }
-            },
-            45 => {
-                {
-                    const Address: u16 = CPU_AddrAbsolute(cpu);
-                    CPU_And(cpu, Address);
-                }
-            },
-            13 => {
-                {
-                    const Address: u16 = CPU_AddrAbsolute(cpu);
-                    CPU_Ora(cpu, Address);
-                }
-            },
-            77 => {
-                {
-                    const Address: u16 = CPU_AddrAbsolute(cpu);
-                    CPU_Xor(cpu, Address);
-                }
-            },
-            61 => {
-                {
-                    const Address: u16 = CPU_AddrAbsoluteX(cpu);
-                    CPU_And(cpu, Address);
-                }
-            },
-            29 => {
-                {
-                    const Address: u16 = CPU_AddrAbsoluteX(cpu);
-                    CPU_Ora(cpu, Address);
-                }
-            },
-            93 => {
-                {
-                    const Address: u16 = CPU_AddrAbsoluteX(cpu);
-                    CPU_Xor(cpu, Address);
-                }
-            },
-            57 => {
-                {
-                    const Address: u16 = CPU_AddrAbsoluteY(cpu);
-                    CPU_And(cpu, Address);
-                }
-            },
-            25 => {
-                {
-                    const Address: u16 = CPU_AddrAbsoluteY(cpu);
-                    CPU_Ora(cpu, Address);
-                }
-            },
-            89 => {
-                {
-                    const Address: u16 = CPU_AddrAbsoluteY(cpu);
-                    CPU_Xor(cpu, Address);
-                }
-            },
-            33 => {
-                {
-                    const Address: u16 = CPU_AddrIndirectX(cpu);
-                    CPU_And(cpu, Address);
-                }
-            },
-            1 => {
-                {
-                    const Address: u16 = CPU_AddrIndirectX(cpu);
-                    CPU_Ora(cpu, Address);
-                }
-            },
-            65 => {
-                {
-                    const Address: u16 = CPU_AddrIndirectX(cpu);
-                    CPU_Xor(cpu, Address);
-                }
-            },
-            49 => {
-                {
-                    const Address: u16 = CPU_AddrIndirectY(cpu);
-                    CPU_And(cpu, Address);
-                }
-            },
-            17 => {
-                {
-                    const Address: u16 = CPU_AddrIndirectY(cpu);
-                    CPU_Ora(cpu, Address);
-                }
-            },
-            81 => {
-                {
-                    const Address: u16 = CPU_AddrIndirectY(cpu);
-                    CPU_Xor(cpu, Address);
-                }
-            },
-            36 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPage(cpu);
-                    const Value: u8 = ReadByte(cpu, Address);
-                    cpu.Flags.Z = @intFromBool(!((cpu.A & Value) != 0));
-                    cpu.Flags.N = @intFromBool((Value & 128) != 0);
-                    cpu.Flags.V = @intFromBool((Value & 64) != 0);
-                }
-            },
-            44 => {
-                {
-                    const Address: u16 = CPU_AddrAbsolute(cpu);
-                    const Value: u8 = ReadByte(cpu, Address);
-                    cpu.Flags.Z = @intFromBool(!((cpu.A & Value) != 0));
-                    cpu.Flags.N = @intFromBool((Value & 128) != 0);
-                    cpu.Flags.V = @intFromBool((Value & 64) != 0);
-                }
-            },
-            169 => {
-                {
-                    cpu.A = CPU_FetchUByte(cpu);
-                    CPU_UpdateFlags(cpu, cpu.A);
-                }
-            },
-            162 => {
-                {
-                    cpu.X = CPU_FetchUByte(cpu);
-                    CPU_UpdateFlags(cpu, cpu.X);
-                }
-            },
-            160 => {
-                {
-                    cpu.Y = CPU_FetchUByte(cpu);
-                    CPU_UpdateFlags(cpu, cpu.Y);
-                }
-            },
-            165 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPage(cpu);
-                    CPU_LoadRegister(cpu, Address, &cpu.A);
-                }
-            },
-            166 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPage(cpu);
-                    CPU_LoadRegister(cpu, Address, &cpu.X);
-                }
-            },
-            182 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPageY(cpu);
-                    CPU_LoadRegister(cpu, Address, &cpu.X);
-                }
-            },
-            164 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPage(cpu);
-                    CPU_LoadRegister(cpu, Address, &cpu.Y);
-                }
-            },
-            181 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPageX(cpu);
-                    CPU_LoadRegister(cpu, Address, &cpu.A);
-                }
-            },
-            180 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPageX(cpu);
-                    CPU_LoadRegister(cpu, Address, &cpu.Y);
-                }
-            },
-            173 => {
-                {
-                    const Address: u16 = CPU_AddrAbsolute(cpu);
-                    CPU_LoadRegister(cpu, Address, &cpu.A);
-                }
-            },
-            174 => {
-                {
-                    const Address: u16 = CPU_AddrAbsolute(cpu);
-                    CPU_LoadRegister(cpu, Address, &cpu.X);
-                }
-            },
-            172 => {
-                {
-                    const Address: u16 = CPU_AddrAbsolute(cpu);
-                    CPU_LoadRegister(cpu, Address, &cpu.Y);
-                }
-            },
-            189 => {
-                {
-                    const Address: u16 = CPU_AddrAbsoluteX(cpu);
-                    CPU_LoadRegister(cpu, Address, &cpu.A);
-                }
-            },
-            188 => {
-                {
-                    const Address: u16 = CPU_AddrAbsoluteX(cpu);
-                    CPU_LoadRegister(cpu, Address, &cpu.Y);
-                }
-            },
-            185 => {
-                {
-                    const Address: u16 = CPU_AddrAbsoluteY(cpu);
-                    CPU_LoadRegister(cpu, Address, &cpu.A);
-                }
-            },
-            190 => {
-                {
-                    const Address: u16 = CPU_AddrAbsoluteY(cpu);
-                    CPU_LoadRegister(cpu, Address, &cpu.X);
-                }
-            },
-            161 => {
-                {
-                    const Address: u16 = CPU_AddrIndirectX(cpu);
-                    CPU_LoadRegister(cpu, Address, &cpu.A);
-                }
-            },
-            129 => {
-                {
-                    const Address: u16 = CPU_AddrIndirectX(cpu);
-                    WriteByte(cpu, cpu.A, Address);
-                }
-            },
-            177 => {
-                {
-                    const Address: u16 = CPU_AddrIndirectY(cpu);
-                    CPU_LoadRegister(cpu, Address, &cpu.A);
-                }
-            },
-            145 => {
-                {
-                    const Address: u16 = CPU_AddrIndirectY_6(cpu);
-                    WriteByte(cpu, cpu.A, Address);
-                }
-            },
-            133 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPage(cpu);
-                    WriteByte(cpu, cpu.A, Address);
-                }
-            },
-            134 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPage(cpu);
-                    WriteByte(cpu, cpu.X, Address);
-                }
-            },
-            150 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPageY(cpu);
-                    WriteByte(cpu, cpu.X, Address);
-                }
-            },
-            132 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPage(cpu);
-                    WriteByte(cpu, cpu.Y, Address);
-                }
-            },
-            141 => {
-                {
-                    const Address: u16 = CPU_AddrAbsolute(cpu);
-                    WriteByte(cpu, cpu.A, Address);
-                }
-            },
-            142 => {
-                {
-                    const Address: u16 = CPU_AddrAbsolute(cpu);
-                    WriteByte(cpu, cpu.X, Address);
-                }
-            },
-            140 => {
-                {
-                    const Address: u16 = CPU_AddrAbsolute(cpu);
-                    WriteByte(cpu, cpu.Y, Address);
-                }
-            },
-            149 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPageX(cpu);
-                    WriteByte(cpu, cpu.A, Address);
-                }
-            },
-            148 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPageX(cpu);
-                    WriteByte(cpu, cpu.Y, Address);
-                }
-            },
-            157 => {
-                {
-                    const Address: u16 = CPU_AddrAbsoluteX_5(cpu);
-                    WriteByte(cpu, cpu.A, Address);
-                }
-            },
-            153 => {
-                {
-                    const Address: u16 = CPU_AddrAbsoluteY_5(cpu);
-                    WriteByte(cpu, cpu.A, Address);
-                }
-            },
-            32 => {
-                {
-                    const SubAddr: u16 = CPU_FetchWord(cpu);
-                    CPU_PushWordToStack(cpu, cpu.PC - 1);
-                    cpu.PC = SubAddr;
-                    cpu.cycles_executed +%= 1;
-                }
-            },
-            96 => {
-                {
-                    const ReturnAddress: u16 = CPU_PopWordFromStack(cpu);
-                    cpu.PC = ReturnAddress + 1;
-                    cpu.cycles_executed +%= 2;
+                if (ret_addr == 0x0000) {
                     if (cpu.dbg_enabled) {
-                        stdout.print("[CPU ] Return to {X:0>4}\n", .{ReturnAddress}) catch {};
+                        stdout.print("[Cpu ] Return EXIT!\n", .{}) catch {};
                     }
-                    if (ReturnAddress == 0x0000) {
-                        if (cpu.dbg_enabled) {
-                            stdout.print("[CPU ] Return EXIT!\n", .{}) catch {};
-                        }
-                        cpu.cycles_last_step = cpu.cycles_executed -% cycles_now;
+                    cpu.cycles_last_step = cpu.cycles_executed -% cycles_now;
 
-                        if (cpu.cycles_executed % FramesPerVsyncPAL == 0) cpu.frame_ctr_PAL += 1;
-                        if (cpu.cycles_executed % FramesPerVsyncNTSC == 0) cpu.frame_ctr_NTSC += 1;
+                    if (cpu.emu.vic == Emulator.VicType.pal and
+                        cpu.cycles_executed % Timing.cyclesVsyncPAL ==
+                            0) cpu.frame_ctr += 1;
 
-                        return @as(u8, @truncate(cpu.cycles_last_step));
-                    }
-                }
-            },
-            76 => {
-                {
-                    const Address: u16 = CPU_AddrAbsolute(cpu);
-                    cpu.PC = Address;
-                }
-            },
-            108 => {
-                {
-                    var Address: u16 = CPU_AddrAbsolute(cpu);
-                    Address = ReadWord(cpu, Address);
-                    cpu.PC = Address;
-                }
-            },
-            186 => {
-                {
-                    cpu.X = cpu.SP;
-                    cpu.cycles_executed +%= 1;
-                    CPU_UpdateFlags(cpu, cpu.X);
-                }
-            },
-            154 => {
-                {
-                    cpu.SP = cpu.X;
-                    cpu.cycles_executed +%= 1;
-                }
-            },
-            72 => {
-                {
-                    CPU_PushByteOntoStack(cpu, cpu.A);
-                }
-            },
-            104 => {
-                {
-                    cpu.A = CPU_PopByteFromStack(cpu);
-                    CPU_UpdateFlags(cpu, cpu.A);
-                    cpu.cycles_executed +%= 1;
-                }
-            },
-            8 => {
-                {
-                    CPU_PushPSToStack(cpu);
-                }
-            },
-            40 => {
-                {
-                    CPU_PopPSFromStack(cpu);
-                    cpu.cycles_executed +%= 1;
-                }
-            },
-            170 => {
-                {
-                    cpu.X = cpu.A;
-                    cpu.cycles_executed +%= 1;
-                    CPU_UpdateFlags(cpu, cpu.X);
-                }
-            },
-            168 => {
-                {
-                    cpu.Y = cpu.A;
-                    cpu.cycles_executed +%= 1;
-                    CPU_UpdateFlags(cpu, cpu.Y);
-                }
-            },
-            138 => {
-                {
-                    cpu.A = cpu.X;
-                    cpu.cycles_executed +%= 1;
-                    CPU_UpdateFlags(cpu, cpu.A);
-                }
-            },
-            152 => {
-                {
-                    cpu.A = cpu.Y;
-                    cpu.cycles_executed +%= 1;
-                    CPU_UpdateFlags(cpu, cpu.A);
-                }
-            },
-            232 => {
-                {
-                    cpu.X +%= 1;
-                    cpu.cycles_executed +%= 1;
-                    CPU_UpdateFlags(cpu, cpu.X);
-                }
-            },
-            200 => {
-                {
-                    cpu.Y +%= 1;
-                    cpu.cycles_executed +%= 1;
-                    CPU_UpdateFlags(cpu, cpu.Y);
-                }
-            },
-            202 => {
-                {
-                    cpu.X -%= 1;
-                    cpu.cycles_executed +%= 1;
-                    CPU_UpdateFlags(cpu, cpu.X);
-                }
-            },
-            136 => {
-                {
-                    cpu.Y -%= 1;
-                    cpu.cycles_executed +%= 1;
-                    CPU_UpdateFlags(cpu, cpu.Y);
-                }
-            },
-            198 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPage(cpu);
-                    var Value: u8 = ReadByte(cpu, Address);
-                    Value -%= 1;
-                    cpu.cycles_executed +%= 1;
-                    WriteByte(cpu, Value, Address);
-                    CPU_UpdateFlags(cpu, Value);
-                }
-            },
-            214 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPageX(cpu);
-                    var Value: u8 = ReadByte(cpu, Address);
-                    Value -%= 1;
-                    cpu.cycles_executed +%= 1;
-                    WriteByte(cpu, Value, Address);
-                    CPU_UpdateFlags(cpu, Value);
-                }
-            },
-            206 => {
-                {
-                    const Address: u16 = CPU_AddrAbsolute(cpu);
-                    var Value: u8 = ReadByte(cpu, Address);
-                    Value -%= 1;
-                    cpu.cycles_executed +%= 1;
-                    WriteByte(cpu, Value, Address);
-                    CPU_UpdateFlags(cpu, Value);
-                }
-            },
-            222 => {
-                {
-                    const Address: u16 = CPU_AddrAbsoluteX_5(cpu);
-                    var Value: u8 = ReadByte(cpu, Address);
-                    Value -%= 1;
-                    cpu.cycles_executed +%= 1;
-                    WriteByte(cpu, Value, Address);
-                    CPU_UpdateFlags(cpu, Value);
-                }
-            },
-            230 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPage(cpu);
-                    var Value: u8 = ReadByte(cpu, Address);
-                    Value +%= 1;
-                    cpu.cycles_executed +%= 1;
-                    WriteByte(cpu, Value, Address);
-                    CPU_UpdateFlags(cpu, Value);
-                }
-            },
-            246 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPageX(cpu);
-                    var Value: u8 = ReadByte(cpu, Address);
-                    Value +%= 1;
-                    cpu.cycles_executed +%= 1;
-                    WriteByte(cpu, Value, Address);
-                    CPU_UpdateFlags(cpu, Value);
-                }
-            },
-            238 => {
-                {
-                    const Address: u16 = CPU_AddrAbsolute(cpu);
-                    var Value: u8 = ReadByte(cpu, Address);
-                    Value +%= 1;
-                    cpu.cycles_executed +%= 1;
-                    WriteByte(cpu, Value, Address);
-                    CPU_UpdateFlags(cpu, Value);
-                }
-            },
-            254 => {
-                {
-                    const Address: u16 = CPU_AddrAbsoluteX_5(cpu);
-                    var Value: u8 = ReadByte(cpu, Address);
-                    Value +%= 1;
-                    cpu.cycles_executed +%= 1;
-                    WriteByte(cpu, Value, Address);
-                    CPU_UpdateFlags(cpu, Value);
-                }
-            },
-            240 => {
-                {
-                    CPU_Branch(cpu, @as(u8, cpu.Flags.Z), 1);
-                }
-            },
-            208 => {
-                {
-                    CPU_Branch(cpu, @as(u8, cpu.Flags.Z), 0);
-                }
-            },
-            176 => {
-                {
-                    CPU_Branch(cpu, @as(u8, cpu.Flags.C), 1);
-                }
-            },
-            144 => {
-                {
-                    CPU_Branch(cpu, @as(u8, cpu.Flags.C), 0);
-                }
-            },
-            48 => {
-                {
-                    CPU_Branch(cpu, @as(u8, cpu.Flags.N), 1);
-                }
-            },
-            16 => {
-                {
-                    CPU_Branch(cpu, @as(u8, cpu.Flags.N), 0);
-                }
-            },
-            80 => {
-                {
-                    CPU_Branch(cpu, @as(u8, cpu.Flags.V), 0);
-                }
-            },
-            112 => {
-                {
-                    CPU_Branch(cpu, @as(u8, cpu.Flags.V), 1);
-                }
-            },
-            24 => {
-                {
-                    cpu.Flags.C = 0;
-                    cpu.cycles_executed +%= 1;
-                }
-            },
-            56 => {
-                {
-                    cpu.Flags.C = 1;
-                    cpu.cycles_executed +%= 1;
-                }
-            },
-            216 => {
-                {
-                    cpu.Flags.D = 0;
-                    cpu.cycles_executed +%= 1;
-                }
-            },
-            248 => {
-                {
-                    cpu.Flags.D = 1;
-                    cpu.cycles_executed +%= 1;
-                }
-            },
-            88 => {
-                {
-                    cpu.Flags.I = 0;
-                    cpu.cycles_executed +%= 1;
-                }
-            },
-            120 => {
-                {
-                    cpu.Flags.I = 1;
-                    cpu.cycles_executed +%= 1;
-                }
-            },
-            184 => {
-                {
-                    cpu.Flags.V = 0;
-                    cpu.cycles_executed +%= 1;
-                }
-            },
-            234 => {
-                {
-                    cpu.cycles_executed +%= 1;
-                }
-            },
-            109 => {
-                {
-                    const Address: u16 = CPU_AddrAbsolute(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    CPU_ADC(cpu, Operand);
-                }
-            },
-            125 => {
-                {
-                    const Address: u16 = CPU_AddrAbsoluteX(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    CPU_ADC(cpu, Operand);
-                }
-            },
-            121 => {
-                {
-                    const Address: u16 = CPU_AddrAbsoluteY(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    CPU_ADC(cpu, Operand);
-                }
-            },
-            101 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPage(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    CPU_ADC(cpu, Operand);
-                }
-            },
-            117 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPageX(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    CPU_ADC(cpu, Operand);
-                }
-            },
-            97 => {
-                {
-                    const Address: u16 = CPU_AddrIndirectX(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    CPU_ADC(cpu, Operand);
-                }
-            },
-            113 => {
-                {
-                    const Address: u16 = CPU_AddrIndirectY(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    CPU_ADC(cpu, Operand);
-                }
-            },
-            105 => {
-                {
-                    const Operand: u8 = CPU_FetchUByte(cpu);
-                    CPU_ADC(cpu, Operand);
-                }
-            },
-            233 => {
-                {
-                    const Operand: u8 = CPU_FetchUByte(cpu);
-                    CPU_SBC(cpu, Operand);
-                }
-            },
-            237 => {
-                {
-                    const Address: u16 = CPU_AddrAbsolute(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    CPU_SBC(cpu, Operand);
-                }
-            },
-            229 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPage(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    CPU_SBC(cpu, Operand);
-                }
-            },
-            245 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPageX(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    CPU_SBC(cpu, Operand);
-                }
-            },
-            253 => {
-                {
-                    const Address: u16 = CPU_AddrAbsoluteX(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    CPU_SBC(cpu, Operand);
-                }
-            },
-            249 => {
-                {
-                    const Address: u16 = CPU_AddrAbsoluteY(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    CPU_SBC(cpu, Operand);
-                }
-            },
-            225 => {
-                {
-                    const Address: u16 = CPU_AddrIndirectX(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    CPU_SBC(cpu, Operand);
-                }
-            },
-            241 => {
-                {
-                    const Address: u16 = CPU_AddrIndirectY(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    CPU_SBC(cpu, Operand);
-                }
-            },
-            224 => {
-                {
-                    const Operand: u8 = CPU_FetchUByte(cpu);
-                    CPU_RegisterCompare(cpu, Operand, cpu.X);
-                }
-            },
-            192 => {
-                {
-                    const Operand: u8 = CPU_FetchUByte(cpu);
-                    CPU_RegisterCompare(cpu, Operand, cpu.Y);
-                }
-            },
-            228 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPage(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    CPU_RegisterCompare(cpu, Operand, cpu.X);
-                }
-            },
-            196 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPage(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    CPU_RegisterCompare(cpu, Operand, cpu.Y);
-                }
-            },
-            236 => {
-                {
-                    const Address: u16 = CPU_AddrAbsolute(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    CPU_RegisterCompare(cpu, Operand, cpu.X);
-                }
-            },
-            204 => {
-                {
-                    const Address: u16 = CPU_AddrAbsolute(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    CPU_RegisterCompare(cpu, Operand, cpu.Y);
-                }
-            },
-            201 => {
-                {
-                    const Operand: u8 = CPU_FetchUByte(cpu);
-                    CPU_RegisterCompare(cpu, Operand, cpu.A);
-                }
-            },
-            197 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPage(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    CPU_RegisterCompare(cpu, Operand, cpu.A);
-                }
-            },
-            213 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPageX(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    CPU_RegisterCompare(cpu, Operand, cpu.A);
-                }
-            },
-            205 => {
-                {
-                    const Address: u16 = CPU_AddrAbsolute(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    CPU_RegisterCompare(cpu, Operand, cpu.A);
-                }
-            },
-            221 => {
-                {
-                    const Address: u16 = CPU_AddrAbsoluteX(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    CPU_RegisterCompare(cpu, Operand, cpu.A);
-                }
-            },
-            217 => {
-                {
-                    const Address: u16 = CPU_AddrAbsoluteY(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    CPU_RegisterCompare(cpu, Operand, cpu.A);
-                }
-            },
-            193 => {
-                {
-                    const Address: u16 = CPU_AddrIndirectX(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    CPU_RegisterCompare(cpu, Operand, cpu.A);
-                }
-            },
-            209 => {
-                {
-                    const Address: u16 = CPU_AddrIndirectY(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    CPU_RegisterCompare(cpu, Operand, cpu.A);
-                }
-            },
-            10 => {
-                {
-                    cpu.A = CPU_ASL(cpu, cpu.A);
-                }
-            },
-            6 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPage(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    const Result: u8 = CPU_ASL(cpu, Operand);
-                    WriteByte(cpu, Result, Address);
-                }
-            },
-            22 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPageX(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    const Result: u8 = CPU_ASL(cpu, Operand);
-                    WriteByte(cpu, Result, Address);
-                }
-            },
-            14 => {
-                {
-                    const Address: u16 = CPU_AddrAbsolute(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    const Result: u8 = CPU_ASL(cpu, Operand);
-                    WriteByte(cpu, Result, Address);
-                }
-            },
-            30 => {
-                {
-                    const Address: u16 = CPU_AddrAbsoluteX_5(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    const Result: u8 = CPU_ASL(cpu, Operand);
-                    WriteByte(cpu, Result, Address);
-                }
-            },
-            74 => {
-                {
-                    cpu.A = CPU_LSR(cpu, cpu.A);
-                }
-            },
-            70 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPage(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    const Result: u8 = CPU_LSR(cpu, Operand);
-                    WriteByte(cpu, Result, Address);
-                }
-            },
-            86 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPageX(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    const Result: u8 = CPU_LSR(cpu, Operand);
-                    WriteByte(cpu, Result, Address);
-                }
-            },
-            78 => {
-                {
-                    const Address: u16 = CPU_AddrAbsolute(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    const Result: u8 = CPU_LSR(cpu, Operand);
-                    WriteByte(cpu, Result, Address);
-                }
-            },
-            94 => {
-                {
-                    const Address: u16 = CPU_AddrAbsoluteX_5(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    const Result: u8 = CPU_LSR(cpu, Operand);
-                    WriteByte(cpu, Result, Address);
-                }
-            },
-            42 => {
-                {
-                    cpu.A = CPU_ROL(cpu, cpu.A);
-                }
-            },
-            38 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPage(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    const Result: u8 = CPU_ROL(cpu, Operand);
-                    WriteByte(cpu, Result, Address);
-                }
-            },
-            54 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPageX(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    const Result: u8 = CPU_ROL(cpu, Operand);
-                    WriteByte(cpu, Result, Address);
-                }
-            },
-            46 => {
-                {
-                    const Address: u16 = CPU_AddrAbsolute(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    const Result: u8 = CPU_ROL(cpu, Operand);
-                    WriteByte(cpu, Result, Address);
-                }
-            },
-            62 => {
-                {
-                    const Address: u16 = CPU_AddrAbsoluteX_5(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    const Result: u8 = CPU_ROL(cpu, Operand);
-                    WriteByte(cpu, Result, Address);
-                }
-            },
-            106 => {
-                {
-                    cpu.A = CPU_ROR(cpu, cpu.A);
-                }
-            },
-            102 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPage(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    const Result: u8 = CPU_ROR(cpu, Operand);
-                    WriteByte(cpu, Result, Address);
-                }
-            },
-            118 => {
-                {
-                    const Address: u16 = CPU_AddrZeroPageX(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    const Result: u8 = CPU_ROR(cpu, Operand);
-                    WriteByte(cpu, Result, Address);
-                }
-            },
-            110 => {
-                {
-                    const Address: u16 = CPU_AddrAbsolute(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    const Result: u8 = CPU_ROR(cpu, Operand);
-                    WriteByte(cpu, Result, Address);
-                }
-            },
-            126 => {
-                {
-                    const Address: u16 = CPU_AddrAbsoluteX_5(cpu);
-                    const Operand: u8 = ReadByte(cpu, Address);
-                    const Result: u8 = CPU_ROR(cpu, Operand);
-                    WriteByte(cpu, Result, Address);
-                }
-            },
-            0 => {
-                {
-                    CPU_PushWordToStack(cpu, cpu.PC + 1);
-                    CPU_PushPSToStack(cpu);
-                    cpu.PC = ReadWord(cpu, 65534);
-                    cpu.Flags.B = 1;
-                    cpu.Flags.I = 1;
+                    if (cpu.emu.vic == Emulator.VicType.ntsc and
+                        cpu.cycles_executed %
+                            Timing.cyclesVsyncNTSC == 0) cpu.frame_ctr += 1;
+
                     return 0;
                 }
             },
-            64 => {
-                {
-                    CPU_PopPSFromStack(cpu);
-                    cpu.PC = CPU_PopWordFromStack(cpu);
-                }
+            0x4C => {
+                const addr: u16 = addrAbs(cpu);
+                cpu.pc = addr;
+            },
+            0x6C => {
+                var addr: u16 = addrAbs(cpu);
+                addr = cpu.readWord(addr);
+                cpu.pc = addr;
+            },
+            0xBA => {
+                cpu.x = cpu.sp;
+                cpu.cycles_executed +%= 1;
+                cpu.updateFlags(cpu.x);
+            },
+            0x9A => {
+                cpu.sp = cpu.x;
+                cpu.cycles_executed +%= 1;
+            },
+            0x48 => {
+                cpu.pushB(cpu.a);
+            },
+            0x68 => {
+                cpu.a = popB(cpu);
+                cpu.updateFlags(cpu.a);
+                cpu.cycles_executed +%= 1;
+            },
+            0x8 => {
+                pushPs(cpu);
+            },
+            0x28 => {
+                popPs(cpu);
+                cpu.cycles_executed +%= 1;
+            },
+            0xAA => {
+                cpu.x = cpu.a;
+                cpu.cycles_executed +%= 1;
+                cpu.updateFlags(cpu.x);
+            },
+            0xA8 => {
+                cpu.y = cpu.a;
+                cpu.cycles_executed +%= 1;
+                cpu.updateFlags(cpu.y);
+            },
+            0x8A => {
+                cpu.a = cpu.x;
+                cpu.cycles_executed +%= 1;
+                cpu.updateFlags(cpu.a);
+            },
+            0x98 => {
+                cpu.a = cpu.y;
+                cpu.cycles_executed +%= 1;
+                cpu.updateFlags(cpu.a);
+            },
+            0xE8 => {
+                cpu.x +%= 1;
+                cpu.cycles_executed +%= 1;
+                cpu.updateFlags(cpu.x);
+            },
+            0xC8 => {
+                cpu.y +%= 1;
+                cpu.cycles_executed +%= 1;
+                cpu.updateFlags(cpu.y);
+            },
+            0xCA => {
+                cpu.x -%= 1;
+                cpu.cycles_executed +%= 1;
+                cpu.updateFlags(cpu.x);
+            },
+            0x88 => {
+                cpu.y -%= 1;
+                cpu.cycles_executed +%= 1;
+                cpu.updateFlags(cpu.y);
+            },
+            0xC6 => {
+                const addr: u16 = addrZp(cpu);
+                var val: u8 = cpu.readByte(addr);
+                val -%= 1;
+                cpu.cycles_executed +%= 1;
+                cpu.writeByte(val, addr);
+                cpu.updateFlags(val);
+            },
+            0xD6 => {
+                const addr: u16 = addrZpX(cpu);
+                var val: u8 = cpu.readByte(addr);
+                val -%= 1;
+                cpu.cycles_executed +%= 1;
+                cpu.writeByte(val, addr);
+                cpu.updateFlags(val);
+            },
+            0xCE => {
+                const addr: u16 = addrAbs(cpu);
+                var val: u8 = cpu.readByte(addr);
+                val -%= 1;
+                cpu.cycles_executed +%= 1;
+                cpu.writeByte(val, addr);
+                cpu.updateFlags(val);
+            },
+            0xDE => {
+                const addr: u16 = addrAbsX5(cpu);
+                var val: u8 = cpu.readByte(addr);
+                val -%= 1;
+                cpu.cycles_executed +%= 1;
+                cpu.writeByte(val, addr);
+                cpu.updateFlags(val);
+            },
+            0xE6 => {
+                const addr: u16 = addrZp(cpu);
+                var val: u8 = cpu.readByte(addr);
+                val +%= 1;
+                cpu.cycles_executed +%= 1;
+                cpu.writeByte(val, addr);
+                cpu.updateFlags(val);
+            },
+            0xF6 => {
+                const addr: u16 = addrZpX(cpu);
+                var val: u8 = cpu.readByte(addr);
+                val +%= 1;
+                cpu.cycles_executed +%= 1;
+                cpu.writeByte(val, addr);
+                cpu.updateFlags(val);
+            },
+            0xEE => {
+                const addr: u16 = addrAbs(cpu);
+                var val: u8 = cpu.readByte(addr);
+                val +%= 1;
+                cpu.cycles_executed +%= 1;
+                cpu.writeByte(val, addr);
+                cpu.updateFlags(val);
+            },
+            0xFE => {
+                const addr: u16 = addrAbsX5(cpu);
+                var val: u8 = cpu.readByte(addr);
+                val +%= 1;
+                cpu.cycles_executed +%= 1;
+                cpu.writeByte(val, addr);
+                cpu.updateFlags(val);
+            },
+            0xF0 => {
+                cpu.branch(@as(u8, cpu.flags.z), 1);
+            },
+            0xD0 => {
+                cpu.branch(@as(u8, cpu.flags.z), 0);
+            },
+            0xB0 => {
+                cpu.branch(@as(u8, cpu.flags.c), 1);
+            },
+            0x90 => {
+                cpu.branch(@as(u8, cpu.flags.c), 0);
+            },
+            0x30 => {
+                cpu.branch(@as(u8, cpu.flags.n), 1);
+            },
+            0x10 => {
+                cpu.branch(@as(u8, cpu.flags.n), 0);
+            },
+            0x50 => {
+                cpu.branch(@as(u8, cpu.flags.v), 0);
+            },
+            0x70 => {
+                cpu.branch(@as(u8, cpu.flags.v), 1);
+            },
+            0x18 => {
+                cpu.flags.c = 0;
+                cpu.cycles_executed +%= 1;
+            },
+            0x38 => {
+                cpu.flags.c = 1;
+                cpu.cycles_executed +%= 1;
+            },
+            0xD8 => {
+                cpu.flags.d = 0;
+                cpu.cycles_executed +%= 1;
+            },
+            0xF8 => {
+                cpu.flags.d = 1;
+                cpu.cycles_executed +%= 1;
+            },
+            0x58 => {
+                cpu.flags.i = 0;
+                cpu.cycles_executed +%= 1;
+            },
+            0x78 => {
+                cpu.flags.i = 1;
+                cpu.cycles_executed +%= 1;
+            },
+            0xB8 => {
+                cpu.flags.v = 0;
+                cpu.cycles_executed +%= 1;
+            },
+            0xEA => {
+                cpu.cycles_executed +%= 1;
+            },
+            0x6D => {
+                const addr: u16 = addrAbs(cpu);
+                const op: u8 = cpu.readByte(addr);
+                cpu.adc(op);
+            },
+            0x7D => {
+                const addr: u16 = addrAbsX(cpu);
+                const op: u8 = cpu.readByte(addr);
+                cpu.adc(op);
+            },
+            0x79 => {
+                const addr: u16 = addrAbsY(cpu);
+                const op: u8 = cpu.readByte(addr);
+                cpu.adc(op);
+            },
+            0x65 => {
+                const addr: u16 = addrZp(cpu);
+                const op: u8 = cpu.readByte(addr);
+                cpu.adc(op);
+            },
+            0x75 => {
+                const addr: u16 = addrZpX(cpu);
+                const op: u8 = cpu.readByte(addr);
+                cpu.adc(op);
+            },
+            0x61 => {
+                const addr: u16 = addrIndX(cpu);
+                const op: u8 = cpu.readByte(addr);
+                cpu.adc(op);
+            },
+            0x71 => {
+                const addr: u16 = addrIndY(cpu);
+                const op: u8 = cpu.readByte(addr);
+                cpu.adc(op);
+            },
+            0x69 => {
+                const op: u8 = fetchUByte(cpu);
+                cpu.adc(op);
+            },
+            0xE9 => {
+                const op: u8 = fetchUByte(cpu);
+                cpu.sbc(op);
+            },
+            0xED => {
+                const addr: u16 = addrAbs(cpu);
+                const op: u8 = cpu.readByte(addr);
+                cpu.sbc(op);
+            },
+            0xE5 => {
+                const addr: u16 = addrZp(cpu);
+                const op: u8 = cpu.readByte(addr);
+                cpu.sbc(op);
+            },
+            0xF5 => {
+                const addr: u16 = addrZpX(cpu);
+                const op: u8 = cpu.readByte(addr);
+                cpu.sbc(op);
+            },
+            0xFD => {
+                const addr: u16 = addrAbsX(cpu);
+                const op: u8 = cpu.readByte(addr);
+                cpu.sbc(op);
+            },
+            0xF9 => {
+                const addr: u16 = addrAbsY(cpu);
+                const op: u8 = cpu.readByte(addr);
+                cpu.sbc(op);
+            },
+            0xE1 => {
+                const addr: u16 = addrIndX(cpu);
+                const op: u8 = cpu.readByte(addr);
+                cpu.sbc(op);
+            },
+            0xF1 => {
+                const addr: u16 = addrIndY(cpu);
+                const op: u8 = cpu.readByte(addr);
+                cpu.sbc(op);
+            },
+            0xE0 => {
+                const op: u8 = fetchUByte(cpu);
+                cpu.cmpReg(op, cpu.x);
+            },
+            0xC0 => {
+                const op: u8 = fetchUByte(cpu);
+                cpu.cmpReg(op, cpu.y);
+            },
+            0xE4 => {
+                const addr: u16 = addrZp(cpu);
+                const op: u8 = cpu.readByte(addr);
+                cpu.cmpReg(op, cpu.x);
+            },
+            0xC4 => {
+                const addr: u16 = addrZp(cpu);
+                const op: u8 = cpu.readByte(addr);
+                cpu.cmpReg(op, cpu.y);
+            },
+            0xEC => {
+                const addr: u16 = addrAbs(cpu);
+                const op: u8 = cpu.readByte(addr);
+                cpu.cmpReg(op, cpu.x);
+            },
+            0xCC => {
+                const addr: u16 = addrAbs(cpu);
+                const op: u8 = cpu.readByte(addr);
+                cpu.cmpReg(op, cpu.y);
+            },
+            0xC9 => {
+                const op: u8 = fetchUByte(cpu);
+                cpu.cmpReg(op, cpu.a);
+            },
+            0xC5 => {
+                const addr: u16 = addrZp(cpu);
+                const op: u8 = cpu.readByte(addr);
+                cpu.cmpReg(op, cpu.a);
+            },
+            0xD5 => {
+                const addr: u16 = addrZpX(cpu);
+                const op: u8 = cpu.readByte(addr);
+                cpu.cmpReg(op, cpu.a);
+            },
+            0xCD => {
+                const addr: u16 = addrAbs(cpu);
+                const op: u8 = cpu.readByte(addr);
+                cpu.cmpReg(op, cpu.a);
+            },
+            0xDD => {
+                const addr: u16 = addrAbsX(cpu);
+                const op: u8 = cpu.readByte(addr);
+                cpu.cmpReg(op, cpu.a);
+            },
+            0xD9 => {
+                const addr: u16 = addrAbsY(cpu);
+                const op: u8 = cpu.readByte(addr);
+                cpu.cmpReg(op, cpu.a);
+            },
+            0xC1 => {
+                const addr: u16 = addrIndX(cpu);
+                const op: u8 = cpu.readByte(addr);
+                cpu.cmpReg(op, cpu.a);
+            },
+            0xD1 => {
+                const addr: u16 = addrIndY(cpu);
+                const op: u8 = cpu.readByte(addr);
+                cpu.cmpReg(op, cpu.a);
+            },
+            0xA => {
+                cpu.a = cpu.asl(cpu.a);
+            },
+            0x6 => {
+                const addr: u16 = addrZp(cpu);
+                const op: u8 = cpu.readByte(addr);
+                const res: u8 = cpu.asl(op);
+                cpu.writeByte(res, addr);
+            },
+            0x16 => {
+                const addr: u16 = addrZpX(cpu);
+                const op: u8 = cpu.readByte(addr);
+                const res: u8 = cpu.asl(op);
+                cpu.writeByte(res, addr);
+            },
+            0xE => {
+                const addr: u16 = addrAbs(cpu);
+                const op: u8 = cpu.readByte(addr);
+                const res: u8 = cpu.asl(op);
+                cpu.writeByte(res, addr);
+            },
+            0x1E => {
+                const addr: u16 = addrAbsX5(cpu);
+                const op: u8 = cpu.readByte(addr);
+                const res: u8 = cpu.asl(op);
+                cpu.writeByte(res, addr);
+            },
+            0x4A => {
+                cpu.a = cpu.lsr(cpu.a);
+            },
+            0x46 => {
+                const addr: u16 = addrZp(cpu);
+                const op: u8 = cpu.readByte(addr);
+                const res: u8 = cpu.lsr(op);
+                cpu.writeByte(res, addr);
+            },
+            0x56 => {
+                const addr: u16 = addrZpX(cpu);
+                const op: u8 = cpu.readByte(addr);
+                const res: u8 = cpu.lsr(op);
+                cpu.writeByte(res, addr);
+            },
+            0x4E => {
+                const addr: u16 = addrAbs(cpu);
+                const op: u8 = cpu.readByte(addr);
+                const res: u8 = cpu.lsr(op);
+                cpu.writeByte(res, addr);
+            },
+            0x5E => {
+                const addr: u16 = addrAbsX5(cpu);
+                const op: u8 = cpu.readByte(addr);
+                const res: u8 = cpu.lsr(op);
+                cpu.writeByte(res, addr);
+            },
+            0x2A => {
+                cpu.a = cpu.rol(cpu.a);
+            },
+            0x26 => {
+                const addr: u16 = addrZp(cpu);
+                const op: u8 = cpu.readByte(addr);
+                const res: u8 = cpu.rol(op);
+                cpu.writeByte(res, addr);
+            },
+            0x36 => {
+                const addr: u16 = addrZpX(cpu);
+                const op: u8 = cpu.readByte(addr);
+                const res: u8 = cpu.rol(op);
+                cpu.writeByte(res, addr);
+            },
+            0x2E => {
+                const addr: u16 = addrAbs(cpu);
+                const op: u8 = cpu.readByte(addr);
+                const res: u8 = cpu.rol(op);
+                cpu.writeByte(res, addr);
+            },
+            0x3E => {
+                const addr: u16 = addrAbsX5(cpu);
+                const op: u8 = cpu.readByte(addr);
+                const res: u8 = cpu.rol(op);
+                cpu.writeByte(res, addr);
+            },
+            0x6A => {
+                cpu.a = cpu.ror(cpu.a);
+            },
+            0x66 => {
+                const addr: u16 = addrZp(cpu);
+                const op: u8 = cpu.readByte(addr);
+                const res: u8 = cpu.ror(op);
+                cpu.writeByte(res, addr);
+            },
+            0x76 => {
+                const addr: u16 = addrZpX(cpu);
+                const op: u8 = cpu.readByte(addr);
+                const res: u8 = cpu.ror(op);
+                cpu.writeByte(res, addr);
+            },
+            0x6E => {
+                const addr: u16 = addrAbs(cpu);
+                const op: u8 = cpu.readByte(addr);
+                const res: u8 = cpu.ror(op);
+                cpu.writeByte(res, addr);
+            },
+            0x7E => {
+                const addr: u16 = addrAbsX5(cpu);
+                const op: u8 = cpu.readByte(addr);
+                const res: u8 = cpu.ror(op);
+                cpu.writeByte(res, addr);
+            },
+            0x0 => {
+                cpu.pushW(cpu.pc + 1);
+                pushPs(cpu);
+                cpu.pc = cpu.readWord(65534);
+                cpu.flags.b = 1;
+                cpu.flags.i = 1;
+                return 0;
+            },
+            0x40 => {
+                popPs(cpu);
+                cpu.pc = popW(cpu);
             },
             else => return 0,
         }
         cpu.cycles_last_step = cpu.cycles_executed -% cycles_now;
 
-        if (cpu.cycles_executed % FramesPerVsyncPAL == 0) cpu.frame_ctr_PAL += 1;
-        if (cpu.cycles_executed % FramesPerVsyncNTSC == 0) cpu.frame_ctr_NTSC += 1;
+        if (cpu.emu.vic == Emulator.VicType.pal and
+            cpu.cycles_executed % Timing.cyclesVsyncPAL == 0) cpu.frame_ctr += 1;
+
+        if (cpu.emu.vic == Emulator.VicType.ntsc and
+            cpu.cycles_executed % Timing.cyclesVsyncNTSC == 0) cpu.frame_ctr += 1;
 
         if (cpu.dbg_enabled) {
-            cpu.PrintStatus();
+            cpu.printStatus();
         }
 
         if (cpu.sid_dbg_enabled and cpu.sid_reg_written) {
-            cpu.PrintSIDRegisters();
+            cpu.emu.sid.printRegisters();
         }
 
         return @as(u8, @truncate(cpu.cycles_last_step));

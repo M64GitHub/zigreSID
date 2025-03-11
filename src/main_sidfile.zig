@@ -2,7 +2,8 @@ const std = @import("std");
 const SDL = @cImport({
     @cInclude("SDL.h");
 });
-const CPU = @import("6510/6510.zig").CPU;
+const Cpu = @import("6510/6510.zig").Cpu;
+const Emulator = @import("6510/6510.zig").Emulator;
 const ReSID = @import("resid/resid.zig").ReSID;
 const SIDFile = @import("resid/sidfile.zig").SIDFile;
 
@@ -67,38 +68,43 @@ pub fn main() !void {
         mem_address = sidfile.header.load_address;
     }
 
-    // -- initialize CPU
+    // -- initialize Cpu
 
-    try stdout.print("[MAIN] Initializing CPU\n", .{});
-    var cpu = CPU.Init(gpa, 0x800); // address does not matter here
-    cpu.mem.Data[0x01] = 0x37;
+    try stdout.print("[MAIN] Initializing EMU\n", .{});
+    var emu = Emulator.init(gpa, Emulator.VicType.pal, 0x0800);
+    emu.mem.data[0x01] = 0x37;
+
+    // emu.dbg_enabled = true;
 
     // write the sid player routine and data into the emulator memory
     if (is_prg) {
-        const loaded_addr = cpu.SetPrg(sid_rawmem, false);
+        const loaded_addr = emu.setPrg(sid_rawmem, false);
         try stdout.print("[MAIN] Loaded address : {X:0>4}\n", .{loaded_addr});
     } else {
-        cpu.WriteMem(sid_rawmem, mem_address);
+        // emu.WriteMem(sid_rawmem, mem_address);
     }
 
     // -- Call SID Init
     try stdout.print("[MAIN] Calling SID Init\n", .{});
-    cpu.A = 0;
-    cpu.X = 0;
-    cpu.Y = 0;
-    cpu.Call(sidfile.header.init_address);
-    try stdout.print("CYCLES: {d}\n", .{cpu.cycles_executed});
+    emu.cpu.a = 0;
+    emu.cpu.x = 0;
+    emu.cpu.y = 0;
+    emu.call(sidfile.header.init_address);
+    try stdout.print("CYCLES: {d}\n", .{emu.cpu.cycles_executed});
 
+    // emu.cpu.dbg_enabled = true;
     // -- Loop Call SID Play
     try stdout.print("[MAIN] Calling SID Play\n", .{});
     for (0..max_frames) |i| {
-        cpu.cycles_executed = 0;
-        cpu.Reset();
-        cpu.Call(sidfile.header.play_address);
-        if (cpu.ext_sid_reg_written) {
-            try stdout.print("{d}: ", .{i});
-            try stdout.print("CYCLES: {d}\n", .{cpu.cycles_executed});
-            cpu.PrintSIDRegisters();
+        emu.cpu.cycles_executed = 0;
+        emu.cpu.a = 0;
+        emu.cpu.x = 0;
+        emu.cpu.y = 0;
+        emu.call(sidfile.header.play_address);
+        if (emu.cpu.ext_sid_reg_written) {
+            try stdout.print("[FRM ] {d} ", .{i});
+            try stdout.print("[CYCL] {d} ", .{emu.cpu.cycles_executed});
+            emu.sid.printRegisters();
         }
     }
 }

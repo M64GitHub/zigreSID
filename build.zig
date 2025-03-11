@@ -103,15 +103,6 @@ pub fn build(b: *std.Build) void {
     exe_wavwriter.linkLibrary(resid_lib);
     b.installArtifact(exe_wavwriter);
 
-    // Build 6510 Emulator Test Executable
-    const exe_6510_cputest = b.addExecutable(.{
-        .name = "zigReSID-6510-cpu-test",
-        .root_source_file = b.path("src/main_6510-cpu-test.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    b.installArtifact(exe_6510_cputest);
-
     // Build .sid-file Test Executable
     const exe_sidfile = b.addExecutable(.{
         .name = "zigReSID-play-sidfile",
@@ -131,7 +122,6 @@ pub fn build(b: *std.Build) void {
     const run_renderaudio = b.addRunArtifact(exe_renderaudio);
     const run_wavwriter = b.addRunArtifact(exe_wavwriter);
 
-    const run_6510_cputest = b.addRunArtifact(exe_6510_cputest);
     const run_sidfile = b.addRunArtifact(exe_sidfile);
 
     if (b.args) |args| {
@@ -140,7 +130,6 @@ pub fn build(b: *std.Build) void {
         run_sdl.addArgs(args);
         run_renderaudio.addArgs(args);
         run_wavwriter.addArgs(args);
-        run_6510_cputest.addArgs(args);
         run_sidfile.addArgs(args);
     }
 
@@ -158,9 +147,6 @@ pub fn build(b: *std.Build) void {
 
     const run_step_wavwriter = b.step("run-wav-writer", "Run the Wav-Writer demo");
     run_step_wavwriter.dependOn(&run_wavwriter.step);
-
-    const run_step_6510_cputest = b.step("run-6510-cpu-test", "Run the 6510 cpu test");
-    run_step_6510_cputest.dependOn(&run_6510_cputest.step);
 
     const run_step_sidfile = b.step("run-sidfile", "Run the .sid file player test");
     run_step_sidfile.dependOn(&run_sidfile.step);
