@@ -30,9 +30,9 @@ This project is **audio-library agnostic** by design. The **core SID emulation a
 ```zig
 const std = @import("std");
 
-const ReSID = @import("resid/resid.zig").ReSID;
-const ReSIDDmpPlayer = @import("resid/resid.zig").ReSIDDmpPlayer;
-const WavWriter = @import("resid/wavwriter.zig").WavWriter;
+const ReSID = @import("resid").ReSID;
+const ReSIDDmpPlayer = @import("resid").ReSIDDmpPlayer;
+const WavWriter = @import("wavwriter").WavWriter;
 
 pub fn main() !void {
     const gpa = std.heap.page_allocator;
@@ -75,7 +75,7 @@ If you’re working with SDL, the `SDLreSIDDmpPlayer` struct provides a convenie
 ```zig
 const std = @import("std");
 
-const SDLreSIDDmpPlayer = @import("resid/residsdl.zig").SDLreSIDDmpPlayer;
+const SDLreSIDDmpPlayer = @import("residsdl").SDLreSIDDmpPlayer;
 
 pub fn main() !void {
     const gpa = std.heap.page_allocator;
@@ -312,8 +312,8 @@ const SDL = @cImport({
     @cInclude("SDL.h");
 });
 
-const ReSID = @import("resid/resid.zig").ReSID;
-const ReSIDDmpPlayer = @import("resid/resid.zig").ReSIDDmpPlayer;
+const ReSID = @import("resid").ReSID;
+const ReSIDDmpPlayer = @import("resid").ReSIDDmpPlayer;
 
 pub fn main() !void {
     const gpa = std.heap.page_allocator;
@@ -428,9 +428,9 @@ const SDL = @cImport({
     @cInclude("SDL.h");
 });
 
-const ReSID = @import("resid/resid.zig").ReSID;
-const ReSIDDmpPlayer = @import("resid/resid.zig").ReSIDDmpPlayer;
-const DP_PLAYSTATE = @import("resid/resid.zig").DP_PLAYSTATE;
+const ReSID = @import("resid").ReSID;
+const ReSIDDmpPlayer = @import("resid").ReSIDDmpPlayer;
+const DP_PLAYSTATE = @import("resid").DP_PLAYSTATE;
 
 fn playerThreadFunc(player: *ReSIDDmpPlayer) !void {
     while (player.isPlaying()) {
