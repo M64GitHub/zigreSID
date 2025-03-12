@@ -1,7 +1,7 @@
 const std = @import("std");
 
-const ReSID = @import("resid").ReSID;
-const ReSIDDmpPlayer = @import("resid").ReSIDDmpPlayer;
+const ReSid = @import("resid").ReSid;
+const ReSidDmpPlayer = @import("resid").ReSidDmpPlayer;
 const WavWriter = @import("wavwriter").WavWriter;
 
 pub fn main() !void {
@@ -12,14 +12,14 @@ pub fn main() !void {
     const pcm_buffer = try gpa.alloc(i16, sampling_rate * 10); // audio buffer
     defer gpa.free(pcm_buffer);
 
-    try stdout.print("[MAIN] zigSID audio rendering wav writer demo!\n", .{});
+    try stdout.print("[MAIN] zigSid audio rendering wav writer demo!\n", .{});
 
-    // create a ReSID instance and configure it
-    var sid = try ReSID.init("MyZIGSID");
+    // create a ReSid instance and configure it
+    var sid = try ReSid.init("MyZIGSid");
     defer sid.deinit();
 
-    // create a ReSIDDmpPlayer instance and initialize it with the ReSID instance
-    var player = try ReSIDDmpPlayer.init(gpa, sid.ptr);
+    // create a ReSidDmpPlayer instance and initialize it with the ReSid instance
+    var player = try ReSidDmpPlayer.init(gpa, sid.ptr);
     defer player.deinit();
 
     try player.loadDmp("data/plasmaghost.sid.dmp");

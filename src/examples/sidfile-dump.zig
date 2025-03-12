@@ -3,8 +3,8 @@ const SDL = @cImport({
     @cInclude("SDL2/SDL.h");
 });
 const Emulator = @import("6510").Emulator;
-const ReSID = @import("resid").ReSID;
-const SIDFile = @import("sidfile").SIDFile;
+const ReSid = @import("resid").ReSid;
+const SidFile = @import("sidfile").SidFile;
 
 pub fn main() !void {
     const gpa = std.heap.page_allocator;
@@ -17,11 +17,11 @@ pub fn main() !void {
     // const file_name = "data/Cybernoid_II.sid";
     const file_name = "data/Club64.sid";
 
-    try stdout.print("[MAIN] Loading SID tune '{s}'\n", .{file_name});
+    try stdout.print("[MAIN] Loading Sid tune '{s}'\n", .{file_name});
 
-    var sidfile = SIDFile.init(gpa);
+    var sidfile = SidFile.init(gpa);
     try sidfile.loadFile(file_name);
-    try stdout.print("[MAIN] Loaded SID tune: {s}\n", .{sidfile.getName()});
+    try stdout.print("[MAIN] Loaded Sid tune: {s}\n", .{sidfile.getName()});
     try stdout.print("[MAIN] Author         : {s}\n", .{sidfile.getAuthor()});
     try stdout.print("[MAIN] Release Info   : {s}\n", .{sidfile.getRelease()});
     try stdout.print("[MAIN] ID             : {s}\n", .{sidfile.getId()});
@@ -51,7 +51,7 @@ pub fn main() !void {
         sidfile.filesize,
     });
 
-    const sid_rawmem = sidfile.getSIDDataSlice();
+    const sid_rawmem = sidfile.getSidDataSlice();
 
     var mem_address: u16 = 0;
     var is_prg: bool = false;
@@ -83,8 +83,8 @@ pub fn main() !void {
         // emu.WriteMem(sid_rawmem, mem_address);
     }
 
-    // -- Call SID Init
-    try stdout.print("[MAIN] Calling SID Init\n", .{});
+    // -- Call Sid Init
+    try stdout.print("[MAIN] Calling Sid Init\n", .{});
     emu.cpu.a = 0;
     emu.cpu.x = 0;
     emu.cpu.y = 0;
@@ -92,8 +92,8 @@ pub fn main() !void {
     try stdout.print("CYCLES: {d}\n", .{emu.cpu.cycles_executed});
 
     // emu.cpu.dbg_enabled = true;
-    // -- Loop Call SID Play
-    try stdout.print("[MAIN] Calling SID Play\n", .{});
+    // -- Loop Call Sid Play
+    try stdout.print("[MAIN] Calling Sid Play\n", .{});
     for (0..max_frames) |i| {
         emu.cpu.cycles_executed = 0;
         emu.cpu.a = 0;

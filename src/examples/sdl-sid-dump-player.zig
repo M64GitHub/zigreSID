@@ -1,15 +1,15 @@
 const std = @import("std");
 
-const SDLreSIDDmpPlayer = @import("residsdl").SDLreSIDDmpPlayer;
+const SdlReSidDmpPlayer = @import("residsdl").SdlReSidDmpPlayer;
 
 pub fn main() !void {
     const gpa = std.heap.page_allocator;
     const stdout = std.io.getStdOut().writer();
 
-    try stdout.print("[MAIN] zigSID audio demo sdl dump player!\n", .{});
+    try stdout.print("[MAIN] zigSid audio demo sdl dump player!\n", .{});
 
     // create SDL sid dump player and configure it
-    var player = try SDLreSIDDmpPlayer.init(gpa, "MY SID Player");
+    var player = try SdlReSidDmpPlayer.init(gpa, "MY Sid Player");
     defer player.deinit();
 
     // load sid dump

@@ -1,11 +1,11 @@
 const std = @import("std");
 
-const SIDHeader = packed struct {
-    // id: [4]u8, // "PSID" or "RSID"
-    id: @Vector(4, u8), // "PSID" or "RSID"
+const SidHeader = packed struct {
+    // id: [4]u8, // "PSid" or "RSid"
+    id: @Vector(4, u8), // "PSid" or "RSid"
     version: u16, // Version number (usually 2 or 4)
-    data_offset: u16, // Offset where SID data begins
-    load_address: u16, // Where to load the SID data
+    data_offset: u16, // Offset where Sid data begins
+    load_address: u16, // Where to load the Sid data
     init_address: u16, // Init routine address
     play_address: u16, // Play routine address
     num_songs: u16, // Number of subsongs
@@ -15,18 +15,18 @@ const SIDHeader = packed struct {
     author: @Vector(32, u8), // ASCII composer name
     released: @Vector(32, u8), // ASCII release info
     flags: u16, // PAL/NTSC compatibility flags
-    start_page: u16, // Only for RSID (usually 0x00)
-    page_length: u16, // Only for RSID (usually 0x00)
+    start_page: u16, // Only for RSid (usually 0x00)
+    page_length: u16, // Only for RSid (usually 0x00)
 };
 
-pub const SIDFile = struct {
+pub const SidFile = struct {
     allocator: std.mem.Allocator,
     data: []u8,
-    header: SIDHeader,
+    header: SidHeader,
     filesize: u32,
 
-    pub fn init(allocator: std.mem.Allocator) SIDFile {
-        return SIDFile{
+    pub fn init(allocator: std.mem.Allocator) SidFile {
+        return SidFile{
             .allocator = allocator,
             .data = &[_]u8{},
             .header = undefined,
@@ -34,7 +34,7 @@ pub const SIDFile = struct {
         };
     }
 
-    pub fn loadFile(self: *SIDFile, filename: []const u8) !void {
+    pub fn loadFile(self: *SidFile, filename: []const u8) !void {
         const file = try std.fs.cwd().openFile(filename, .{});
         defer file.close();
 
@@ -54,35 +54,35 @@ pub const SIDFile = struct {
         self.header.speed = toBigEndianU32(self.header.speed);
     }
 
-    pub fn parseHeader(self: *SIDFile) !void {
-        if (self.data.len < 124) return error.InvalidSID;
+    pub fn parseHeader(self: *SidFile) !void {
+        if (self.data.len < 124) return error.InvalidSid;
 
-        self.header = @bitCast(@as(*const SIDHeader, @alignCast(@ptrCast(&self.data[0]))).*);
+        self.header = @bitCast(@as(*const SidHeader, @alignCast(@ptrCast(&self.data[0]))).*);
 
         if (!std.mem.eql(u8, &@as([4]u8, self.header.id), "PSID") and
             !std.mem.eql(u8, &@as([4]u8, self.header.id), "RSID"))
         {
-            return error.InvalidSID;
+            return error.InvalidSid;
         }
     }
 
-    pub fn getSIDDataSlice(self: *SIDFile) []const u8 {
+    pub fn getSidDataSlice(self: *SidFile) []const u8 {
         return self.data[self.header.data_offset..];
     }
 
-    pub fn getId(self: *SIDFile) []const u8 {
+    pub fn getId(self: *SidFile) []const u8 {
         return @as([*]const u8, @ptrCast(&self.header.id))[0..4]; // Convert to slice
     }
 
-    pub fn getName(self: *SIDFile) []const u8 {
+    pub fn getName(self: *SidFile) []const u8 {
         return @as([*]const u8, @ptrCast(&self.header.name))[0..32]; // Convert to slice
     }
 
-    pub fn getAuthor(self: *SIDFile) []const u8 {
+    pub fn getAuthor(self: *SidFile) []const u8 {
         return @as([*]const u8, @ptrCast(&self.header.author))[0..32]; // Convert to slice
     }
 
-    pub fn getRelease(self: *SIDFile) []const u8 {
+    pub fn getRelease(self: *SidFile) []const u8 {
         return @as([*]const u8, @ptrCast(&self.header.released))[0..32]; // Convert to slice
     }
 
@@ -94,7 +94,7 @@ pub const SIDFile = struct {
         return @byteSwap(value);
     }
 
-    pub fn deinit(self: *SIDFile) void {
+    pub fn deinit(self: *SidFile) void {
         self.allocator.free(self.data);
     }
 };

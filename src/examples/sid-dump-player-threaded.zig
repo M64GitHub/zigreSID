@@ -3,11 +3,11 @@ const SDL = @cImport({
     @cInclude("SDL2/SDL.h");
 });
 
-const ReSID = @import("resid").ReSID;
-const ReSIDDmpPlayer = @import("resid").ReSIDDmpPlayer;
-const Playstate = @import("resid").ReSIDDmpPlayer.Playstate;
+const ReSid = @import("resid").ReSid;
+const ReSidDmpPlayer = @import("resid").ReSidDmpPlayer;
+const Playstate = @import("resid").ReSidDmpPlayer.Playstate;
 
-fn playerThreadFunc(player: *ReSIDDmpPlayer) !void {
+fn playerThreadFunc(player: *ReSidDmpPlayer) !void {
     while (player.isPlaying()) {
         if (!player.update()) {
             player.stop();
@@ -20,14 +20,14 @@ pub fn main() !void {
     const gpa = std.heap.page_allocator;
     const stdout = std.io.getStdOut().writer();
 
-    try stdout.print("[MAIN] zigSID audio demo threaded!\n", .{});
+    try stdout.print("[MAIN] zigSid audio demo threaded!\n", .{});
 
-    // create a ReSID instance and configure it
-    var sid = try ReSID.init("MyZIGSID");
+    // create a ReSid instance and configure it
+    var sid = try ReSid.init("MyZIGSid");
     defer sid.deinit();
 
-    // create a ReSIDDmpPlayer instance and initialize it with the ReSID instance
-    var player = try ReSIDDmpPlayer.init(gpa, sid.ptr);
+    // create a ReSidDmpPlayer instance and initialize it with the ReSid instance
+    var player = try ReSidDmpPlayer.init(gpa, sid.ptr);
     defer player.deinit();
 
     // load dump
@@ -41,7 +41,7 @@ pub fn main() !void {
         .format = SDL.AUDIO_S16,
         .channels = 1,
         .samples = 4096,
-        .callback = &ReSIDDmpPlayer.sdlAudioCallback,
+        .callback = &ReSidDmpPlayer.sdlAudioCallback,
         .userdata = @ptrCast(&player),
     };
 
@@ -67,17 +67,17 @@ pub fn main() !void {
     const playerThread = try std.Thread.spawn(.{}, playerThreadFunc, .{&player});
     defer playerThread.join(); // Wait for the thread to finish (if needed)
 
-    // do something in main: print the SID registers, and player stats
+    // do something in main: print the Sid registers, and player stats
     for (1..10) |_| {
         const regs = sid.getRegs(); // [25]u8 array
 
-        try stdout.print("[MAIN] SID Registers: ", .{});
+        try stdout.print("[MAIN] Sid Registers: ", .{});
         for (regs) |value| {
             try stdout.print("{x:0>2} ", .{value});
         }
         try stdout.print("\n", .{});
 
-        try stdout.print("[MAIN] {d} buffers played, {d} buffer underruns, {d} SID frames\n", .{ player.getPlayerContext().stat_bufwrites, player.getPlayerContext().stat_buf_underruns, player.getPlayerContext().stat_framectr });
+        try stdout.print("[MAIN] {d} buffers played, {d} buffer underruns, {d} Sid frames\n", .{ player.getPlayerContext().stat_bufwrites, player.getPlayerContext().stat_buf_underruns, player.getPlayerContext().stat_framectr });
 
         std.time.sleep(0.5 * std.time.ns_per_s);
     }
