@@ -118,28 +118,6 @@ pub fn main() !void {
 
 <br>
 
-## 🎼 **Audio and SID Chip Details**
-
-- 🎵 **Stereo Audio Output**: The generated audio fills a **mono buffer**, providing the SID mono signal at equal levels on the left and right audio channel. A dual SID for a 6 voice true stereo sound is in progress.
-- 🎚️ **Sampling Rate**: Set to **44.1kHz** by default. The sampling rate is **changeable at runtime** via the provided API.
-- 🎛️ **SID Chip Model Selection**:
-  - **SID6581**: Classic SID sound with characteristic filter behavior, more bassy sound.
-  - **SID8580**: Enhanced model with improved signal-to-noise ratio (**default**).
-- **Emulation Quality**: The emulation quality is set to the highest possible level supported by the reSID library: `SAMPLE_RESAMPLE_INTERPOLATE`.
-
-<br>
-
-## 💡 How The reSID Zig Integration Works
-
-This project bridges the gap between C++, C, and Zig:
-
-1. **reSID C++ Library**: Handles low-level SID emulation.
-2. **Simplified C++ Framework**: A custom wrapper that manages timing, buffer generation, and playback logic, so you don’t have to.
-3. **C Bindings**: Exposes the simpliefied framework through a clean C interface.
-4. **Zig Wrapper**: A clear and explicit Zig interface built with structs and associated methods, wrapping C bindings for seamless SID playback and control. 
-
-<br>
-
 ## 🛠️ Building the Project
 
 Ensure you have **Zig 0.13.0+** and **SDL2** development libraries installed:
@@ -177,6 +155,27 @@ Executables will be available in `zig-out/bin/`:
 
 <br>
 
+## 🎼 **Audio and SID Chip Details**
+
+- 🎵 **Stereo Audio Output**: The generated audio fills a **mono buffer**, providing the SID mono signal at equal levels on the left and right audio channel. A dual SID for a 6 voice true stereo sound is in progress.
+- 🎚️ **Sampling Rate**: Set to **44.1kHz** by default. The sampling rate is **changeable at runtime** via the provided API.
+- 🎛️ **SID Chip Model Selection**:
+  - **SID6581**: Classic SID sound with characteristic filter behavior, more bassy sound.
+  - **SID8580**: Enhanced model with improved signal-to-noise ratio (**default**).
+- **Emulation Quality**: The emulation quality is set to the highest possible level supported by the reSID library: `SAMPLE_RESAMPLE_INTERPOLATE`.
+
+<br>
+
+## 💡 How The reSID Zig Integration Works
+
+This project bridges the gap between C++, C, and Zig:
+
+1. **reSID C++ Library**: Handles low-level SID emulation.
+2. **Simplified C++ Framework**: A custom wrapper that manages timing, buffer generation, and playback logic, so you don’t have to.
+3. **C Bindings**: Exposes the simpliefied framework through a clean C interface.
+4. **Zig Wrapper**: A clear and explicit Zig interface built with structs and associated functions, wrapping C bindings for seamless SID playback and control. 
+
+<br>
   
 ## 🎼 About the **ReSIDDmpPlayer**  
 #### Realtime Audio Buffer Generation via Callback
