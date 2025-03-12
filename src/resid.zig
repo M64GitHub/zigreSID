@@ -58,7 +58,8 @@ pub const ReSidDmpPlayer = struct {
     allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator, resid: *wrapper.ReSID) !ReSidDmpPlayer {
-        const player = wrapper.ReSIDDmpPlayer_create(resid) orelse return error.FailedToCreatePlayer;
+        const player = wrapper.ReSIDDmpPlayer_create(resid) orelse
+            return error.FailedToCreatePlayer;
         return ReSidDmpPlayer{ .ptr = player, .allocator = allocator };
     }
 
@@ -108,9 +109,7 @@ pub const ReSidDmpPlayer = struct {
 
         const buffer = try self.allocator.alloc(u8, file_size);
 
-        // Read the file into the buffer
         _ = try file.readAll(buffer);
-
         setDmp(self, buffer);
     }
 
