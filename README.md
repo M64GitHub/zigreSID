@@ -132,55 +132,32 @@ zig build
 
 5 examples are available for demonstration:
 
-- 🎹 **Integrated SDL Playback:** `src/main_sdlplayer.zig`
+You can find them under `src/examples/`
+
+- 🎹 **SDL SID Dump Player:** `src/examples/sdl-sid-dump-player.zig`
      automatic SDL configuration, simple playback
-- 🎛️ **Unthreaded Playback:** `src/main_unthreaded.zig`
+- 🎛️ **SID Dump Player:** `src/examples/sid-dump-player.zig`
      manual SDL configuration, and access to SID registers
-- ⚡ **Threaded Playback:** `src/main_threaded.zig`
+- ⚡ **Threaded SID Dump Player:** `src/examples/sid-dump-player-threaded.zig`
      manual SDL configuration, access to SID registers, and player internals, playback in custom thread
-- 📀 **WAV Writing Example**: `src/main_wavwriter.zig`
+- 📀 **WAV Writing Example**: `src/examples/wav-writer-example.zig`
      demonstrates how to generate a SID-based PCM buffer and save it as a .wav file
-- 🎧 **Custom PCM Buffer Generation and Playback**: `src/main_renderaudio.zig`
+- 🎧 **Custom PCM Buffer Generation and Playback:** `src/examples/render-audio-example.zig`
      generates a raw SID audio PCM buffer and plays it directly (via SDL_QueueAudio())
+- 🎹 **SID-File Dump Utility:** `src/examples/sidfile-dump.zig`
+     creates dumps from your `.sid` files.
 
 Executables will be available in `zig-out/bin/`:
 
-- `zig_sid_demo_sdl`
-- `zig_sid_demo_unthreaded`
-- `zig_sid_demo_threaded`
-- `zig_sid_demo_renderaudio`
-- `zig_sid_demo_wavwriter`
+ - `zigreSID-dump-play`
+ - `zigreSID-dump-play-threaded`
+ - `zigreSID-play-sidfile`
+ - `zigreSID-render-audio`
+ - `zigreSID-sdl-player`
+ - `zigreSID-wav-writer`
 
 <br>
 
-## 🎼 Running the demos
-
-### 🎹 **Run Integrated SDL Playback** demo
-```bash
-zig build run-sdl
-```
-
-### 🎛️ **Run Unthreaded Playback** demo 
-```bash
-zig build run-unthreaded
-```
-
-### ⚡ **Run Threaded Playback** demo
-```bash
-zig build run-threaded
-```
-
-### 📀 **Run WAV Writing Example** demo
-```bash
-zig build run-wavwriter
-```
-
-### 🎧 **Custom PCM Buffer Generation and Playback** demo
-```bash
-zig build run-renderaudio
-```
-
-<br>
   
 ## 🎼 About the **ReSIDDmpPlayer**  
 #### Realtime Audio Buffer Generation via Callback
