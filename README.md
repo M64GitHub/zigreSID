@@ -25,7 +25,7 @@ With precise PAL & NTSC timing support, register state tracking, and real-time p
 - 🔧 **Simplified API** – All complex timing calculations and buffer management are handled automatically!  
 
 ### **🆕 New Features – Full `.sid` File Processing!**  
-- 🏆 **Supports `.sid` Files** – Load and execute real C64 SID music effortlessly!  
+- 🚀 **Supports `.sid` Files** – Load and execute real C64 SID music effortlessly!  
 - 🏁 **Full 6510 CPU Emulation** – Now includes a cycle-accurate 6510 CPU emulator for authentic execution of `.sid` files.  
 - ⏳ **PAL & NTSC Timing Support** – in case you need to be specific  
 - 🔄 **SID Register Dumping & Playback** – Analyze how SID registers change during music playback!  
