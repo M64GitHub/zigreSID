@@ -639,7 +639,12 @@ const DmpPlayerContext = extern struct {
 
 ## 🎧 License
 
-This project uses the **reSID** library and follows its licensing terms. The Zig and C bindings code is provided under the **MIT License**.
+This project uses the **reSID** library and follows its licensing terms. The Zig, C++, and C bindings code is provided under the **MIT License**.
+
+<br>
+
+## Credits
+Developed with ❤️ by **M64**. Credits to the amazing `resid` library and its authors!
 
 ---
 
