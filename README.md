@@ -61,7 +61,7 @@ pub fn main() !void {
     const pcm_buffer = try gpa.alloc(i16, sampling_rate * 10); // audio buffer
     defer gpa.free(pcm_buffer);
 
-    try stdout.print("[MAIN] zigSID audio rendering wav writer demo!\n", .{});
+    try stdout.print("[MAIN] zigreSID audio rendering wav writer demo!\n", .{});
 
     // create a ReSid instance
     var sid = try ReSid.init("zig sid 64");
