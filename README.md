@@ -29,13 +29,13 @@ With precise PAL & NTSC timing support, register state tracking, and real-time p
 - 🏁 **Full 6510 CPU Emulation** – Now includes a cycle-accurate 6510 CPU emulator for authentic execution of `.sid` files.  
 - ⏳ **PAL & NTSC Timing Support** – in case you need to be specific  
 - 🔄 **SID Register Dumping & Playback** – Analyze how SID registers change during music playback!  
-- 🛠️ **Fully Integrated in Zig** – A seamless **Zig-native** implementation, making SID emulation more accessible than ever!  
+- 🛠️ **Fully Integrated in Zig** – A seamless Zig-native implementation, making SID emulation more accessible than ever!  
 
 
 <br>
 
 ### 🎧 **Audio Library Independence**
-This project is **audio-library agnostic** by design. The **core SID emulation and playback logic** is completely independent of any audio backend. However, the **current implementation** demonstrates audio playback using **SDL2** for convenience and cross-platform support. You can easily adapt or extend the audio interface to suit other libraries or custom solutions. The playback engine supports both **automatic audio callbacks** for seamless integration and **manual audio buffer generation** for full control and customization of the audio stream.
+This project is **audio-library agnostic** by design. The core SID emulation and playback logic is completely independent of any audio backend. However, the current implementation demonstrates audio playback using **SDL2** for convenience and cross-platform support. You can easily adapt or extend the audio interface to suit other libraries or custom solutions. The playback engine supports both automatic audio callbacks for seamless integration and manual audio buffer generation for full control and customization of the audio stream.
 
 <br>
 
