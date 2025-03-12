@@ -39,7 +39,12 @@ This project is **audio-library agnostic** by design. The **core SID emulation a
 
 <br>
 
-### Minimal Example Wav-File Rendering
+## 🎵 As Simple As It Gets – Instant SID Playback!
+
+With just a few lines of code, you can **render** or **play back** SID audio effortlessly!  
+Here are **two minimal examples** demonstrating how easy it is to use **zigReSID**:
+
+### 🎼 Minimal Example: Wav-File Rendering
 
 ```zig
 const std = @import("std");
@@ -83,7 +88,7 @@ pub fn main() !void {
 
 <br>
 
-### Minimal Example Playback-Code (SDL specific)
+### 🔊 Minimal Example: Real-Time Playback (SDL)
 If you’re working with SDL, the `SDLreSIDDmpPlayer` struct provides a convenient way to handle playback. It fully manages SDL initialization, audio callbacks, and buffer generation internally, making playback effortless. Since it runs in the background, playback is non-blocking. More detailed examples can be found in the sections below.
 
 ```zig
