@@ -1,10 +1,10 @@
 # Zig SID Soundchip Emulation  
 
-This project provides **SID soundchip emulation for Zig**, enabling you to generate, process, and play SID audio with ease.  
-It is built upon the powerful **reSID C++ library**, delivering authentic SID sound emulation combined with the simplicity and safety of Zig.  
+This project provides SID soundchip emulation for Zig, enabling you to generate, process, and play SID audio with ease.  
+It is built upon the powerful reSID C++ library, delivering authentic SID sound emulation combined with the simplicity and safety of Zig.  
 
-This library **fully supports** the **`.sid` file format**, allowing you to load and **execute** real C64 SID music files!  
-To achieve this, it includes a cycle-accurate **MOS 6510 CPU emulator**, ensuring accurate playback as on original C64 hardware.  
+This library fully supports the `.sid` file format, allowing you to load and execute real C64 SID music files!  
+To achieve this, it includes a cycle-accurate MOS 6510 CPU emulator, ensuring accurate playback as on original C64 hardware.  
 
 With precise PAL & NTSC timing support, register state tracking, and real-time playback integration, it provides a complete environment for accurate SID music playback, debugging, and analysis.  
 
@@ -15,21 +15,21 @@ With precise PAL & NTSC timing support, register state tracking, and real-time p
 ## **🔥 Features**  
 
 ### **🎹 Core Features**  
-- 🎵 **SID Soundchip Emulation for Zig** – Experience the **iconic** SID sound directly in your Zig projects!  
-- ⚡ **Powered by reSID** – Uses the proven **reSID C++ library** for **high-quality** sound emulation. ([reSID on GitHub](https://github.com/daglem/reSID))  
-- 🎼 **Dynamic Audio Buffer Rendering** – Generates **high-fidelity PCM buffers** from SID music, perfect for **playback, processing, and visualization**.  
-- 📀 **WAV Export (Mono & Stereo)** – Save your SID-generated audio as **.wav files**, ideal for **archiving, music production, and retro projects**.  
-- 🎧 **Flexible Audio Backends** – Seamlessly integrates with various **audio libraries** for playback.  
-- ⚡ **Non-Blocking Audio Playback** – The music **runs in the background**, keeping your app responsive!  
-- 🧵 **Dedicated Thread Support** – Choose between **simple single-threaded** playback or **advanced multi-threaded** execution for **performance gains, real-time audio visualization, and modifications**.  
-- 🔧 **Simplified API** – All complex **timing calculations and buffer management** are handled automatically!  
+- 🎵 **SID Soundchip Emulation for Zig** – Experience the iconic SID sound directly in your Zig projects!  
+- ⚡ **Powered by reSID** – Uses the proven reSID C++ library for high-quality sound emulation. ([reSID on GitHub](https://github.com/daglem/reSID))  
+- 🎼 **Dynamic Audio Buffer Rendering** – Generate high-fidelity PCM audio buffers from SID music, perfect for playback, processing, and visualization.  
+- 📀 **WAV Export (Mono & Stereo)** – Save your SID-generated audio as `.wav` files, ideal for archiving, music production, and retro inspired projects.  
+- 🎧 **Flexible Audio Backends** – Seamlessly integrates with various audio libraries for playback.  
+- ⚡ **Non-Blocking Audio Playback** – Music playback fully runs in the background keeping your app responsive!  
+- 🧵 **Dedicated Thread Support** – Choose between simple single-threaded playback or advanced multi-threaded execution for performance gains, real-time audio visualization, and modifications.  
+- 🔧 **Simplified API** – All complex timing calculations and buffer management are handled automatically!  
 
 ### **🆕 New Features – Full `.sid` File Processing!**  
-- 🏆 **Supports `.sid` Files** – Load and execute **real C64 SID music** effortlessly!  
-- 🏁 **Full 6510 CPU Emulation** – Now includes a **cycle-accurate** 6510 CPU emulator for **authentic execution of SID files**.  
-- ⏳ **PAL & NTSC Timing Support** – Choose **accurate timing modes**, just like on real hardware!  
-- 🔄 **SID Register Dumping & Playback** – Analyze **how SID registers change** during music playback!  
-- 🎛️ **Attach the CPU to the SID** – The emulator **fully synchronizes with the SID**, allowing precise playback control!  
+- 🏆 **Supports `.sid` Files** – Load and execute real C64 SID music effortlessly!  
+- 🏁 **Full 6510 CPU Emulation** – Now includes a cycle-accurate 6510 CPU emulator for authentic execution of `.sid` files.  
+- ⏳ **PAL & NTSC Timing Support** – in case you need to be specific  
+- 🔄 **SID Register Dumping & Playback** – Analyze how SID registers change during music playback!  
+- 🎛️ **Attach the CPU to the SID** – The emulator fully synchronizes with the SID, allowing precise playback control.  
 - 🛠️ **Fully Integrated in Zig** – A seamless **Zig-native** implementation, making **SID emulation more accessible than ever!**  
 
 
