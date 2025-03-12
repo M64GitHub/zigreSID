@@ -644,8 +644,8 @@ This project uses the **reSID** library and follows its licensing terms. The Zig
 <br>
 
 ## Credits
-Developed with ❤️ by **M64**. Credits to the amazing `resid` library and its authors!
+Developed with ❤️ by **M64**. Credits to the amazing `resid` library and its authors!  
 
----
+<br>  
 
 ✨ *SID sound made simple. Powered by ReSID. Integrated with Zig. ✨
