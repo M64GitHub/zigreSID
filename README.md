@@ -39,10 +39,10 @@ This project is **audio-library agnostic** by design. The **core SID emulation a
 
 <br>
 
-## 🎵 As Simple As It Gets – Instant SID Playback!
+## 🎵 Getting Started
 
-With just a few lines of code, you can **render** or **play back** SID audio effortlessly!  
-Here are **two minimal examples** demonstrating how easy it is to use **zigReSID**:
+The zigReSID library makes SID audio playback and rendering simple and efficient.  
+Below are two minimal examples demonstrating how to **generate WAV files** or **play back SID audio in real-time** using just a few lines of code.
 
 ### 🎼 Minimal Example: Wav-File Rendering
 
