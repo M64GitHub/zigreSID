@@ -365,8 +365,8 @@ pub fn main() !void {
 
 <br>
 
-### main_threaded.zig
-#### audio buffer calculation in a dedicated thread
+### Threaded SID Dump Player (`sid-dump-player-threaded.zig`)
+#### audio buffer calculation in a **dedicated thread**
 
 This example demonstrates a more advanced approach to playing a SID dump.  
 The `sid` and `player` struct instances are initialized the same way as in the unthreaded version. Playback also starts by calling `player.play()`.  
