@@ -44,6 +44,36 @@ This project is **audio-library agnostic** by design. The **core SID emulation a
 The zigReSID library makes SID audio playback and rendering simple and efficient.  
 Below are two minimal examples demonstrating how to **generate WAV files** or **play back SID audio in real-time** using just a few lines of code.
 
+### 🔊 Example: Real-Time Playback (SDL)
+If you’re working with SDL, the `SdlReSidDmpPlayer` struct provides a convenient way to handle playback. It fully manages SDL initialization, audio callbacks, and buffer generation internally, making playback effortless. Since it runs in the background, playback is non-blocking. More detailed examples can be found in the sections below.
+
+```zig
+const std = @import("std");
+
+const SdlReSidDmpPlayer = @import("residsdl").SdlReSidDmpPlayer;
+
+pub fn main() !void {
+    const gpa = std.heap.page_allocator;
+    const stdout = std.io.getStdOut().writer();
+
+    try stdout.print("[MAIN] zigSID audio demo sdl dump player!\n", .{});
+
+    var player = try SdlReSidDmpPlayer.init(gpa, "MY SID Player");
+    defer player.deinit();
+
+    try player.loadDmp("data/plasmaghost.sid.dmp");
+
+    player.play();
+
+    try stdout.print("[MAIN] Press enter to exit\n", .{});
+    _ = std.io.getStdIn().reader().readByte() catch null;
+
+    player.stop();
+}
+```
+
+<br>
+
 ### 🎼 Example: Wav-File Rendering
 
 ```zig
@@ -83,36 +113,6 @@ pub fn main() !void {
     var mywav = WavWriter.init(gpa, "sid-out.wav");
     mywav.setMonoBuffer(pcm_buffer);
     try mywav.writeStereo();
-}
-```
-
-<br>
-
-### 🔊 Example: Real-Time Playback (SDL)
-If you’re working with SDL, the `SdlReSidDmpPlayer` struct provides a convenient way to handle playback. It fully manages SDL initialization, audio callbacks, and buffer generation internally, making playback effortless. Since it runs in the background, playback is non-blocking. More detailed examples can be found in the sections below.
-
-```zig
-const std = @import("std");
-
-const SdlReSidDmpPlayer = @import("residsdl").SdlReSidDmpPlayer;
-
-pub fn main() !void {
-    const gpa = std.heap.page_allocator;
-    const stdout = std.io.getStdOut().writer();
-
-    try stdout.print("[MAIN] zigSID audio demo sdl dump player!\n", .{});
-
-    var player = try SdlReSidDmpPlayer.init(gpa, "MY SID Player");
-    defer player.deinit();
-
-    try player.loadDmp("data/plasmaghost.sid.dmp");
-
-    player.play();
-
-    try stdout.print("[MAIN] Press enter to exit\n", .{});
-    _ = std.io.getStdIn().reader().readByte() catch null;
-
-    player.stop();
 }
 ```
 
