@@ -20,7 +20,7 @@ With precise PAL & NTSC timing support, register state tracking, and real-time p
 - 🎼 **Dynamic Audio Buffer Rendering** – Generate high-fidelity PCM audio buffers from SID music, perfect for playback, processing, and visualization.  
 - 📀 **WAV Export (Mono & Stereo)** – Save your SID-generated audio as `.wav` files, ideal for archiving, music production, and retro inspired projects.  
 - 🎧 **Flexible Audio Backends** – Seamlessly integrates with various audio libraries for playback.  
-- ⚡ **Non-Blocking Audio Playback** – Music playback fully runs in the background keeping your app responsive!  
+- ⚡ **Non-Blocking Audio Playback** – Music playback fully runs in the background keeping your code responsive!  
 - 🧵 **Dedicated Thread Support** – Choose between simple single-threaded playback or advanced multi-threaded execution for performance gains, real-time audio visualization, and modifications.  
 - 🔧 **Simplified API** – All complex timing calculations and buffer management are handled automatically!  
 
