@@ -72,7 +72,7 @@ pub fn build(b: *std.Build) void {
 
     // Build Unthreaded Executable
     const exe_unthreaded = b.addExecutable(.{
-        .name = "zigReSID-dump-play",
+        .name = "zigreSID-dump-play",
         .root_source_file = b.path("src/examples/sid-dump-player.zig"),
         .target = target,
         .optimize = optimize,
@@ -84,7 +84,7 @@ pub fn build(b: *std.Build) void {
 
     // Build Threaded Executable
     const exe_threaded = b.addExecutable(.{
-        .name = "zigReSID-dump-play-threaded",
+        .name = "zigreSID-dump-play-threaded",
         .root_source_file = b.path("src/examples/sid-dump-player-threaded.zig"),
         .target = target,
         .optimize = optimize,
@@ -96,7 +96,7 @@ pub fn build(b: *std.Build) void {
 
     // Build SDL Executable
     const exe_sdl = b.addExecutable(.{
-        .name = "zigReSID-sdl-player",
+        .name = "zigreSID-sdl-player",
         .root_source_file = b.path("src/examples/sdl-sid-dump-player.zig"),
         .target = target,
         .optimize = optimize,
@@ -108,7 +108,7 @@ pub fn build(b: *std.Build) void {
 
     // Build RenderAudio Executable
     const exe_renderaudio = b.addExecutable(.{
-        .name = "zigReSID-render-audio",
+        .name = "zigreSID-render-audio",
         .root_source_file = b.path("src/examples/render-audio-example.zig"),
         .target = target,
         .optimize = optimize,
@@ -120,7 +120,7 @@ pub fn build(b: *std.Build) void {
 
     // Build WavWriter Executable
     const exe_wavwriter = b.addExecutable(.{
-        .name = "zigReSID-wav-writer",
+        .name = "zigreSID-wav-writer",
         .root_source_file = b.path("src/examples/wav-writer-example.zig"),
         .target = target,
         .optimize = optimize,
@@ -131,7 +131,7 @@ pub fn build(b: *std.Build) void {
 
     // Build .sid-file Test Executable
     const exe_sidfile = b.addExecutable(.{
-        .name = "zigReSID-play-sidfile",
+        .name = "zigreSID-play-sidfile",
         .root_source_file = b.path("src/examples/sidfile-dump.zig"),
         .target = target,
         .optimize = optimize,

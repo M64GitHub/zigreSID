@@ -442,16 +442,16 @@ pub const Cpu = struct {
         cpu.updateFlags(cpu.a);
     }
 
-    fn branch(cpu: *Cpu, t1: u8, t2: u8) void {
+    pub fn branch(cpu: *Cpu, t1: u8, t2: u8) void {
         const offs: i8 = fetchByte(cpu);
         if (t1 == t2) {
-            const old_pc: u16 = cpu.pc;
+            const old_pc = @as(u32, cpu.pc);
             var s_pc = @as(i32, cpu.pc);
             s_pc += @as(i32, offs);
             const u_pc = @as(u32, @bitCast(s_pc));
             cpu.pc = @as(u16, @truncate(u_pc));
             cpu.cycles_executed +%= 1;
-            if ((cpu.pc >> 8) != (old_pc >> 8)) {
+            if ((u_pc >> 8) != (old_pc >> 8)) {
                 cpu.cycles_executed +%= 1;
             }
         }
