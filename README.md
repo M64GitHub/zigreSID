@@ -265,7 +265,7 @@ Executables will be available in `zig-out/bin/`:
 
 ## 🧬 **Demo Code**
 
-### main_unthreaded.zig
+### SID Dump Player (`sid-dump-player.zig`)
 #### audio buffer calculation in the SDL callback
 
 This example demonstrates the simplest way to play a SID dump using the `ReSIDDmpPlayer`.  
