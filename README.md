@@ -288,7 +288,7 @@ This project bridges the gap between C++, C, and Zig:
 
 
 
-## 🧬 **Demo Code**
+## 🧬 **Example Code**
 
 ### SID Dump Player (`sid-dump-player.zig`)
 #### audio buffer calculation in the SDL callback
