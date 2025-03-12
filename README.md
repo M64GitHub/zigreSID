@@ -181,6 +181,7 @@ This project bridges the gap between C++, C, and Zig:
 #### Realtime Audio Buffer Generation via Callback
 **`ReSidDmpPlayer`**  is the primary method for playing back complete SID tunes or sound effects. It provides a simple way to handle SID sound playback (see demo code below). Internally, it manages audio buffer generation and SID register updates, continuously reading and processing register values from a dump file in steps triggered by the audio-callback.
 
+<br>
 
 ### 🧬 **How Realtime Audio Buffer Generation Works**  
 
