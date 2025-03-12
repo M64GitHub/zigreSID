@@ -4,7 +4,7 @@ This project provides SID soundchip emulation for Zig, enabling you to generate,
 It is built upon the powerful reSID C++ library, delivering authentic SID sound emulation combined with the simplicity and safety of Zig.  
 
 This library fully supports the `.sid` file format, allowing you to load and execute real C64 SID music files!  
-To achieve this, it includes a cycle-accurate MOS 6510 CPU emulator, ensuring accurate playback as on original C64 hardware.  
+To achieve this, it includes a seamless Zig-native implementation of a cycle-accurate MOS 6510 CPU emulator, ensuring  playback as on original C64 hardware.  
 
 With precise PAL & NTSC timing support, register state tracking, and real-time playback integration, it provides a complete environment for accurate SID music playback, debugging, and analysis.  
 
