@@ -44,12 +44,15 @@ pub fn build(b: *std.Build) void {
     });
 
     // modules
+
+    // resid
     const mod_resid = b.addModule("resid", .{ .root_source_file = .{
         .cwd_relative = "src/resid.zig",
     } });
     mod_resid.addIncludePath(.{ .cwd_relative = resid_include_path });
     mod_resid.linkLibrary(resid_lib);
 
+    // residsdl
     const mod_residsdl = b.addModule("residsdl", .{ .root_source_file = .{
         .cwd_relative = "src/residsdl.zig",
     } });
@@ -58,31 +61,34 @@ pub fn build(b: *std.Build) void {
     mod_residsdl.addImport("resid", mod_resid);
     mod_residsdl.linkLibrary(resid_lib);
 
+    // 6510
     const mod_6510 = b.addModule("6510", .{ .root_source_file = .{
         .cwd_relative = "src/6510/6510.zig",
     } });
 
+    // sidfile
     const mod_sidfile = b.addModule("sidfile", .{ .root_source_file = .{
         .cwd_relative = "src/sidfile.zig",
     } });
 
+    // wavwriter
     const mod_wavwriter = b.addModule("wavwriter", .{ .root_source_file = .{
         .cwd_relative = "src/wavwriter.zig",
     } });
 
-    // Build Unthreaded Executable
-    const exe_unthreaded = b.addExecutable(.{
+    // Build Dump Player Executable
+    const exe_dumpplayer = b.addExecutable(.{
         .name = "zigreSID-dump-play",
         .root_source_file = b.path("src/examples/sid-dump-player.zig"),
         .target = target,
         .optimize = optimize,
     });
-    exe_unthreaded.addIncludePath(.{ .cwd_relative = usr_include_path });
-    exe_unthreaded.root_module.addImport("resid", mod_resid);
-    exe_unthreaded.linkSystemLibrary("SDL2");
-    b.installArtifact(exe_unthreaded);
+    exe_dumpplayer.addIncludePath(.{ .cwd_relative = usr_include_path });
+    exe_dumpplayer.root_module.addImport("resid", mod_resid);
+    exe_dumpplayer.linkSystemLibrary("SDL2");
+    b.installArtifact(exe_dumpplayer);
 
-    // Build Threaded Executable
+    // Build Threaded Dump Player Executable
     const exe_threaded = b.addExecutable(.{
         .name = "zigreSID-dump-play-threaded",
         .root_source_file = b.path("src/examples/sid-dump-player-threaded.zig"),
@@ -142,7 +148,7 @@ pub fn build(b: *std.Build) void {
     b.installArtifact(exe_sidfile);
 
     // Run steps for all
-    const run_unthreaded = b.addRunArtifact(exe_unthreaded);
+    const run_dumpplayer = b.addRunArtifact(exe_dumpplayer);
     const run_threaded = b.addRunArtifact(exe_threaded);
     const run_sdl = b.addRunArtifact(exe_sdl);
     const run_renderaudio = b.addRunArtifact(exe_renderaudio);
@@ -151,7 +157,7 @@ pub fn build(b: *std.Build) void {
     const run_sidfile = b.addRunArtifact(exe_sidfile);
 
     if (b.args) |args| {
-        run_unthreaded.addArgs(args);
+        run_dumpplayer.addArgs(args);
         run_threaded.addArgs(args);
         run_sdl.addArgs(args);
         run_renderaudio.addArgs(args);
@@ -159,8 +165,8 @@ pub fn build(b: *std.Build) void {
         run_sidfile.addArgs(args);
     }
 
-    const run_step_unthreaded = b.step("run-dump-play", "Run the unthreaded dump player");
-    run_step_unthreaded.dependOn(&run_unthreaded.step);
+    const run_step_dumpplayer = b.step("run-dump-play", "Run the unthreaded dump player");
+    run_step_dumpplayer.dependOn(&run_dumpplayer.step);
 
     const run_step_threaded = b.step("run-dump-play-threaded", "Run the threaded dump player");
     run_step_threaded.dependOn(&run_threaded.step);
