@@ -1,6 +1,6 @@
 const std = @import("std");
 
-const SDLreSIDDmpPlayer = @import("resid/residsdl.zig").SDLreSIDDmpPlayer;
+const SDLreSIDDmpPlayer = @import("residsdl").SDLreSIDDmpPlayer;
 
 pub fn main() !void {
     const gpa = std.heap.page_allocator;

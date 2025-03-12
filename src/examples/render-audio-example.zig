@@ -1,10 +1,10 @@
 const std = @import("std");
 const SDL = @cImport({
-    @cInclude("SDL.h");
+    @cInclude("SDL2/SDL.h");
 });
 
-const ReSID = @import("resid/resid.zig").ReSID;
-const ReSIDDmpPlayer = @import("resid/resid.zig").ReSIDDmpPlayer;
+const ReSID = @import("resid").ReSID;
+const ReSIDDmpPlayer = @import("resid").ReSIDDmpPlayer;
 
 pub fn main() !void {
     const gpa = std.heap.page_allocator;

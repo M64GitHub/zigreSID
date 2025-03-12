@@ -1,10 +1,10 @@
 const std = @import("std");
 const SDL = @cImport({
-    @cInclude("SDL.h");
+    @cInclude("SDL2/SDL.h");
 });
 
-const ReSID = @import("resid.zig").ReSID;
-const ReSIDDmpPlayer = @import("resid.zig").ReSIDDmpPlayer;
+const ReSID = @import("resid").ReSID;
+const ReSIDDmpPlayer = @import("resid").ReSIDDmpPlayer;
 
 pub const SDLreSIDDmpPlayer = struct {
     resid: ReSID,

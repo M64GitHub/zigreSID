@@ -1,11 +1,10 @@
 const std = @import("std");
 const SDL = @cImport({
-    @cInclude("SDL.h");
+    @cInclude("SDL2/SDL.h");
 });
-const Cpu = @import("6510/6510.zig").Cpu;
-const Emulator = @import("6510/6510.zig").Emulator;
-const ReSID = @import("resid/resid.zig").ReSID;
-const SIDFile = @import("resid/sidfile.zig").SIDFile;
+const Emulator = @import("6510").Emulator;
+const ReSID = @import("resid").ReSID;
+const SIDFile = @import("sidfile").SIDFile;
 
 pub fn main() !void {
     const gpa = std.heap.page_allocator;

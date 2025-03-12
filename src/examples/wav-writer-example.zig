@@ -1,8 +1,8 @@
 const std = @import("std");
 
-const ReSID = @import("resid/resid.zig").ReSID;
-const ReSIDDmpPlayer = @import("resid/resid.zig").ReSIDDmpPlayer;
-const WavWriter = @import("resid/wavwriter.zig").WavWriter;
+const ReSID = @import("resid").ReSID;
+const ReSIDDmpPlayer = @import("resid").ReSIDDmpPlayer;
+const WavWriter = @import("wavwriter").WavWriter;
 
 pub fn main() !void {
     const gpa = std.heap.page_allocator;

@@ -4,4 +4,8 @@
 zig-out
 *.wav
 *.raw
+zig-cache
+
+zig-global-cache
+
 
