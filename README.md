@@ -131,17 +131,23 @@ zig build
 
 You can find them under `src/examples/`
 
-- 🎹 **SDL SID Dump Player:** `src/examples/sdl-sid-dump-player.zig`  
+- 🎹 **SDL SID Dump Player:**  
+     `src/examples/sdl-sid-dump-player.zig`  
      automatic SDL configuration, simple playback
-- 🎛️ **SID Dump Player:** `src/examples/sid-dump-player.zig`  
+- 🎛️ **SID Dump Player:** 
+     `src/examples/sid-dump-player.zig`  
      manual SDL configuration, and access to SID registers
-- ⚡ **Threaded SID Dump Player:** `src/examples/sid-dump-player-threaded.zig`  
+- ⚡ **Threaded SID Dump Player:** 
+     `src/examples/sid-dump-player-threaded.zig`  
      manual SDL configuration, access to SID registers, and player internals, playback in custom thread
-- 📀 **WAV Writing Example**: `src/examples/wav-writer-example.zig`  
+- 📀 **WAV Writing Example**: 
+     `src/examples/wav-writer-example.zig`  
      demonstrates how to generate a SID-based PCM buffer and save it as a .wav file
-- 🎧 **Custom PCM Buffer Generation and Playback:** `src/examples/render-audio-example.zig`  
+- 🎧 **Custom PCM Buffer Generation and Playback:** 
+     `src/examples/render-audio-example.zig`  
      generates a raw SID audio PCM buffer and plays it directly (via SDL_QueueAudio())
-- 🎹 **SID-File Dump Utility:** `src/examples/sidfile-dump.zig`  
+- 🎹 **SID-File Dump Utility:** 
+     `src/examples/sidfile-dump.zig`  
      creates dumps from your `.sid` files.
 
 Executables will be available in `zig-out/bin/`:
