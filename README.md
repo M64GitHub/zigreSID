@@ -59,7 +59,7 @@ pub fn main() !void {
     try stdout.print("[MAIN] zigSID audio rendering wav writer demo!\n", .{});
 
     // create a ReSID instance
-    var sid = try ReSID.init("MyZIGSID");
+    var sid = try ReSID.init("zig sid 64");
     defer sid.deinit();
 
     // create a ReSIDDmpPlayer, and initialize it with the ReSID instance
