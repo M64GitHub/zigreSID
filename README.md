@@ -8,7 +8,7 @@ Whether you're **analyzing SID registers, creating chiptune music, or integratin
 
 🎶🎵 **"Bringing the C64 SID sound into the future, one cycle at a time!"** 🎵🎶  
 
----
+<br>
 
 ## **🔥 Features**  
 
