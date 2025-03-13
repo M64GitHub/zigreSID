@@ -1,11 +1,15 @@
 // build.zig
 const std = @import("std");
+
 const resid_include_path = "resid-cpp/";
 const usr_include_path = "/usr/include/";
 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = std.builtin.OptimizeMode.ReleaseFast;
+
+    const dep_mos6510 = b.dependency("mos6510", .{});
+    const mod_mos6510 = dep_mos6510.module("mos6510");
 
     // Build reSID C++ shared library and C wrapper
     const resid_lib = b.addSharedLibrary(.{
@@ -46,35 +50,30 @@ pub fn build(b: *std.Build) void {
     // modules
 
     // resid
-    const mod_resid = b.addModule("resid", .{ .root_source_file = .{
-        .cwd_relative = "src/resid.zig",
-    } });
+    const mod_resid = b.addModule("resid", .{
+        .root_source_file = b.path("src/resid.zig"),
+    });
     mod_resid.addIncludePath(.{ .cwd_relative = resid_include_path });
     mod_resid.linkLibrary(resid_lib);
 
     // residsdl
-    const mod_residsdl = b.addModule("residsdl", .{ .root_source_file = .{
-        .cwd_relative = "src/residsdl.zig",
-    } });
+    const mod_residsdl = b.addModule("residsdl", .{
+        .root_source_file = b.path("src/residsdl.zig"),
+    });
     mod_residsdl.addIncludePath(.{ .cwd_relative = resid_include_path });
     mod_residsdl.addIncludePath(.{ .cwd_relative = usr_include_path });
     mod_residsdl.addImport("resid", mod_resid);
     mod_residsdl.linkLibrary(resid_lib);
 
-    // 6510
-    const mod_6510 = b.addModule("6510", .{ .root_source_file = .{
-        .cwd_relative = "src/6510/6510.zig",
-    } });
-
     // sidfile
-    const mod_sidfile = b.addModule("sidfile", .{ .root_source_file = .{
-        .cwd_relative = "src/sidfile.zig",
-    } });
+    const mod_sidfile = b.addModule("sidfile", .{
+        .root_source_file = b.path("src/sidfile.zig"),
+    });
 
     // wavwriter
-    const mod_wavwriter = b.addModule("wavwriter", .{ .root_source_file = .{
-        .cwd_relative = "src/wavwriter.zig",
-    } });
+    const mod_wavwriter = b.addModule("wavwriter", .{
+        .root_source_file = b.path("src/wavwriter.zig"),
+    });
 
     // Build Dump Player Executable
     const exe_dumpplayer = b.addExecutable(.{
@@ -143,7 +142,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     exe_sidfile.root_module.addImport("resid", mod_resid);
-    exe_sidfile.root_module.addImport("6510", mod_6510);
+    exe_sidfile.root_module.addImport("mos6510", mod_mos6510);
     exe_sidfile.root_module.addImport("sidfile", mod_sidfile);
     b.installArtifact(exe_sidfile);
 

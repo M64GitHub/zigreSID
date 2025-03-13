@@ -2,7 +2,7 @@ const std = @import("std");
 const SDL = @cImport({
     @cInclude("SDL2/SDL.h");
 });
-const Emulator = @import("6510").Emulator;
+const Emulator = @import("mos6510").Emulator;
 const ReSid = @import("resid").ReSid;
 const SidFile = @import("sidfile").SidFile;
 
