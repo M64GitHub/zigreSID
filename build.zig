@@ -8,8 +8,8 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = std.builtin.OptimizeMode.ReleaseFast;
 
-    const dep_mos6510 = b.dependency("mos6510", .{});
-    const mod_mos6510 = dep_mos6510.module("mos6510");
+    const dep_zig64 = b.dependency("zig64", .{});
+    const mod_zig64 = dep_zig64.module("zig64");
 
     // Build reSID C++ shared library and C wrapper
     const resid_lib = b.addSharedLibrary(.{
@@ -142,7 +142,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     exe_sidfile.root_module.addImport("resid", mod_resid);
-    exe_sidfile.root_module.addImport("mos6510", mod_mos6510);
+    exe_sidfile.root_module.addImport("zig64", mod_zig64);
     exe_sidfile.root_module.addImport("sidfile", mod_sidfile);
     b.installArtifact(exe_sidfile);
 

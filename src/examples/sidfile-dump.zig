@@ -2,7 +2,7 @@ const std = @import("std");
 const SDL = @cImport({
     @cInclude("SDL2/SDL.h");
 });
-const Emulator = @import("mos6510").Emulator;
+const C64 = @import("zig64");
 const ReSid = @import("resid").ReSid;
 const SidFile = @import("sidfile").SidFile;
 
@@ -69,41 +69,41 @@ pub fn main() !void {
 
     // -- initialize Cpu
 
-    try stdout.print("[MAIN] Initializing EMU\n", .{});
-    var emu = Emulator.init(gpa, Emulator.VicType.pal, 0x0800);
-    emu.mem.data[0x01] = 0x37;
+    try stdout.print("[MAIN] Initializing c64\n", .{});
+    var c64 = C64.init(gpa, C64.Vic.Type.pal, 0x0800);
+    c64.mem.data[0x01] = 0x37;
 
-    // emu.dbg_enabled = true;
+    // c64.dbg_enabled = true;
 
-    // write the sid player routine and data into the emulator memory
+    // write the sid player routine and data into the c64lator memory
     if (is_prg) {
-        const loaded_addr = emu.setPrg(sid_rawmem, false);
+        const loaded_addr = c64.setPrg(sid_rawmem, false);
         try stdout.print("[MAIN] Loaded address : {X:0>4}\n", .{loaded_addr});
     } else {
-        // emu.WriteMem(sid_rawmem, mem_address);
+        // c64.WriteMem(sid_rawmem, mem_address);
     }
 
     // -- Call Sid Init
     try stdout.print("[MAIN] Calling Sid Init\n", .{});
-    emu.cpu.a = 0;
-    emu.cpu.x = 0;
-    emu.cpu.y = 0;
-    emu.call(sidfile.header.init_address);
-    try stdout.print("CYCLES: {d}\n", .{emu.cpu.cycles_executed});
+    c64.cpu.a = 0;
+    c64.cpu.x = 0;
+    c64.cpu.y = 0;
+    c64.call(sidfile.header.init_address);
+    try stdout.print("CYCLES: {d}\n", .{c64.cpu.cycles_executed});
 
-    // emu.cpu.dbg_enabled = true;
+    // c64.cpu.dbg_enabled = true;
     // -- Loop Call Sid Play
     try stdout.print("[MAIN] Calling Sid Play\n", .{});
     for (0..max_frames) |i| {
-        emu.cpu.cycles_executed = 0;
-        emu.cpu.a = 0;
-        emu.cpu.x = 0;
-        emu.cpu.y = 0;
-        emu.call(sidfile.header.play_address);
-        if (emu.cpu.ext_sid_reg_written) {
+        c64.cpu.cycles_executed = 0;
+        c64.cpu.a = 0;
+        c64.cpu.x = 0;
+        c64.cpu.y = 0;
+        c64.call(sidfile.header.play_address);
+        if (c64.cpu.ext_sid_reg_written) {
             try stdout.print("[FRM ] {d} ", .{i});
-            try stdout.print("[CYCL] {d} ", .{emu.cpu.cycles_executed});
-            emu.sid.printRegisters();
+            try stdout.print("[CYCL] {d} ", .{c64.cpu.cycles_executed});
+            c64.sid.printRegisters();
         }
     }
 }
