@@ -1,6 +1,6 @@
-# Zig SID Soundchip Emulation  
+# SID Soundchip Emulation in Zig   
 
-This project provides SID soundchip emulation for Zig, enabling you to generate, process, and play SID audio with ease.  
+This project provides MOS 6581/8580 SID soundchip emulation for Zig, enabling you to generate, process, and play SID audio with ease.  
 It is built upon the powerful `reSID C++` library, delivering authentic SID sound emulation combined with the simplicity and safety of Zig.  
 
 🚀 **Powered by [zig64](https://github.com/M64GitHub/zig64)!**  
