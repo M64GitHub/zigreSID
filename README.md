@@ -10,7 +10,7 @@ A Zig-native, cycle-accurate MOS 6510 CPU emulator ensures playback precision, f
 
 With precise PAL & NTSC timing support, register state tracking, and real-time playback integration, it provides a complete environment for accurate SID music playback, debugging, and analysis.  
 
-🎶🎵 **Reviving the C64 SID sound with the power of Zig!** 🎵🎶  
+🎵 **Reviving the C64 SID sound with the power of Zig!** 🎵  
 
 <br>
 
