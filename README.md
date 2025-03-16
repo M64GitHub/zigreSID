@@ -195,6 +195,8 @@ pub fn build(b: *std.Build) void {
 ```
 After adding the dependency, simply run `zig build` to compile your project!
 
+### Examples Included
+
 5 examples are available for demonstration:
 
 You can find them under `src/examples/`
@@ -202,12 +204,15 @@ You can find them under `src/examples/`
 - 🎹 **SDL SID Dump Player:**  
      `src/examples/sdl-sid-dump-player.zig`  
      automatic SDL configuration, simple playback
+
 - 🎛️ **SID Dump Player:** 
      `src/examples/sid-dump-player.zig`  
      manual SDL configuration, and access to SID registers
+  
 - ⚡ **Threaded SID Dump Player:** 
      `src/examples/sid-dump-player-threaded.zig`  
      manual SDL configuration, access to SID registers, and player internals, playback in custom thread
+  
 - 📀 **WAV Writing Example**: 
      `src/examples/wav-writer-example.zig`  
      demonstrates how to generate a SID-based PCM buffer and save it as a .wav file
