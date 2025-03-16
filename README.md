@@ -90,8 +90,8 @@ pub fn main() !void {
 
 ### 🎵 Example: Render a SID Dump to a WAV File 
 
-This example demonstrates how to **convert a SID register dump into a high-quality WAV file**.  
-It initializes a SID chip instance, loads a **SID dump file (`.dmp`)**, and **renders PCM audio** from it.  
+This example demonstrates how to **convert** a SID register dump into a WAV file.  
+It initializes a SID chip instance, loads a SID dump file (`.dmp`), and **renders PCM audio** from it.  
 The rendered audio is stored in a **stereo WAV file**, making it easy to use for playback, archiving, or further processing.  
 
 📌 **How It Works:**  
