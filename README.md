@@ -45,8 +45,7 @@ These examples use a `SID register dump`, a file containing the raw register cha
 You can create your own SID dumps from `.sid` files using the included `sid-dump.zig` utility (see below).  
 
 > **📝 Note:** SID dumps are powerful because they eliminate CPU processing overhead compared to full SID execution.  
-> They can be treated like **audio samples**, allowing you to extract, rearrange, and reuse specific parts of SID tunes  
-> or isolate particular sounds for creative remixing!  
+> They can be treated like **audio samples**, allowing you to extract, rearrange, and reuse specific parts of SID tunes or isolate particular sounds for creative remixing!  
 
 
 
