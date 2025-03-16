@@ -4,10 +4,10 @@ const SDL = @cImport({
 });
 
 const ReSid = @import("resid").ReSid;
-const ReSidDmpPlayer = @import("resid").ReSidDmpPlayer;
-const Playstate = @import("resid").ReSidDmpPlayer.Playstate;
+const DumpPlayer = @import("resid").DumpPlayer;
+const Playstate = @import("resid").DumpPlayer.Playstate;
 
-fn playerThreadFunc(player: *ReSidDmpPlayer) !void {
+fn playerThreadFunc(player: *DumpPlayer) !void {
     while (player.isPlaying()) {
         if (!player.update()) {
             player.stop();
@@ -26,8 +26,8 @@ pub fn main() !void {
     var sid = try ReSid.init("MyZIGSid");
     defer sid.deinit();
 
-    // create a ReSidDmpPlayer instance and initialize it with the ReSid instance
-    var player = try ReSidDmpPlayer.init(gpa, sid.ptr);
+    // create a DumpPlayer instance and initialize it with the ReSid instance
+    var player = try DumpPlayer.init(gpa, sid.ptr);
     defer player.deinit();
 
     // load dump
@@ -41,7 +41,7 @@ pub fn main() !void {
         .format = SDL.AUDIO_S16,
         .channels = 1,
         .samples = 4096,
-        .callback = &ReSidDmpPlayer.sdlAudioCallback,
+        .callback = &DumpPlayer.sdlAudioCallback,
         .userdata = @ptrCast(&player),
     };
 

@@ -47,12 +47,12 @@ The zigReSID library makes SID audio playback and rendering simple and efficient
 Below are two minimal examples demonstrating how to generate WAV files or play back SID audio in real-time using just a few lines of code.
 
 ### 🔊 Example: Real-Time Playback (SDL)
-If you’re working with SDL, the `SdlReSidDmpPlayer` struct provides a convenient way to handle playback. It fully manages SDL initialization, audio callbacks, and buffer generation internally, making playback effortless. Since it runs in the background, playback is non-blocking. More detailed examples can be found in the sections below.
+If you’re working with SDL, the `SdlDumpPlayer` struct provides a convenient way to handle playback. It fully manages SDL initialization, audio callbacks, and buffer generation internally, making playback effortless. Since it runs in the background, playback is non-blocking. More detailed examples can be found in the sections below.
 
 ```zig
 const std = @import("std");
 
-const SdlReSidDmpPlayer = @import("residsdl").SdlReSidDmpPlayer;
+const SdlDumpPlayer = @import("residsdl").SdlDumpPlayer;
 
 pub fn main() !void {
     const gpa = std.heap.page_allocator;
@@ -60,7 +60,7 @@ pub fn main() !void {
 
     try stdout.print("[MAIN] zigSID audio demo sdl dump player!\n", .{});
 
-    var player = try SdlReSidDmpPlayer.init(gpa, "MY SID Player");
+    var player = try SdlDumpPlayer.init(gpa, "MY SID Player");
     defer player.deinit();
 
     try player.loadDmp("data/plasmaghost.sid.dmp");
@@ -82,7 +82,7 @@ pub fn main() !void {
 const std = @import("std");
 
 const ReSid = @import("resid").ReSid;
-const ReSidDmpPlayer = @import("resid").ReSidDmpPlayer;
+const DumpPlayer = @import("resid").DumpPlayer;
 const WavWriter = @import("wavwriter").WavWriter;
 
 pub fn main() !void {
@@ -99,8 +99,8 @@ pub fn main() !void {
     var sid = try ReSid.init("zig sid 64");
     defer sid.deinit();
 
-    // create a ReSidDmpPlayer, and initialize it with the ReSid instance
-    var player = try ReSidDmpPlayer.init(gpa, sid.ptr);
+    // create a DumpPlayer, and initialize it with the ReSid instance
+    var player = try DumpPlayer.init(gpa, sid.ptr);
     defer player.deinit();
 
     try player.loadDmp("data/plasmaghost.sid.dmp");
@@ -185,9 +185,9 @@ This project bridges the gap between C++, C, and Zig:
 
 <br>
 
-## 🎼 About the **ReSidDmpPlayer**  
+## 🎼 About the **DumpPlayer**  
 #### Realtime Audio Buffer Generation via Callback
-**`ReSidDmpPlayer`**  is the primary method for playing back complete SID tunes or sound effects. It provides a simple way to handle SID sound playback (see demo code below). Internally, it manages audio buffer generation and SID register updates, continuously reading and processing register values from a dump file in steps triggered by the audio-callback.
+**`DumpPlayer`**  is the primary method for playing back complete SID tunes or sound effects. It provides a simple way to handle SID sound playback (see demo code below). Internally, it manages audio buffer generation and SID register updates, continuously reading and processing register values from a dump file in steps triggered by the audio-callback.
 
 <br>
 
@@ -240,7 +240,7 @@ This project bridges the gap between C++, C, and Zig:
   ``` 
 - Example threaded update loop:  
   ```zig
-    fn playerThreadFunc(player: *ReSidDmpPlayer) !void {
+    fn playerThreadFunc(player: *DumpPlayer) !void {
         while (player.isPlaying()) {
             if (!player.update()) {
                 player.stop();
@@ -295,7 +295,7 @@ This project bridges the gap between C++, C, and Zig:
 ### SID Dump Player (`sid-dump-player.zig`)
 #### audio buffer calculation in the SDL callback
 
-This example demonstrates the simplest way to play a SID dump using the `ReSidDmpPlayer`.  
+This example demonstrates the simplest way to play a SID dump using the `DumpPlayer`.  
 The player processes SID register values for each virtual frame, synchronized to a virtual PAL video standard vertical sync for accurate timing. That means it reads a set of SID register values from the dump and writes them to reSID, for each step.   The internal audio generation clocks the SID in the background and uses the output to fill an audio buffer. When the vertical sync frequency is reached, the next set of register values is read from the dump.
 
 You can generate your own SID dumps using a siddump utility. In this demo, the SID dump is included via a C header file generated using the `xxd -i` tool.
@@ -317,7 +317,7 @@ const SDL = @cImport({
 });
 
 const ReSid = @import("resid").ReSid;
-const ReSidDmpPlayer = @import("resid").ReSidDmpPlayer;
+const DumpPlayer = @import("resid").DumpPlayer;
 
 pub fn main() !void {
     const gpa = std.heap.page_allocator;
@@ -329,8 +329,8 @@ pub fn main() !void {
     var sid = try ReSid.init("MyZIGSID");
     defer sid.deinit();
 
-    // create a ReSidDmpPlayer instance and initialize it with the ReSid instance
-    var player = try ReSidDmpPlayer.init(gpa, sid.ptr);
+    // create a DumpPlayer instance and initialize it with the ReSid instance
+    var player = try DumpPlayer.init(gpa, sid.ptr);
     defer player.deinit();
 
     // load dump
@@ -342,7 +342,7 @@ pub fn main() !void {
         .format = SDL.AUDIO_S16,
         .channels = 1,
         .samples = 4096,
-        .callback = &ReSidDmpPlayer.sdlAudioCallback,
+        .callback = &DumpPlayer.sdlAudioCallback,
         .userdata = @ptrCast(&player), // reference to player
     };
 
@@ -433,10 +433,10 @@ const SDL = @cImport({
 });
 
 const ReSid = @import("resid").ReSid;
-const ReSidDmpPlayer = @import("resid").ReSidDmpPlayer;
+const DumpPlayer = @import("resid").DumpPlayer;
 const DP_PLAYSTATE = @import("resid").DP_PLAYSTATE;
 
-fn playerThreadFunc(player: *ReSidDmpPlayer) !void {
+fn playerThreadFunc(player: *DumpPlayer) !void {
     while (player.isPlaying()) {
         if (!player.update()) {
             player.stop();
@@ -455,8 +455,8 @@ pub fn main() !void {
     var sid = try ReSid.init("MyZIGSID");
     defer sid.deinit();
 
-    // create a ReSidDmpPlayer instance and initialize it with the ReSid instance
-    var player = try ReSidDmpPlayer.init(gpa, sid.ptr);
+    // create a DumpPlayer instance and initialize it with the ReSid instance
+    var player = try DumpPlayer.init(gpa, sid.ptr);
     defer player.deinit();
 
     // load dump
@@ -470,7 +470,7 @@ pub fn main() !void {
         .format = SDL.AUDIO_S16,
         .channels = 1,
         .samples = 4096,
-        .callback = &ReSidDmpPlayer.sdlAudioCallback,
+        .callback = &DumpPlayer.sdlAudioCallback,
         .userdata = @ptrCast(&player),
     };
 
@@ -544,9 +544,9 @@ pub fn main() !void {
 <br>
 
 
-### 🎛️ **ReSidDmpPlayer Struct** (Playback Controller)
+### 🎛️ **DumpPlayer Struct** (Playback Controller)
 
-- `init(allocator: std.mem.Allocator, resid: *c.ReSid) !ReSidDmpPlayer`: Creates a **player instance** linked to a **SID instance**.
+- `init(allocator: std.mem.Allocator, resid: *c.ReSid) !DumpPlayer`: Creates a **player instance** linked to a **SID instance**.
 - `deinit()`: Frees the **player instance**.
 - `play()`: Starts **playback** from the beginning.
 - `stop()`: **Stops** and **resets** playback.
@@ -568,10 +568,10 @@ pub fn main() !void {
 
 <br>
 
-### 🎹 **SdlReSidDmpPlayer Struct** (Simplified SDL Player)
+### 🎹 **SdlDumpPlayer Struct** (Simplified SDL Player)
 
-- `init(allocator: std.mem.Allocator, name: [*:0]const u8) !*SdlReSidDmpPlayer`: Creates a new SdlReSidDmpPlayer instance, initializes ReSid, ReSidDmpPlayer, and SDL.
-- `deinit(self: *SdlReSidDmpPlayer) void`: Cleans up the instance by stopping playback, closing SDL, and freeing memory.
+- `init(allocator: std.mem.Allocator, name: [*:0]const u8) !*SdlDumpPlayer`: Creates a new SdlDumpPlayer instance, initializes ReSid, DumpPlayer, and SDL.
+- `deinit(self: *SdlDumpPlayer) void`: Cleans up the instance by stopping playback, closing SDL, and freeing memory.
 - `setDmp(dump: []u8)`: Loads a **SID dump** for playback (**must be called before** `play()`).
 - `loadDmp(filename: []const u8) !void`: **load dump** from file.
 - `play() void`: Starts playing the loaded SID dump.
@@ -581,7 +581,7 @@ pub fn main() !void {
 
 ### 🎛️ **DmpPlayerContext Struct**  
 
-The `DmpPlayerContext` struct represents the **internal state** and **buffer management** for the `ReSidDmpPlayer`. It manages **audio buffer double-buffering**, **playback state**, and **runtime statistics** to ensure **smooth and continuous SID sound playback**.
+The `DmpPlayerContext` struct represents the **internal state** and **buffer management** for the `DumpPlayer`. It manages **audio buffer double-buffering**, **playback state**, and **runtime statistics** to ensure **smooth and continuous SID sound playback**.
 
 #### 🧩 **Zig Struct Definition**:
 ```zig

@@ -4,7 +4,7 @@ const SDL = @cImport({
 });
 
 const ReSid = @import("resid").ReSid;
-const ReSidDmpPlayer = @import("resid").ReSidDmpPlayer;
+const DumpPlayer = @import("resid").DumpPlayer;
 
 pub fn main() !void {
     const gpa = std.heap.page_allocator;
@@ -21,8 +21,8 @@ pub fn main() !void {
     sid.setSamplingRate(sampling_rate);
     defer sid.deinit();
 
-    // create a ReSidDmpPlayer instance and initialize it with the ReSid instance
-    var player = try ReSidDmpPlayer.init(gpa, sid.ptr);
+    // create a DumpPlayer instance and initialize it with the ReSid instance
+    var player = try DumpPlayer.init(gpa, sid.ptr);
     defer player.deinit();
 
     // load dump

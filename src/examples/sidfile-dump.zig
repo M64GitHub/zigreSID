@@ -1,10 +1,10 @@
 const std = @import("std");
-const SDL = @cImport({
-    @cInclude("SDL2/SDL.h");
-});
 const C64 = @import("zig64");
 const ReSid = @import("resid").ReSid;
 const SidFile = @import("sidfile").SidFile;
+const SDL = @cImport({
+    @cInclude("SDL2/SDL.h");
+});
 
 pub fn main() !void {
     const gpa = std.heap.page_allocator;
@@ -68,19 +68,15 @@ pub fn main() !void {
     }
 
     // -- initialize Cpu
-
     try stdout.print("[MAIN] Initializing c64\n", .{});
-    var c64 = C64.init(gpa, C64.Vic.Type.pal, 0x0800);
-    c64.mem.data[0x01] = 0x37;
-
-    // c64.dbg_enabled = true;
+    var c64 = try C64.init(gpa, C64.Vic.Model.pal, 0x0000);
 
     // write the sid player routine and data into the c64lator memory
     if (is_prg) {
-        const loaded_addr = c64.setPrg(sid_rawmem, false);
+        const loaded_addr = try c64.setPrg(sid_rawmem, false);
         try stdout.print("[MAIN] Loaded address : {X:0>4}\n", .{loaded_addr});
     } else {
-        // c64.WriteMem(sid_rawmem, mem_address);
+        c64.cpu.writeMem(sid_rawmem, mem_address);
     }
 
     // -- Call Sid Init
@@ -91,7 +87,6 @@ pub fn main() !void {
     c64.call(sidfile.header.init_address);
     try stdout.print("CYCLES: {d}\n", .{c64.cpu.cycles_executed});
 
-    // c64.cpu.dbg_enabled = true;
     // -- Loop Call Sid Play
     try stdout.print("[MAIN] Calling Sid Play\n", .{});
     for (0..max_frames) |i| {

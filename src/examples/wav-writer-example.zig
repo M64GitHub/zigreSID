@@ -1,7 +1,7 @@
 const std = @import("std");
 
 const ReSid = @import("resid").ReSid;
-const ReSidDmpPlayer = @import("resid").ReSidDmpPlayer;
+const DumpPlayer = @import("resid").DumpPlayer;
 const WavWriter = @import("wavwriter").WavWriter;
 
 pub fn main() !void {
@@ -18,8 +18,8 @@ pub fn main() !void {
     var sid = try ReSid.init("MyZIGSid");
     defer sid.deinit();
 
-    // create a ReSidDmpPlayer instance and initialize it with the ReSid instance
-    var player = try ReSidDmpPlayer.init(gpa, sid.ptr);
+    // create a DumpPlayer instance and initialize it with the ReSid instance
+    var player = try DumpPlayer.init(gpa, sid.ptr);
     defer player.deinit();
 
     try player.loadDmp("data/plasmaghost.sid.dmp");
