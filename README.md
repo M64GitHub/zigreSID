@@ -143,12 +143,14 @@ pub fn main() !void {
 
 <br>
 
-## 🛠️ Building the Project
+## Building the Project
+#### Requirements
+- ⚡ **Zig** 0.13.0
+- 🎧 **SDL2** (optional, required for SDL-based playback)
 
-Ensure you have **Zig 0.13.0+** and **SDL2** development libraries installed:
-
-```bash
-sudo apt install libsdl2-dev
+#### Build
+```sh
+sudo apt install libsdl2-dev  # Ubuntu/Debian, optional
 zig build
 ```
 
