@@ -39,7 +39,7 @@ The SID emulation and playback logic are **fully independent of any audio librar
 
 ## 🎵 Getting Started  
 
-Getting started is easy! Below are two minimal examples demonstrating how to generate WAV files or play back SID audio in real-time** with just a few lines of code.  
+Getting started is easy! Below are two minimal examples demonstrating how to generate WAV files or play back SID audio in real-time with just a few lines of code.  
 
 These examples use a `SID register dump`, a file containing the raw register changes of a `.sid` tune.  
 You can create your own SID dumps from `.sid` files using the included `sid-dump.zig` utility (see below).  
