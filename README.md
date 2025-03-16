@@ -146,13 +146,53 @@ pub fn main() !void {
 ## Building the Project
 #### Requirements
 - ⚡ **Zig** 0.13.0
-- 🎧 **SDL2** (optional, required for SDL-based playback)
+- 🎧 **SDL2** (optional, required for SDL-based playback, and building examples)
 
 #### Build
 ```sh
 sudo apt install libsdl2-dev  # Ubuntu/Debian, optional
 zig build
 ```
+
+## Using zigreSID In Your Project
+```sh
+zig fetch --save https://github.com/M64GitHub/zigreSID/archive/refs/tags/v0.0.0-alpha.tar.gz
+```
+This will add a dependency to your `build.zig.zon`:
+```zig
+.dependencies = .{
+    .resid = .{
+        .url = "https://github.com/M64GitHub/zigreSID/archive/refs/tags/v0.0.0-alpha.tar.gz",
+        .hash = "12207fd061a0e099dd70964ef6f508cae2ddd40a98651449ce1fb250abaa70c587bd",
+    },
+},
+```
+
+In your `build.zig`, import the `resid` module as follows:
+```zig
+pub fn build(b: *std.Build) void {
+    const target = b.standardTargetOptions(.{});
+    const optimize = b.standardOptimizeOption(.{});
+
+    // Add zigreSID as a dependency
+    const dep_resid = b.dependency("resid", .{}); 
+    const mod_resid = dep_resid.module("resid");  
+
+    // Define an example executable
+    const exe = b.addExecutable(.{
+        .name = "sid-dump",
+        .root_source_file = b.path("src/sid-dump.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Link the resid module
+    exe.root_module.addImport("resid", mod_resid); 
+
+    b.installArtifact(exe);
+}
+```
+After adding the dependency, simply run `zig build` to compile your project!
 
 5 examples are available for demonstration:
 
