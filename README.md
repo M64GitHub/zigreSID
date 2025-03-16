@@ -213,7 +213,7 @@ Each example is built automatically and placed in `zig-out/bin/`.
 After building the project, the compiled executables are placed in:
 ```sh
 zig-out/bin/
-
+```
 
 
 
