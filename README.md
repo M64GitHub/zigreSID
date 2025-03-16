@@ -25,7 +25,7 @@ With precise PAL & NTSC timing support, register state tracking, and real-time p
 - 🧵 **Dedicated Thread Support** – Choose between simple single-threaded playback or advanced multi-threaded execution for performance gains, real-time audio visualization, and modifications.  
 - 🔧 **Simplified API** – All complex timing calculations and buffer management are handled automatically!  
 - 🏁 **Full 6510 CPU Emulation** – Now includes a cycle-accurate 6510 CPU emulator for authentic execution of `.sid` files.  
-- 🔄 **Lots of Examples!** - Create SID `register dumps`, `convert` SID songs `to wav audio` files, and examples for all major structs!
+- 🗂️ **Lots of Examples!** - Create SID `register dumps`, `convert` SID songs `to wav audio` files, and examples for all major structs!
 - 🛠️ **Fully Integrated in Zig** – A seamless Zig-native implementation, making SID emulation more accessible than ever!  
 - ⚡ **Powered by reSID** – Uses the proven reSID C++ library for high-quality sound emulation. ([reSID on GitHub](https://github.com/daglem/reSID))  
 
