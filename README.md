@@ -195,7 +195,7 @@ pub fn build(b: *std.Build) void {
 ```
 After adding the dependency, simply run `zig build` to compile your project!
 
-## Included Examples
+## 📜 Included Examples
 
 The following example programs demonstrate various features of the library:
 
@@ -592,7 +592,7 @@ pub fn main() !void {
 <br>
 
 
-## 🎧 **Zig API Documentation**
+## 🔤 **API Documentation**
 
 ### 🎹 **ReSid Struct** (SID Emulation)
 
