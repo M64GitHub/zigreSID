@@ -50,7 +50,10 @@ You can create your own SID dumps from `.sid` files using the included `sid-dump
 
 
 ### 🔊 Example: Real-Time Playback (SDL)
-If you’re fine with SDL, the `SdlDumpPlayer` struct provides a convenient way to handle playback. It fully manages SDL initialization, audio callbacks, and buffer generation internally, making playback effortless. Since it runs in the background, playback is non-blocking. More detailed examples can be found in the sections below.
+If you're using SDL, the `SdlDumpPlayer` struct offers a hassle-free way to handle playback.  
+It fully manages SDL initialization, audio callbacks, and buffer generation, making playback effortless and non-blocking. Since it runs in the background, your program remains fully responsive.  
+
+For more detailed examples, check the sections below.
 
 ```zig
 const std = @import("std");
