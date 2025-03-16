@@ -83,7 +83,19 @@ pub fn main() !void {
 
 <br>
 
-### 🎼 Example: Wav-File Rendering
+### 🎵 Example: Render a SID Dump to a WAV File 
+
+This example demonstrates how to **convert a SID register dump into a high-quality WAV file**.  
+It initializes a SID chip instance, loads a **SID dump file (`.dmp`)**, and **renders PCM audio** from it.  
+The rendered audio is stored in a **stereo WAV file**, making it easy to use for playback, archiving, or further processing.  
+
+📌 **How It Works:**  
+- A **SID instance** is created for audio synthesis.  
+- A **DumpPlayer** loads and plays the `.dmp` file, simulating SID playback.  
+- The SID is **rendered frame-by-frame** at **50.125 Hz**, generating **10 seconds** of audio.  
+- The resulting PCM data is stored and saved to `sid-out.wav`.  
+
+🔊 **Now you can export SID music to WAV and use it anywhere!**  
 
 ```zig
 const std = @import("std");
