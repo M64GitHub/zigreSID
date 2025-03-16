@@ -195,42 +195,34 @@ pub fn build(b: *std.Build) void {
 ```
 After adding the dependency, simply run `zig build` to compile your project!
 
-### Examples Included
+## Included Examples
 
-5 examples are available for demonstration:
+The following example programs demonstrate various features of the library:
 
-You can find them under `src/examples/`
+| 🔥 Example | 📂 File | 📝 Description |
+|------------|---------|---------------|
+| 🎹 **SDL SID Dump Player** | `sdl-sid-dump-player.zig` | Fully automated SDL configuration for simple SID playback. |
+| 🎛️ **SID Dump Player** | `sid-dump-player.zig` | Manual SDL configuration with direct access to SID registers. |
+| ⚡ **Threaded SID Dump Player** | `sid-dump-player-threaded.zig` | Advanced version with a custom playback thread and full access to player internals. |
+| 📀 **WAV Writing Example** | `wav-writer-example.zig` | Demonstrates how to generate a SID-based PCM buffer and save it as a `.wav` file. |
+| 🎧 **Custom PCM Buffer & Playback** | `render-audio-example.zig` | Generates a raw SID audio PCM buffer and plays it directly via `SDL_QueueAudio()`. |
+| 🎹 **SID-File Dump Utility** | `sidfile-dump.zig` | Converts `.sid` files into register dumps for analysis and reuse. |
 
-- 🎹 **SDL SID Dump Player:**  
-     `src/examples/sdl-sid-dump-player.zig`  
-     automatic SDL configuration, simple playback
+📂 **You can find these under:** `src/examples/`  
 
-- 🎛️ **SID Dump Player:** 
-     `src/examples/sid-dump-player.zig`  
-     manual SDL configuration, and access to SID registers
-  
-- ⚡ **Threaded SID Dump Player:** 
-     `src/examples/sid-dump-player-threaded.zig`  
-     manual SDL configuration, access to SID registers, and player internals, playback in custom thread
-  
-- 📀 **WAV Writing Example**: 
-     `src/examples/wav-writer-example.zig`  
-     demonstrates how to generate a SID-based PCM buffer and save it as a .wav file
-- 🎧 **Custom PCM Buffer Generation and Playback:** 
-     `src/examples/render-audio-example.zig`  
-     generates a raw SID audio PCM buffer and plays it directly (via SDL_QueueAudio())
-- 🎹 **SID-File Dump Utility:** 
-     `src/examples/sidfile-dump.zig`  
-     creates dumps from your `.sid` files.
+### 🏗️ Compiled Executables  
+After building, the executables will be available in:  
+📌 **`zig-out/bin/`**  
 
-Executables will be available in `zig-out/bin/`:
+| 🏁 Executable | 🔧 Function |
+|--------------|------------|
+| `dump-player` | Plays SID register dumps with SDL. |
+| `dump-player-threaded` | Plays SID register dumps with threading. |
+| `sdl-dump-player` | Simple SDL-based SID playback. |
+| `sid-dump` | Dumps `.sid` register changes into a binary file. |
+| `siddump-wav-writer` | Converts SID register dumps into `.wav` audio files. |
+| `sid-render-audio` | Generates and plays SID PCM buffers. |
 
-- `dump-player`
-- `dump-player-threaded`
-- `sdl-dump-player`
-- `sid-dump`
-- `siddump-wav-writer`
-- `sid-render-audio`
 
 
 <br>
