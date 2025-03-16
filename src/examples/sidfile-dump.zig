@@ -1,104 +1,75 @@
 const std = @import("std");
-const C64 = @import("zig64");
 const ReSid = @import("resid").ReSid;
 const SidFile = @import("sidfile").SidFile;
-const SDL = @cImport({
-    @cInclude("SDL2/SDL.h");
-});
+const SidPlayer = @import("sidplayer").SidPlayer;
 
 pub fn main() !void {
-    const gpa = std.heap.page_allocator;
     const stdout = std.io.getStdOut().writer();
+    const gpa = std.heap.page_allocator;
 
-    const max_frames = 100000;
+    // parse commandline
+    const args = try std.process.argsAlloc(gpa);
+    defer std.process.argsFree(gpa, args);
 
-    // -- read and parse the .sid file
-
-    // const file_name = "data/Cybernoid_II.sid";
-    const file_name = "data/Club64.sid";
-
-    try stdout.print("[MAIN] Loading Sid tune '{s}'\n", .{file_name});
-
-    var sidfile = SidFile.init(gpa);
-    try sidfile.loadFile(file_name);
-    try stdout.print("[MAIN] Loaded Sid tune: {s}\n", .{sidfile.getName()});
-    try stdout.print("[MAIN] Author         : {s}\n", .{sidfile.getAuthor()});
-    try stdout.print("[MAIN] Release Info   : {s}\n", .{sidfile.getRelease()});
-    try stdout.print("[MAIN] ID             : {s}\n", .{sidfile.getId()});
-    try stdout.print("[MAIN] Version        : {X:0>4}\n", .{sidfile.header.version});
-    try stdout.print("[MAIN] Data offset    : {X:0>4}\n", .{
-        sidfile.header.data_offset,
-    });
-    try stdout.print("[MAIN] Load address   : {X:0>4}\n", .{
-        sidfile.header.load_address,
-    });
-    try stdout.print("[MAIN] Init address   : {X:0>4}\n", .{
-        sidfile.header.init_address,
-    });
-    try stdout.print("[MAIN] Play address   : {X:0>4}\n", .{
-        sidfile.header.play_address,
-    });
-    try stdout.print("[MAIN] Number of songs: {X:0>4}\n", .{
-        sidfile.header.num_songs,
-    });
-    try stdout.print("[MAIN] Start song#    : {X:0>4}\n", .{
-        sidfile.header.start_song,
-    });
-    try stdout.print("[MAIN] Speed          : {X:0>8}\n", .{
-        sidfile.header.speed,
-    });
-    try stdout.print("[MAIN] Filesize       : {X:0>8}\n", .{
-        sidfile.filesize,
-    });
-
-    const sid_rawmem = sidfile.getSidDataSlice();
-
-    var mem_address: u16 = 0;
-    var is_prg: bool = false;
-
-    if (sidfile.header.load_address == 0) {
-        mem_address = @as(u16, sid_rawmem[1]) * 256 +
-            @as(u16, sid_rawmem[0]);
-        try stdout.print("[MAIN] 0 Load Address!: {X:0>4}\n", .{
-            mem_address,
-        });
-        is_prg = true;
-    } else {
-        mem_address = sidfile.header.load_address;
+    if (args.len < 4) {
+        std.debug.print("Usage: sid-dump <SID file> <output dump> <frames> [--debug]\n", .{});
+        return;
     }
 
-    // -- initialize Cpu
-    try stdout.print("[MAIN] Initializing c64\n", .{});
-    var c64 = try C64.init(gpa, C64.Vic.Model.pal, 0x0000);
+    const sid_filename = args[1];
+    const output_filename = args[2];
+    const max_frames = try std.fmt.parseInt(usize, args[3], 10);
+    const dbg_enabled = args.len >= 5 and std.mem.eql(
+        u8,
+        args[4],
+        "--debug",
+    );
 
-    // write the sid player routine and data into the c64lator memory
-    if (is_prg) {
-        const loaded_addr = try c64.setPrg(sid_rawmem, false);
-        try stdout.print("[MAIN] Loaded address : {X:0>4}\n", .{loaded_addr});
-    } else {
-        c64.cpu.writeMem(sid_rawmem, mem_address);
+    // allocate output dump
+    const dump_size = max_frames * 25; // 25 registers per frame
+    var sid_dump = try gpa.alloc(u8, dump_size);
+
+    // init sidfile
+    var sid_file = SidFile.init();
+    defer sid_file.deinit(gpa);
+
+    // load .sid file
+    try stdout.print("[EXE] loading Sid tune '{s}'\n", .{sid_filename});
+    try sid_file.load(gpa, sid_filename);
+
+    // print file info
+    try sid_file.printHeader();
+
+    // init sidplayer
+    var player = try SidPlayer.init(gpa, sid_file);
+
+    // -- call sid init
+    try player.sidInit(sid_file.header.start_song - 1);
+
+    // -- loop call sid play
+    try stdout.print("[EXE] looping sid play()\n", .{});
+    for (0..max_frames) |frame| {
+        try player.sidPlay();
+        const sid_registers = player.c64.sid.getRegisters();
+        @memcpy(sid_dump[frame * 25 .. frame * 25 + 25], sid_registers[0..]);
+        if (dbg_enabled)
+            hexDumpRegisters(frame, &sid_registers);
     }
 
-    // -- Call Sid Init
-    try stdout.print("[MAIN] Calling Sid Init\n", .{});
-    c64.cpu.a = 0;
-    c64.cpu.x = 0;
-    c64.cpu.y = 0;
-    c64.call(sidfile.header.init_address);
-    try stdout.print("CYCLES: {d}\n", .{c64.cpu.cycles_executed});
+    // -- write dump to output file
+    var file = try std.fs.cwd().createFile(output_filename, .{});
+    defer file.close();
+    try file.writeAll(sid_dump);
+    std.debug.print("[EXE] SID binary dump saved to {s}!\n", .{output_filename});
+}
 
-    // -- Loop Call Sid Play
-    try stdout.print("[MAIN] Calling Sid Play\n", .{});
-    for (0..max_frames) |i| {
-        c64.cpu.cycles_executed = 0;
-        c64.cpu.a = 0;
-        c64.cpu.x = 0;
-        c64.cpu.y = 0;
-        c64.call(sidfile.header.play_address);
-        if (c64.cpu.ext_sid_reg_written) {
-            try stdout.print("[FRM ] {d} ", .{i});
-            try stdout.print("[CYCL] {d} ", .{c64.cpu.cycles_executed});
-            c64.sid.printRegisters();
-        }
+fn hexDumpRegisters(frame: usize, registers: []const u8) void {
+    var stdout = std.io.getStdOut().writer();
+
+    stdout.print("[{X:06}] ", .{frame}) catch return;
+    for (registers) |reg| {
+        stdout.print("{X:02} ", .{reg}) catch return;
     }
+
+    stdout.print("\n", .{}) catch return;
 }

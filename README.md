@@ -25,26 +25,25 @@ With precise PAL & NTSC timing support, register state tracking, and real-time p
 - ⚡ **Non-Blocking Audio Playback** – Music playback fully runs in the background keeping your code responsive!  
 - 🧵 **Dedicated Thread Support** – Choose between simple single-threaded playback or advanced multi-threaded execution for performance gains, real-time audio visualization, and modifications.  
 - 🔧 **Simplified API** – All complex timing calculations and buffer management are handled automatically!  
-
-### **🆕 New Features – Full `.sid` File Processing!**   
 - 💾 **Supports `.sid` Files** – Load and execute real C64 SID music effortlessly!  
 - 🏁 **Full 6510 CPU Emulation** – Now includes a cycle-accurate 6510 CPU emulator for authentic execution of `.sid` files.  
-- ⏳ **PAL & NTSC Timing Support** – in case you need to be specific  
-- 🔄 **SID Register Dumping & Playback** – Analyze how SID registers change during music playback!  
+- 🔄 **Lots of Examples!** - Create SID `register dumps`, `convert` SID songs `to wav audio` files, and examples for all major structs!
 - 🛠️ **Fully Integrated in Zig** – A seamless Zig-native implementation, making SID emulation more accessible than ever!  
 
 
 <br>
 
 ### 🎧 **Audio Library Independence**
-This project is **audio-library agnostic** by design. The core SID emulation and playback logic is completely independent of any audio backend. However, the current implementation demonstrates audio playback using **SDL2** for convenience and cross-platform support. You can easily adapt or extend the audio interface to suit other libraries or custom solutions. The playback engine supports both automatic audio callbacks for seamless integration and manual audio buffer generation for full control and customization of the audio stream.
+This project is **audio-library agnostic** by design. The core SID emulation and playback logic is completely independent of any audio backend. However, the examples demonstrate audio playback using **SDL2** for convenience and cross-platform support. You can easily adapt or extend the audio interface to suit other libraries or custom solutions. The playback engine supports both automatic audio callbacks for seamless integration and manual audio buffer generation for full control and customization of the audio stream.
 
 <br>
 
 ## 🎵 Getting Started
 
 The zigReSID library makes SID audio playback and rendering simple and efficient.  
-Below are two minimal examples demonstrating how to generate WAV files or play back SID audio in real-time using just a few lines of code.
+Below are two minimal examples demonstrating how to generate WAV files or play back SID audio in real-time using just a few lines of code.  
+The following examples work with a `sid dump`. The register-changes of a sid tune dumped to a file.  
+You can create dumps of your own `.sid` files with the included example `sid-dump.zig` (see below).
 
 ### 🔊 Example: Real-Time Playback (SDL)
 If you’re working with SDL, the `SdlDumpPlayer` struct provides a convenient way to handle playback. It fully manages SDL initialization, audio callbacks, and buffer generation internally, making playback effortless. Since it runs in the background, playback is non-blocking. More detailed examples can be found in the sections below.

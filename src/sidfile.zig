@@ -20,27 +20,33 @@ const SidHeader = packed struct {
 };
 
 pub const SidFile = struct {
-    allocator: std.mem.Allocator,
     data: []u8,
     header: SidHeader,
-    filesize: u32,
+    file_size: u32,
+    file_name: []u8,
+    loaded: bool,
 
-    pub fn init(allocator: std.mem.Allocator) SidFile {
+    pub fn init() SidFile {
         return SidFile{
-            .allocator = allocator,
             .data = &[_]u8{},
             .header = undefined,
-            .filesize = 0,
+            .file_size = 0,
+            .file_name = "",
+            .loaded = false,
         };
     }
 
-    pub fn loadFile(self: *SidFile, filename: []const u8) !void {
+    pub fn load(
+        self: *SidFile,
+        allocator: std.mem.Allocator,
+        filename: []const u8,
+    ) !void {
         const file = try std.fs.cwd().openFile(filename, .{});
         defer file.close();
 
         const file_size = (try file.stat()).size;
-        self.data = try self.allocator.alloc(u8, file_size);
-        self.filesize = @as(u32, @truncate(file_size));
+        self.data = try allocator.alloc(u8, file_size);
+        self.file_size = @as(u32, @truncate(file_size));
         _ = try file.readAll(self.data);
         try self.parseHeader();
         // need to convert from little to big endian
@@ -52,6 +58,7 @@ pub const SidFile = struct {
         self.header.start_song = toBigEndianU16(self.header.start_song);
         self.header.version = toBigEndianU16(self.header.version);
         self.header.speed = toBigEndianU32(self.header.speed);
+        self.loaded = true;
     }
 
     pub fn parseHeader(self: *SidFile) !void {
@@ -66,7 +73,7 @@ pub const SidFile = struct {
         }
     }
 
-    pub fn getSidDataSlice(self: *SidFile) []const u8 {
+    pub fn getSidDataSlice(self: *const SidFile) []const u8 {
         return self.data[self.header.data_offset..];
     }
 
@@ -94,7 +101,40 @@ pub const SidFile = struct {
         return @byteSwap(value);
     }
 
-    pub fn deinit(self: *SidFile) void {
-        self.allocator.free(self.data);
+    pub fn deinit(self: *SidFile, allocator: std.mem.Allocator) void {
+        allocator.free(self.data);
+    }
+
+    pub fn printHeader(self: *SidFile) !void {
+        const stdout = std.io.getStdOut().writer();
+        try stdout.print("[sidfile] Loaded Sid tune: {s}\n", .{self.getName()});
+        try stdout.print("[sidfile] Author         : {s}\n", .{self.getAuthor()});
+        try stdout.print("[sidfile] Release Info   : {s}\n", .{self.getRelease()});
+        try stdout.print("[sidfile] ID             : {s}\n", .{self.getId()});
+        try stdout.print("[sidfile] Version        : {X:0>4}\n", .{self.header.version});
+        try stdout.print("[sidfile] Data offset    : {X:0>4}\n", .{
+            self.header.data_offset,
+        });
+        try stdout.print("[sidfile] Load address   : {X:0>4}\n", .{
+            self.header.load_address,
+        });
+        try stdout.print("[sidfile] Init address   : {X:0>4}\n", .{
+            self.header.init_address,
+        });
+        try stdout.print("[sidfile] Play address   : {X:0>4}\n", .{
+            self.header.play_address,
+        });
+        try stdout.print("[sidfile] Number of songs: {X:0>4}\n", .{
+            self.header.num_songs,
+        });
+        try stdout.print("[sidfile] Start song#    : {X:0>4}\n", .{
+            self.header.start_song,
+        });
+        try stdout.print("[sidfile] Speed          : {X:0>8}\n", .{
+            self.header.speed,
+        });
+        try stdout.print("[sidfile] Filesize       : {X:0>8}\n", .{
+            self.file_size,
+        });
     }
 };

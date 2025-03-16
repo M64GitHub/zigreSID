@@ -65,19 +65,28 @@ pub fn build(b: *std.Build) void {
     mod_residsdl.addImport("resid", mod_resid);
     mod_residsdl.linkLibrary(resid_lib);
 
-    // sidfile
-    const mod_sidfile = b.addModule("sidfile", .{
-        .root_source_file = b.path("src/sidfile.zig"),
-    });
-
     // wavwriter
     const mod_wavwriter = b.addModule("wavwriter", .{
         .root_source_file = b.path("src/wavwriter.zig"),
     });
 
+    // sidfile
+    const mod_sidfile = b.addModule("sidfile", .{
+        .root_source_file = b.path("src/sidfile.zig"),
+    });
+
+    // sidplayer
+    const mod_sidplayer = b.addModule("sidplayer", .{
+        .root_source_file = b.path("src/sidplayer.zig"),
+        .imports = &.{
+            .{ .name = "sidfile", .module = mod_sidfile },
+            .{ .name = "zig64", .module = mod_zig64 },
+        },
+    });
+
     // Build Dump Player Executable
     const exe_dumpplayer = b.addExecutable(.{
-        .name = "zigreSID-dump-play",
+        .name = "dump-player",
         .root_source_file = b.path("src/examples/sid-dump-player.zig"),
         .target = target,
         .optimize = optimize,
@@ -89,7 +98,7 @@ pub fn build(b: *std.Build) void {
 
     // Build Threaded Dump Player Executable
     const exe_threaded = b.addExecutable(.{
-        .name = "zigreSID-dump-play-threaded",
+        .name = "dump-player-threaded",
         .root_source_file = b.path("src/examples/sid-dump-player-threaded.zig"),
         .target = target,
         .optimize = optimize,
@@ -101,7 +110,7 @@ pub fn build(b: *std.Build) void {
 
     // Build SDL Executable
     const exe_sdl = b.addExecutable(.{
-        .name = "zigreSID-sdl-player",
+        .name = "sdl-dump-player",
         .root_source_file = b.path("src/examples/sdl-sid-dump-player.zig"),
         .target = target,
         .optimize = optimize,
@@ -113,7 +122,7 @@ pub fn build(b: *std.Build) void {
 
     // Build RenderAudio Executable
     const exe_renderaudio = b.addExecutable(.{
-        .name = "zigreSID-render-audio",
+        .name = "sid-render-audio",
         .root_source_file = b.path("src/examples/render-audio-example.zig"),
         .target = target,
         .optimize = optimize,
@@ -125,7 +134,7 @@ pub fn build(b: *std.Build) void {
 
     // Build WavWriter Executable
     const exe_wavwriter = b.addExecutable(.{
-        .name = "zigreSID-wav-writer",
+        .name = "siddump-wav-writer",
         .root_source_file = b.path("src/examples/wav-writer-example.zig"),
         .target = target,
         .optimize = optimize,
@@ -134,16 +143,30 @@ pub fn build(b: *std.Build) void {
     exe_wavwriter.root_module.addImport("wavwriter", mod_wavwriter);
     b.installArtifact(exe_wavwriter);
 
-    // Build .sid-file Test Executable
+    // Build .sid-file Dump Executable
     const exe_sidfile = b.addExecutable(.{
-        .name = "zigreSID-play-sidfile",
+        .name = "sid-dump",
         .root_source_file = b.path("src/examples/sidfile-dump.zig"),
         .target = target,
         .optimize = optimize,
     });
     exe_sidfile.root_module.addImport("resid", mod_resid);
-    exe_sidfile.root_module.addImport("zig64", mod_zig64);
     exe_sidfile.root_module.addImport("sidfile", mod_sidfile);
+    exe_sidfile.root_module.addImport("zig64", mod_zig64);
+    exe_sidfile.root_module.addImport("sidplayer", mod_sidplayer);
+    b.installArtifact(exe_sidfile);
+
+    // Build .sid player Executable
+    const exe_sidplayer = b.addExecutable(.{
+        .name = "zigreSID-play-sidfile",
+        .root_source_file = b.path("src/examples/sid-player.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    exe_sidplayer.root_module.addImport("resid", mod_resid);
+    exe_sidplayer.root_module.addImport("zig64", mod_zig64);
+    exe_sidplayer.root_module.addImport("sidfile", mod_sidfile);
+    exe_sidplayer.root_module.addImport("sidplayer", mod_sidplayer);
     b.installArtifact(exe_sidfile);
 
     // Run steps for all
