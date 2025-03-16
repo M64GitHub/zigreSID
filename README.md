@@ -18,7 +18,6 @@ The generated audio can be played in real-time or exported as high-quality `.wav
 
 ## **🔥 Features**  
 
-### **🎹 Core Features**  
 - 💾 **`.sid` File Support** – Load and execute real C64 SID music effortlessly!  
 - 📀 **`.wav` File Support (Mono & Stereo)** – Save your SID-generated audio as `.wav` files, ideal for archiving, music production, and retro inspired projects.  
 - 🎧 **Flexible Audio Backends** – Seamlessly integrates with various audio libraries for playback.  
