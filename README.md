@@ -220,12 +220,13 @@ You can find them under `src/examples/`
 
 Executables will be available in `zig-out/bin/`:
 
- - `zigreSID-dump-play`
- - `zigreSID-dump-play-threaded`
- - `zigreSID-play-sidfile`
- - `zigreSID-render-audio`
- - `zigreSID-sdl-player`
- - `zigreSID-wav-writer`
+- `dump-player`
+- `dump-player-threaded`
+- `sdl-dump-player`
+- `sid-dump`
+- `siddump-wav-writer`
+- `sid-render-audio`
+
 
 <br>
 
