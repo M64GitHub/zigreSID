@@ -37,12 +37,13 @@ The SID emulation and playback logic are **fully independent of any audio librar
 
 <br>
 
-## 🎵 Getting Started
+## 🎵 Getting Started  
 
-The zigReSID library makes SID audio playback and rendering simple and efficient.  
-Below are two minimal examples demonstrating how to generate WAV files or play back SID audio in real-time using just a few lines of code.  
-The following examples work with a `sid dump`. The register-changes of a sid tune dumped to a file.  
-You can create dumps of your own `.sid` files with the included example `sid-dump.zig` (see below).
+Getting started is easy! Below are two minimal examples demonstrating how to generate WAV files or play back SID audio in real-time** with just a few lines of code.  
+
+These examples use a `SID register dump`, a file containing the raw register changes of a `.sid` tune.  
+You can create your own SID dumps from `.sid` files using the included `sid-dump.zig` utility (see below).  
+
 
 ### 🔊 Example: Real-Time Playback (SDL)
 If you’re working with SDL, the `SdlDumpPlayer` struct provides a convenient way to handle playback. It fully manages SDL initialization, audio callbacks, and buffer generation internally, making playback effortless. Since it runs in the background, playback is non-blocking. More detailed examples can be found in the sections below.
