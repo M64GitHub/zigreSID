@@ -12,7 +12,7 @@ pub fn build(b: *std.Build) void {
     const mod_zig64 = dep_zig64.module("zig64");
 
     // Build reSID C++ shared library and C wrapper
-    const resid_lib = b.addSharedLibrary(.{
+    const resid_lib = b.addStaticLibrary(.{
         .name = "sid",
         .target = target,
         .optimize = optimize,
@@ -63,7 +63,6 @@ pub fn build(b: *std.Build) void {
     mod_residsdl.addIncludePath(.{ .cwd_relative = resid_include_path });
     mod_residsdl.addIncludePath(.{ .cwd_relative = usr_include_path });
     mod_residsdl.addImport("resid", mod_resid);
-    mod_residsdl.linkLibrary(resid_lib);
 
     // wavwriter
     const mod_wavwriter = b.addModule("wavwriter", .{
