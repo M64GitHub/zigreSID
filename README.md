@@ -55,6 +55,11 @@ It fully manages SDL initialization, audio callbacks, and buffer generation, mak
 
 For more detailed examples, check the sections below.
 
+📌 **How It Works:**  
+- A **SdlDumpPlayer** instance is created and linked to an SDL audio stream.  
+- The **SID dump file (`.dmp`)** is loaded, containing all SID register changes from a `.sid` tune.  
+- Calling `player.play()` starts playback, with **SDL handling audio processing in the background**.  
+
 ```zig
 const std = @import("std");
 const ReSid = @import("resid");
