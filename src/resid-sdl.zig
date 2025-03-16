@@ -3,12 +3,12 @@ const SDL = @cImport({
     @cInclude("SDL2/SDL.h");
 });
 
-const ReSid = @import("resid").ReSid;
-const DumpPlayer = @import("resid").DumpPlayer;
+const ReSID = @import("resid_cpp").Sid;
+const DP = @import("resid_cpp").DumpPlayer;
 
 pub const SdlDumpPlayer = struct {
-    resid: ReSid,
-    player: DumpPlayer,
+    resid: ReSID,
+    player: DP,
     dev: SDL.SDL_AudioDeviceID = 0,
     allocator: std.mem.Allocator,
 
@@ -18,8 +18,8 @@ pub const SdlDumpPlayer = struct {
     pub fn init(allocator: std.mem.Allocator, name: [*:0]const u8) !*SdlDumpPlayer {
         var self = try std.heap.c_allocator.create(SdlDumpPlayer);
 
-        self.resid = try ReSid.init(name);
-        self.player = try DumpPlayer.init(allocator, self.resid.ptr);
+        self.resid = try ReSID.init(name);
+        self.player = try DP.init(allocator, self.resid.ptr);
         self.dev = 0;
         self.allocator = allocator;
 
@@ -44,7 +44,7 @@ pub const SdlDumpPlayer = struct {
             .format = SDL.AUDIO_S16,
             .channels = 1,
             .samples = 4096,
-            .callback = &DumpPlayer.sdlAudioCallback,
+            .callback = &DP.sdlAudioCallback,
             .userdata = @ptrCast(&self.player),
         };
 

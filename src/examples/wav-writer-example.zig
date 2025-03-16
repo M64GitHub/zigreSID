@@ -1,8 +1,9 @@
 const std = @import("std");
+const ReSid = @import("resid");
 
-const ReSid = @import("resid").ReSid;
-const DumpPlayer = @import("resid").DumpPlayer;
-const WavWriter = @import("wavwriter").WavWriter;
+const Sid = ReSid.Sid;
+const DumpPlayer = ReSid.DumpPlayer;
+const WavWriter = ReSid.WavWriter;
 
 pub fn main() !void {
     const gpa = std.heap.page_allocator;
@@ -14,11 +15,11 @@ pub fn main() !void {
 
     try stdout.print("[MAIN] zigSid audio rendering wav writer demo!\n", .{});
 
-    // create a ReSid instance and configure it
-    var sid = try ReSid.init("MyZIGSid");
+    // create a Sid instance and configure it
+    var sid = try Sid.init("sid#1");
     defer sid.deinit();
 
-    // create a DumpPlayer instance and initialize it with the ReSid instance
+    // create a DumpPlayer instance and initialize it with the Sid instance
     var player = try DumpPlayer.init(gpa, sid.ptr);
     defer player.deinit();
 

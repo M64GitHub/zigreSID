@@ -1,7 +1,8 @@
 const std = @import("std");
-const ReSid = @import("resid").ReSid;
-const SidFile = @import("sidfile").SidFile;
-const SidPlayer = @import("sidplayer").SidPlayer;
+const ReSid = @import("resid");
+
+const SidFile = ReSid.SidFile;
+const SidPlayer = ReSid.SidPlayer;
 
 pub const CsvFormat = enum { hex, decimal };
 

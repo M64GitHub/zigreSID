@@ -2,9 +2,10 @@ const std = @import("std");
 const SDL = @cImport({
     @cInclude("SDL2/SDL.h");
 });
+const ReSid = @import("resid");
 
-const ReSid = @import("resid").ReSid;
-const DumpPlayer = @import("resid").DumpPlayer;
+const Sid = ReSid.Sid;
+const DumpPlayer = ReSid.DumpPlayer;
 
 pub fn main() !void {
     const gpa = std.heap.page_allocator;
@@ -14,14 +15,14 @@ pub fn main() !void {
     const pcm_buffer = try gpa.alloc(i16, sampling_rate * 10);
     defer gpa.free(pcm_buffer);
 
-    try stdout.print("[MAIN] zigSid audio rendering demo!\n", .{});
+    try stdout.print("[EXE] audio rendering demo!\n", .{});
 
-    // create a ReSid instance and configure it
-    var sid = try ReSid.init("MyZIGSid");
+    // create a Sid instance and configure it
+    var sid = try Sid.init("zigsid#1");
     sid.setSamplingRate(sampling_rate);
     defer sid.deinit();
 
-    // create a DumpPlayer instance and initialize it with the ReSid instance
+    // create a DumpPlayer instance and initialize it with the Sid instance
     var player = try DumpPlayer.init(gpa, sid.ptr);
     defer player.deinit();
 
@@ -35,13 +36,12 @@ pub fn main() !void {
     const file = try std.fs.cwd().createFile("pcm_dump.raw", .{ .truncate = true });
     defer file.close();
     try file.writeAll(std.mem.sliceAsBytes(pcm_buffer));
-    std.debug.print("[MAIN] PCM dump written to 'pcm_dump.raw'\n", .{});
+    std.debug.print("[EXE] pcm dump written to 'pcm_dump.raw'\n", .{});
 
-    try stdout.print("[MAIN] Steps rendered {d}\n", .{steps_rendered});
+    try stdout.print("[EXE] steps rendered {d}\n", .{steps_rendered});
 
-    // -- playback the rendered audio via SDL.SDL_QueueAudio
-
-    // init sdl with a callback to our player
+    // playback the rendered audio via SDL.SDL_QueueAudio
+    // -- init sdl with a callback to our player
     var spec = SDL.SDL_AudioSpec{
         .freq = sid.getSamplingRate(),
         .format = SDL.AUDIO_S16,
@@ -52,30 +52,30 @@ pub fn main() !void {
     };
 
     if (SDL.SDL_Init(SDL.SDL_INIT_AUDIO) < 0) {
-        try stdout.print("[MAIN] Failed to initialize SDL audio: {s}\n", .{SDL.SDL_GetError()});
+        try stdout.print("[EXE] failed to initialize SDL audio: {s}\n", .{SDL.SDL_GetError()});
         return;
     }
     defer SDL.SDL_Quit();
 
     const dev = SDL.SDL_OpenAudioDevice(null, 0, &spec, null, 0);
     if (dev == 0) {
-        try stdout.print("[MAIN] Failed to open SDL audio device: {s}\n", .{SDL.SDL_GetError()});
+        try stdout.print("[EXE] failed to open SDL audio device: {s}\n", .{SDL.SDL_GetError()});
         return;
     }
     defer SDL.SDL_CloseAudioDevice(dev);
 
     SDL.SDL_PauseAudioDevice(dev, 0); // Start SDL audio
-    try stdout.print("[MAIN] SDL audio started at 44100 Hz.\n", .{});
-    // end of SDL initialization
+    try stdout.print("[EXE] sdl audio started at 44100 Hz.\n", .{});
+    // -- end of SDL initialization
 
     // enqueue rendered audio
     const buf_len: u32 = @truncate(pcm_buffer.len);
     const rv = SDL.SDL_QueueAudio(dev, pcm_buffer.ptr, buf_len);
-    try stdout.print("[MAIN] SDL_QueueAudio() result: {d}\n", .{rv});
+    try stdout.print("[EXE] SDL_QueueAudio() result: {d}\n", .{rv});
 
-    try stdout.print("[MAIN] Press enter to exit\n", .{});
+    try stdout.print("[EXE] press enter to exit\n", .{});
     _ = std.io.getStdIn().reader().readByte() catch null;
 
     SDL.SDL_PauseAudioDevice(dev, 1); // Stop SDL audio
-    try stdout.print("[MAIN] SDL audio stopped.\n", .{});
+    try stdout.print("[EXE] sdl audio stopped.\n", .{});
 }

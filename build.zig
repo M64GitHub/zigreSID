@@ -11,7 +11,7 @@ pub fn build(b: *std.Build) void {
     const dep_zig64 = b.dependency("zig64", .{});
     const mod_zig64 = dep_zig64.module("zig64");
 
-    // Build reSID C++ shared library and C wrapper
+    // build reSID C++ shared library and C wrapper
     const resid_lib = b.addStaticLibrary(.{
         .name = "sid",
         .target = target,
@@ -47,22 +47,22 @@ pub fn build(b: *std.Build) void {
         .flags = &.{ "-x", "c++", "-DVERSION=\"m64-000\"", "-Ofast" },
     });
 
-    // modules
+    // sub modules
 
-    // resid
-    const mod_resid = b.addModule("resid", .{
-        .root_source_file = b.path("src/resid.zig"),
+    // original resid
+    const mod_resid_cpp = b.addModule("resid_cpp", .{
+        .root_source_file = b.path("src/resid-cpp.zig"),
     });
-    mod_resid.addIncludePath(.{ .cwd_relative = resid_include_path });
-    mod_resid.linkLibrary(resid_lib);
+    mod_resid_cpp.addIncludePath(.{ .cwd_relative = resid_include_path });
+    mod_resid_cpp.linkLibrary(resid_lib);
 
     // residsdl
-    const mod_residsdl = b.addModule("residsdl", .{
-        .root_source_file = b.path("src/residsdl.zig"),
+    const mod_resid_sdl = b.addModule("resid_sdl", .{
+        .root_source_file = b.path("src/resid-sdl.zig"),
     });
-    mod_residsdl.addIncludePath(.{ .cwd_relative = resid_include_path });
-    mod_residsdl.addIncludePath(.{ .cwd_relative = usr_include_path });
-    mod_residsdl.addImport("resid", mod_resid);
+    mod_resid_sdl.addIncludePath(.{ .cwd_relative = resid_include_path });
+    mod_resid_sdl.addIncludePath(.{ .cwd_relative = usr_include_path });
+    mod_resid_sdl.addImport("resid_cpp", mod_resid_cpp);
 
     // wavwriter
     const mod_wavwriter = b.addModule("wavwriter", .{
@@ -82,6 +82,23 @@ pub fn build(b: *std.Build) void {
             .{ .name = "zig64", .module = mod_zig64 },
         },
     });
+
+    // ---
+
+    // Create the main `resid` module (which includes everything)
+    const mod_resid = b.addModule("resid", .{
+        .root_source_file = b.path("src/resid.zig"),
+    });
+
+    // Add all submodules to `resid`
+    mod_resid.addImport("sidfile", mod_sidfile);
+    mod_resid.addImport("wavwriter", mod_wavwriter);
+    mod_resid.addImport("resid_cpp", mod_resid_cpp); // C++ Wrapper
+    mod_resid.addImport("resid_sdl", mod_resid_sdl);
+    mod_resid.addImport("sidplayer", mod_sidplayer);
+    mod_resid.addImport("zig64", mod_zig64);
+
+    // ---
 
     // Build Dump Player Executable
     const exe_dumpplayer = b.addExecutable(.{
@@ -116,7 +133,7 @@ pub fn build(b: *std.Build) void {
     });
     exe_sdl.addIncludePath(.{ .cwd_relative = usr_include_path });
     exe_sdl.linkSystemLibrary("SDL2");
-    exe_sdl.root_module.addImport("residsdl", mod_residsdl);
+    exe_sdl.root_module.addImport("resid", mod_resid);
     b.installArtifact(exe_sdl);
 
     // Build RenderAudio Executable
@@ -139,7 +156,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     exe_wavwriter.root_module.addImport("resid", mod_resid);
-    exe_wavwriter.root_module.addImport("wavwriter", mod_wavwriter);
+    // exe_wavwriter.root_module.addImport("wavwriter", mod_wavwriter);
     b.installArtifact(exe_wavwriter);
 
     // Build .sid-file Dump Executable
@@ -150,9 +167,9 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     exe_sidfile.root_module.addImport("resid", mod_resid);
-    exe_sidfile.root_module.addImport("sidfile", mod_sidfile);
-    exe_sidfile.root_module.addImport("zig64", mod_zig64);
-    exe_sidfile.root_module.addImport("sidplayer", mod_sidplayer);
+    // exe_sidfile.root_module.addImport("sidfile", mod_sidfile);
+    // exe_sidfile.root_module.addImport("zig64", mod_zig64);
+    // exe_sidfile.root_module.addImport("sidplayer", mod_sidplayer);
     b.installArtifact(exe_sidfile);
 
     // Build .sid player Executable
@@ -163,9 +180,9 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     exe_sidplayer.root_module.addImport("resid", mod_resid);
-    exe_sidplayer.root_module.addImport("zig64", mod_zig64);
-    exe_sidplayer.root_module.addImport("sidfile", mod_sidfile);
-    exe_sidplayer.root_module.addImport("sidplayer", mod_sidplayer);
+    // exe_sidplayer.root_module.addImport("zig64", mod_zig64);
+    // exe_sidplayer.root_module.addImport("sidfile", mod_sidfile);
+    // exe_sidplayer.root_module.addImport("sidplayer", mod_sidplayer);
     b.installArtifact(exe_sidfile);
 
     // Run steps for all
