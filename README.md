@@ -58,8 +58,6 @@ pub fn main() !void {
     const gpa = std.heap.page_allocator;
     const stdout = std.io.getStdOut().writer();
 
-    try stdout.print("[EXE] sdl dump player demo!\n", .{});
-
     // create SDL sid dump player and configure it
     var player = try Player.init(gpa, "player#1");
     defer player.deinit();
@@ -96,8 +94,6 @@ pub fn main() !void {
     const pcm_buffer = try gpa.alloc(i16, sampling_rate * 10); // audio buffer
     defer gpa.free(pcm_buffer);
 
-    try stdout.print("[MAIN] zigSid audio rendering wav writer demo!\n", .{});
-
     // create a Sid instance and configure it
     var sid = try Sid.init("sid#1");
     defer sid.deinit();
@@ -112,7 +108,7 @@ pub fn main() !void {
     // sid updates (audio frames) are executed at virtually 50.125 Hz
     // this will create 10 seconds audio
     const steps_rendered = player.renderAudio(0, 50 * 10, pcm_buffer);
-    try stdout.print("[MAIN] Steps rendered {d}\n", .{steps_rendered});
+    try stdout.print("[EXE] Steps rendered {d}\n", .{steps_rendered});
 
     // create a stereo wav file and write it to disk
     var mywav = WavWriter.init(gpa, "sid-out.wav");
