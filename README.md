@@ -29,7 +29,7 @@ The generated audio can be played in real-time or exported as high-quality `.wav
 - 🗂️**Lots of Examples!** - Create SID `register dumps`, `convert` SID songs `to wav audio` files, and examples for all major structs!
 - 🛠️ **Fully Integrated in Zig** – A seamless Zig-native implementation, making SID emulation more accessible than ever!  
 - ⚡ **Powered by reSID** – Uses the proven reSID C++ library for high-quality sound emulation. ([reSID on GitHub](https://github.com/daglem/reSID))
-- - 🏆 **Powered by zig64** – A high-performance C64 emulator core written in Zig, ensuring accurate 6510 CPU execution and SID register emulation. ([zig64 on GitHub](https://github.com/M64GitHub/zig64))  
+- 🏆 **Powered by zig64** – A high-performance C64 emulator core written in Zig, ensuring accurate 6510 CPU execution and SID register emulation. ([zig64 on GitHub](https://github.com/M64GitHub/zig64))  
 
 
 <br>
