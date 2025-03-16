@@ -13,8 +13,9 @@
     .paths = .{
         "build.zig",
         "build.zig.zon",
-        "src",
         "data",
+        "resid-cpp",
+        "src",
         "README.md",
     },
 }
