@@ -155,10 +155,11 @@ zig build
 ```
 
 ## Using zigreSID In Your Project
+To add zigreSID as a dependency, use:
 ```sh
 zig fetch --save https://github.com/M64GitHub/zigreSID/archive/refs/tags/v0.0.0-alpha.tar.gz
 ```
-This will add a dependency to your `build.zig.zon`:
+This will add the dependency to your `build.zig.zon`:
 ```zig
 .dependencies = .{
     .resid = .{
