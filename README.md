@@ -17,8 +17,6 @@ With precise PAL & NTSC timing support, register state tracking, and real-time p
 ## **🔥 Features**  
 
 ### **🎹 Core Features**  
-- 🎵 **SID Soundchip Emulation for Zig** – Experience the iconic SID sound directly in your Zig projects!  
-- ⚡ **Powered by reSID** – Uses the proven reSID C++ library for high-quality sound emulation. ([reSID on GitHub](https://github.com/daglem/reSID))  
 - 💾 **`.sid` File Support** – Load and execute real C64 SID music effortlessly!  
 - 📀 **`.wav` File Support (Mono & Stereo)** – Save your SID-generated audio as `.wav` files, ideal for archiving, music production, and retro inspired projects.  
 - 🎧 **Flexible Audio Backends** – Seamlessly integrates with various audio libraries for playback.  
@@ -29,6 +27,7 @@ With precise PAL & NTSC timing support, register state tracking, and real-time p
 - 🏁 **Full 6510 CPU Emulation** – Now includes a cycle-accurate 6510 CPU emulator for authentic execution of `.sid` files.  
 - 🔄 **Lots of Examples!** - Create SID `register dumps`, `convert` SID songs `to wav audio` files, and examples for all major structs!
 - 🛠️ **Fully Integrated in Zig** – A seamless Zig-native implementation, making SID emulation more accessible than ever!  
+- ⚡ **Powered by reSID** – Uses the proven reSID C++ library for high-quality sound emulation. ([reSID on GitHub](https://github.com/daglem/reSID))  
 
 
 <br>
