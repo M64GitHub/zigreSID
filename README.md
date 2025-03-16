@@ -50,23 +50,26 @@ If you’re working with SDL, the `SdlDumpPlayer` struct provides a convenient w
 
 ```zig
 const std = @import("std");
+const ReSid = @import("resid");
 
-const SdlDumpPlayer = @import("residsdl").SdlDumpPlayer;
+const Player = ReSid.SdlDumpPlayer;
 
 pub fn main() !void {
     const gpa = std.heap.page_allocator;
     const stdout = std.io.getStdOut().writer();
 
-    try stdout.print("[MAIN] zigSID audio demo sdl dump player!\n", .{});
+    try stdout.print("[EXE] sdl dump player demo!\n", .{});
 
-    var player = try SdlDumpPlayer.init(gpa, "MY SID Player");
+    // create SDL sid dump player and configure it
+    var player = try Player.init(gpa, "player#1");
     defer player.deinit();
 
+    // load sid dump
     try player.loadDmp("data/plasmaghost.sid.dmp");
 
     player.play();
 
-    try stdout.print("[MAIN] Press enter to exit\n", .{});
+    try stdout.print("[EXE] press enter to exit\n", .{});
     _ = std.io.getStdIn().reader().readByte() catch null;
 
     player.stop();
@@ -79,10 +82,11 @@ pub fn main() !void {
 
 ```zig
 const std = @import("std");
+const ReSid = @import("resid");
 
-const ReSid = @import("resid").ReSid;
-const DumpPlayer = @import("resid").DumpPlayer;
-const WavWriter = @import("wavwriter").WavWriter;
+const Sid = ReSid.Sid;
+const DumpPlayer = ReSid.DumpPlayer;
+const WavWriter = ReSid.WavWriter;
 
 pub fn main() !void {
     const gpa = std.heap.page_allocator;
@@ -92,22 +96,22 @@ pub fn main() !void {
     const pcm_buffer = try gpa.alloc(i16, sampling_rate * 10); // audio buffer
     defer gpa.free(pcm_buffer);
 
-    try stdout.print("[MAIN] zigreSID audio rendering wav writer demo!\n", .{});
+    try stdout.print("[MAIN] zigSid audio rendering wav writer demo!\n", .{});
 
-    // create a ReSid instance
-    var sid = try ReSid.init("zig sid 64");
+    // create a Sid instance and configure it
+    var sid = try Sid.init("sid#1");
     defer sid.deinit();
 
-    // create a DumpPlayer, and initialize it with the ReSid instance
+    // create a DumpPlayer instance and initialize it with the Sid instance
     var player = try DumpPlayer.init(gpa, sid.ptr);
     defer player.deinit();
 
     try player.loadDmp("data/plasmaghost.sid.dmp");
 
-    // render 10 * 50 frames into PCM audio buffer
+    // render 50 * 10 frames into PCM audio buffer
     // sid updates (audio frames) are executed at virtually 50.125 Hz
-    // this will create 10 seconds of audio
-    const steps_rendered = player.renderAudio(0, 10 * 50, pcm_buffer);
+    // this will create 10 seconds audio
+    const steps_rendered = player.renderAudio(0, 50 * 10, pcm_buffer);
     try stdout.print("[MAIN] Steps rendered {d}\n", .{steps_rendered});
 
     // create a stereo wav file and write it to disk
