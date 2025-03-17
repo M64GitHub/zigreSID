@@ -222,7 +222,7 @@ zig-out/bin/
 
 
 
-## 🧬 **Example Code**
+## 🧬 ** Playback Example Code**
 Working with zigreSID is best demonstrated by examples. The following two examples show the usage of the `DumpPlayer` struct, in two different modes of operation. You will see it is quite simple to setup playback. Most of the code deals with setting up an SDL audio stream.  
 
 ### SID Dump Player (`sid-dump-player.zig`)
