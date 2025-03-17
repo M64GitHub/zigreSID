@@ -19,7 +19,7 @@ pub const SdlDumpPlayer = struct {
         var self = try std.heap.c_allocator.create(SdlDumpPlayer);
 
         self.resid = try ReSID.init(name);
-        self.player = try DP.init(allocator, self.resid.ptr);
+        self.player = try DP.init(allocator, self.resid);
         self.dev = 0;
         self.allocator = allocator;
 

@@ -57,8 +57,8 @@ pub const DumpPlayer = struct {
     dump: []u8 = &.{},
     allocator: std.mem.Allocator,
 
-    pub fn init(allocator: std.mem.Allocator, resid: *wrapper.ReSID) !DumpPlayer {
-        const player = wrapper.ReSIDDmpPlayer_create(resid) orelse
+    pub fn init(allocator: std.mem.Allocator, resid: Sid) !DumpPlayer {
+        const player = wrapper.ReSIDDmpPlayer_create(resid.ptr) orelse
             return error.FailedToCreatePlayer;
         return DumpPlayer{ .ptr = player, .allocator = allocator };
     }

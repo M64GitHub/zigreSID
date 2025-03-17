@@ -18,7 +18,7 @@ pub fn main() !void {
     defer sid.deinit();
 
     // create a DumpPlayer instance and initialize it with the Sid instance
-    var player = try DumpPlayer.init(gpa, sid.ptr);
+    var player = try DumpPlayer.init(gpa, sid);
     defer player.deinit();
 
     try player.loadDmp("data/plasmaghost.sid.dmp");
