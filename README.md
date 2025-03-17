@@ -123,7 +123,7 @@ pub fn main() !void {
     defer sid.deinit();
 
     // create a DumpPlayer instance and initialize it with the Sid instance
-    var player = try DumpPlayer.init(gpa, sid.ptr);
+    var player = try DumpPlayer.init(gpa, sid);
     defer player.deinit();
 
     try player.loadDmp("data/plasmaghost.sid.dmp");
@@ -268,7 +268,7 @@ pub fn main() !void {
 ```
 ```zig
     // create a DumpPlayer instance and initialize it with the ReSid instance
-    var player = try DumpPlayer.init(gpa, sid.ptr);
+    var player = try DumpPlayer.init(gpa, sid);
     defer player.deinit();
     // load dump
     try player.loadDmp("data/plasmaghost.sid.dmp");
@@ -398,7 +398,7 @@ fn playerThreadFunc(player: *DumpPlayer) !void {
     defer sid.deinit();
 
     // create a DumpPlayer instance and initialize it with the ReSid instance
-    var player = try DumpPlayer.init(gpa, sid.ptr);
+    var player = try DumpPlayer.init(gpa, sid);
     defer player.deinit();
 
     // load dump
@@ -580,7 +580,7 @@ This project bridges the gap between C++, C, and Zig:
 
 | **Function**                                         | **Description** |
 |------------------------------------------------------|-------------------------------------------------|
-| **`init(allocator: std.mem.Allocator, resid: *Sid) !DumpPlayer`** | Creates a **player instance** linked to a **SID instance**. |
+| **`init(allocator: std.mem.Allocator, resid: Sid) !DumpPlayer`** | Creates a **player instance** linked to a **SID instance**. |
 | **`deinit(self: *DumpPlayer)`**                                       | Frees the **player instance** and releases memory. |
 | **`play(self: *DumpPlayer)`**                                         | Starts **playback** from the beginning. |
 | **`stop(self: *DumpPlayer)`**                                         | **Stops** and **resets** playback. |
