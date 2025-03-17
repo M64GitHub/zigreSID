@@ -215,12 +215,7 @@ After building the project, the compiled executables are placed in:
 zig-out/bin/
 ```
 
-
-
 <br>
-
-
-
 
 ## 🧬 Playback Example Code
 Working with zigreSID is best demonstrated by examples. The following two examples show the usage of the `DumpPlayer` struct, in two different modes of operation. You will see it is quite simple to setup playback. Most of the code deals with setting up an SDL audio stream.  
@@ -430,7 +425,6 @@ fn playerThreadFunc(player: *DumpPlayer) !void {
 
 <br>
 
-
 ## 🔤 **Documentation**
 ### Introduction
 #### 💡 Structure of the reSID Zig Integration
@@ -441,8 +435,6 @@ This project bridges the gap between C++, C, and Zig:
 2. **Simplified C++ Framework**: A custom wrapper that manages timing, buffer generation, and playback logic, so you don’t have to.
 3. **C Bindings**: Exposes the simpliefied framework through a clean C interface.
 4. **Zig Wrapper**: A clear and explicit Zig interface built with structs and associated functions, wrapping C bindings for seamless SID playback and control. 
-
-<br>
 
 #### 🎼 **Audio and SID Chip Details**
 
