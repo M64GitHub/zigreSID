@@ -450,9 +450,7 @@ This project bridges the gap between C++, C, and Zig:
 ### 🛠️ Working with zigreSID
 #### 🎼 About the **DumpPlayer**  
 ##### Realtime Audio Buffer Generation via Callback
-**`DumpPlayer`**  is the most efficient method for playing back complete SID tunes or sound effects. It provides a simple way to handle SID sound playback (see example code). Internally, it manages audio buffer generation and SID register updates, continuously reading and processing register values from a dump file in steps triggered by the audio-callback.
-
-<br>
+**`DumpPlayer`**  is the most efficient method for playing back complete SID tunes or sound effects. It provides a simple way to handle SID sound playback (see example code). Internally, it manages audio buffer generation and SID register updates, continuously reading and processing register values from a dump file in steps triggered by the audio-callback.  
 
 ##### 🧬 **Realtime Audio Buffer Generation**  
 
@@ -468,8 +466,6 @@ This project bridges the gap between C++, C, and Zig:
   - `buf_ptr_playing`: Currently being played by the audio backend (e.g., SDL2).  
   - `buf_ptr_next`: Prepared by the player for future playback.  
 - Once the audio backend finishes playing `buf_ptr_playing`, the buffers are swapped internally to ensure gapless playback.  
-
-<br>
 
 ##### ⚡ **Buffer Generation Approaches**  
 
@@ -515,8 +511,6 @@ This project bridges the gap between C++, C, and Zig:
     }
   ```
 
-<br>
-
 ##### 🎛️ **Playback State and Audio Buffer Access**  
 
 ###### 🔍 **Playback Control Functions**  
@@ -532,8 +526,6 @@ This project bridges the gap between C++, C, and Zig:
   const playingBuffer = ([]i16) player.getPlayerContext().buf_ptr_playing;
   ```  
 - Modify the buffer at `buf_ptr_next` during playback for **dynamic audio effects** or **custom processing**.  
-
-<br>
 
 ##### 🔄 **SID Register Access**  
 
