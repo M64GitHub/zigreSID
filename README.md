@@ -230,17 +230,17 @@ zig-out/bin/
 This example demonstrates the simplest way to play a SID dump using the `DumpPlayer`.  
 The player processes SID register values for each virtual frame, synchronized to a virtual PAL video standard vertical sync for accurate timing. That means it reads a set of SID register values from the dump and writes them to reSID, for each step.   The internal audio generation clocks the SID in the background and uses the output to fill an audio buffer. When the vertical sync frequency is reached, the next set of register values is read from the dump.
 
-You can generate your own SID dumps using a siddump utility. In this demo, the SID dump is included via a C header file generated using the `xxd -i` tool.
-- After initializing the `sid` and `player` struct instances, set the []u8 dump for the player:  
+You can generate your own SID dumps using a siddump utility. In this demo, the SID dump is loaded from a file:
+- After initializing the `sid` and `player` struct instances, load the []u8 dump for the player:  
   ```zig
-  player.setDmp(sounddata);
+  try player.loadDmp("data/plasmaghost.sid.dmp");
   ```
 - And to start playback, simply call:  
   ```zig
   player.play();
   ```  
-- SDL2 handles audio playback in the background using its audio callback mechanism. The audiodata is also updated in the callback routine.
-- Audio generation runs entirely within the SDL audio thread.
+- SDL2 handles audio playback in the background using its audio callback mechanism, the audiodata is updated in the callback routine.
+- -> Audio generation runs entirely within the SDL audio thread.
 
 `Code`:
 ```zig
