@@ -242,6 +242,7 @@ You can generate your own SID dumps using a siddump utility. In this demo, the S
 - SDL2 handles audio playback in the background using its audio callback mechanism. The audiodata is also updated in the callback routine.
 - Audio generation runs entirely within the SDL audio thread.
 
+`Code`:
 ```zig
 const std = @import("std");
 const SDL = @cImport({
