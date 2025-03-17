@@ -533,8 +533,8 @@ This project bridges the gap between C++, C, and Zig:
 ###### 🎚️ **Accessing Audio Buffers**  
 - Access **audio data buffers** for **real-time manipulation**:  
   ```zig
-  const nextBuffer = ([*c]c_short) player.getPlayerContext().buf_ptr_next;
-  const playingBuffer = ([*c]c_short) player.getPlayerContext().buf_ptr_playing;
+  const nextBuffer = ([]i16) player.getPlayerContext().buf_ptr_next;
+  const playingBuffer = ([]i16) player.getPlayerContext().buf_ptr_playing;
   ```  
 - Modify the buffer at `buf_ptr_next` during playback for **dynamic audio effects** or **custom processing**.  
 
