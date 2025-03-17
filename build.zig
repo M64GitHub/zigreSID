@@ -46,15 +46,39 @@ pub fn build(b: *std.Build) void {
         },
         .flags = &.{ "-x", "c++", "-DVERSION=\"m64-000\"", "-Ofast" },
     });
+    b.installArtifact(resid_lib);
 
     // sub modules
-
     // original resid
     const mod_resid_cpp = b.addModule("resid_cpp", .{
         .root_source_file = b.path("src/resid-cpp.zig"),
     });
-    mod_resid_cpp.addIncludePath(.{ .cwd_relative = resid_include_path });
     mod_resid_cpp.linkLibrary(resid_lib);
+
+    // Install headers and use them
+    const install_headers = b.addInstallDirectory(.{
+        .source_dir = b.path("resid-cpp"),
+        .install_dir = .header,
+        .install_subdir = "resid-cpp",
+    });
+    b.getInstallStep().dependOn(&install_headers.step);
+    mod_resid_cpp.addIncludePath(.{
+        .cwd_relative = b.getInstallPath(.header, "resid-cpp"),
+    });
+
+    for (mod_resid_cpp.include_dirs.items) |inc_dir| {
+        const tag = @as(std.meta.Tag(@TypeOf(inc_dir)), inc_dir); // **Tag extraction is correct!**
+
+        switch (tag) {
+            .path => {
+                const path = inc_dir.path; // **Now safely access path!**
+                std.debug.print("resid_cpp Include Path: {s}\n", .{path.cwd_relative});
+            },
+            else => {
+                std.debug.print("Skipping non-path include dir...\n", .{});
+            },
+        }
+    }
 
     // residsdl
     const mod_resid_sdl = b.addModule("resid_sdl", .{
@@ -97,6 +121,10 @@ pub fn build(b: *std.Build) void {
     mod_resid.addImport("resid_sdl", mod_resid_sdl);
     mod_resid.addImport("sidplayer", mod_sidplayer);
     mod_resid.addImport("zig64", mod_zig64);
+    mod_resid.addIncludePath(.{
+        .cwd_relative = b.getInstallPath(.header, "resid-cpp"),
+    });
+    mod_resid.linkLibrary(resid_lib); // Link the C++ library
 
     // ---
 
@@ -167,9 +195,6 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     exe_sidfile.root_module.addImport("resid", mod_resid);
-    // exe_sidfile.root_module.addImport("sidfile", mod_sidfile);
-    // exe_sidfile.root_module.addImport("zig64", mod_zig64);
-    // exe_sidfile.root_module.addImport("sidplayer", mod_sidplayer);
     b.installArtifact(exe_sidfile);
 
     // Build .sid player Executable
@@ -180,10 +205,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     exe_sidplayer.root_module.addImport("resid", mod_resid);
-    // exe_sidplayer.root_module.addImport("zig64", mod_zig64);
-    // exe_sidplayer.root_module.addImport("sidfile", mod_sidfile);
-    // exe_sidplayer.root_module.addImport("sidplayer", mod_sidplayer);
-    b.installArtifact(exe_sidfile);
+    b.installArtifact(exe_sidplayer);
 
     // Run steps for all
     const run_dumpplayer = b.addRunArtifact(exe_dumpplayer);
