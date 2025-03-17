@@ -245,30 +245,34 @@ You can generate your own SID dumps using a siddump utility. In this demo, the S
 ```zig
 const std = @import("std");
 const SDL = @cImport({
-    @cInclude("SDL2/SDL.h");
+    @cInclude("SDL2/SDL.h"); // we setup the DumpPlayer to use SDL audio callbacks
 });
-const ReSid = @import("resid");
-
-const Sid = ReSid.Sid;
-const DumpPlayer = ReSid.DumpPlayer;
-
+const ReSid = @import("resid");      // import zigreSID
+```
+```
+const Sid = ReSid.Sid;               // struct Sid for audio generation
+const DumpPlayer = ReSid.DumpPlayer; // struct DumpPlayer for controlling the Sid using a buffer
+```
+```
 pub fn main() !void {
     const gpa = std.heap.page_allocator;
     const stdout = std.io.getStdOut().writer();
 
     try stdout.print("[EXE] dump player demo!\n", .{});
-
+```
+```
     // create a ReSid instance and configure it
     var sid = try Sid.init("zigsid#1");
     defer sid.deinit();
-
+```
+```
     // create a DumpPlayer instance and initialize it with the ReSid instance
     var player = try DumpPlayer.init(gpa, sid.ptr);
     defer player.deinit();
-
     // load dump
     try player.loadDmp("data/plasmaghost.sid.dmp");
-
+```
+```
     // -- init sdl with a callback to our player
     var spec = SDL.SDL_AudioSpec{
         .freq = sid.getSamplingRate(),
@@ -295,9 +299,11 @@ pub fn main() !void {
     SDL.SDL_PauseAudioDevice(dev, 0); // Start SDL audio
     try stdout.print("[EXE] sdl audio started at {d} Hz.\n", .{sid.getSamplingRate()});
     // -- end of SDL initialization
-
+```
+```
     player.play();
-
+```
+```
     // do something in main: print the Sid registers, and player stats
     for (1..10) |_| {
         const regs = sid.getRegs(); // [25]u8 array
@@ -316,7 +322,8 @@ pub fn main() !void {
 
         std.time.sleep(0.5 * std.time.ns_per_s);
     }
-
+```
+```
     try stdout.print("[EXE] press enter to exit\n", .{});
     _ = std.io.getStdIn().reader().readByte() catch null;
 
@@ -354,7 +361,7 @@ player.isPlaying();
 Running `update()` in a separate thread enables **real-time audio visualization** and **manipulation**.  
 The active audio buffer can be accessed via:  
 ```zig
-([*c]c_short) player.getPlayerContext().buf_ptr_playing
+player.getPlayerContext().buf_ptr_playing : []i16
 ```
 
 The playback mechanism uses a **double-buffering strategy**:  
