@@ -516,7 +516,7 @@ This project bridges the gap between C++, C, and Zig:
 - `player.pause()`: Pause audio generation.  
 - `player.continuePlayback()`: Resume playback after pause.  
 
-###### Accessing Audio Buffers  
+###### Audio Buffers Access  
 - Access **audio data buffers** for **real-time manipulation**:  
   ```zig
   const nextBuffer = ([]i16) player.getPlayerContext().buf_ptr_next;
