@@ -452,31 +452,29 @@ This project bridges the gap between C++, C, and Zig:
 ##### Realtime Audio Buffer Generation via Callback
 **`DumpPlayer`**  is the most efficient method for playing back complete SID tunes or sound effects. It provides a simple way to handle SID sound playback (see example code). Internally, it manages audio buffer generation and SID register updates, continuously reading and processing register values from a dump file in steps triggered by the audio-callback.  
 
-##### 🧬 **Realtime Audio Buffer Generation**  
+##### Realtime Audio Buffer Generation  
 
-###### 🔄 **DumpPlayers Frame-Based SID Register Processing**  
+###### DumpPlayers Frame-Based SID Register Processing  
 - **SID dumps** contain SID register values representing audio frames.
 - The player receives a dump via the `setDmp()` function
 - For each virtual PAL frame (50.125 Hz, synchronized to a virtual vertical sync), the **player** reads a set of **25 SID register values** from the dump.  
 - These registers are bulk-written to the reSID engine using `writeRegs()`.  
 - The **`fillAudioBuffer()`** function clocks the reSID engine internally, generating audio samples that form the audio buffer.  
 
-###### 🎵 **Audio Buffer Structure and Playback**  
+###### Audio Buffer Structure and Playback  
 - The generated audio is stored in double buffers:  
   - `buf_ptr_playing`: Currently being played by the audio backend (e.g., SDL2).  
   - `buf_ptr_next`: Prepared by the player for future playback.  
 - Once the audio backend finishes playing `buf_ptr_playing`, the buffers are swapped internally to ensure gapless playback.  
 
-##### ⚡ **Buffer Generation Approaches**  
-
-###### 🏃 **Unthreaded Mode** (Default, SDL Audio Callback Driven)  
+##### Buffer Generation Approaches  
+###### Default Mode (SDL Audio Callback Driven)  
 - The audio buffer** is updated automatically within the **SDL audio thread**.  
 - The **SDL audio callback** invokes the player's internal audio generation methods, ensuring continuous playback without manual intervention.  
 - Suitable for **simpler use cases** where real-time audio control is not required.
 - No extra code is required. All required for audio playback is to call `player.play()`
 
-
-###### 🧵 **Threaded Mode** (Manual Audio Buffer Updates)  
+###### Threaded Mode (Manual Audio Buffer Updates)  
 - The user gains full control over buffer updates by calling:  
   ```zig
   player.updateExternal(true);
@@ -511,15 +509,15 @@ This project bridges the gap between C++, C, and Zig:
     }
   ```
 
-##### 🎛️ **Playback State and Audio Buffer Access**  
+##### Playback State and Audio Buffer Access  
 
-###### 🔍 **Playback Control Functions**  
+###### Playback Control Functions  
 - `player.play()`: Start playback from the beginning.  
 - `player.stop()`: Stop playback and reset internal buffers.  
 - `player.pause()`: Pause audio generation.  
 - `player.continuePlayback()`: Resume playback after pause.  
 
-###### 🎚️ **Accessing Audio Buffers**  
+###### Accessing Audio Buffers  
 - Access **audio data buffers** for **real-time manipulation**:  
   ```zig
   const nextBuffer = ([]i16) player.getPlayerContext().buf_ptr_next;
@@ -527,7 +525,7 @@ This project bridges the gap between C++, C, and Zig:
   ```  
 - Modify the buffer at `buf_ptr_next` during playback for **dynamic audio effects** or **custom processing**.  
 
-##### 🔄 **SID Register Access**  
+##### SID Register Access  
 
 - The player reads **SID register values** per frame and writes them to the **reSID** engine using:
   ```zig
