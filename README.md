@@ -573,7 +573,7 @@ This project bridges the gap between C++, C, and Zig:
 
 <br>
 
-### 🔄 **SID Register Handling**  
+##### 🔄 **SID Register Handling**  
 
 - The player reads **SID register values** per frame and writes them to the **reSID** engine using:
   ```zig
@@ -587,10 +587,10 @@ This project bridges the gap between C++, C, and Zig:
 <br>
 
 
+### 🔤 Struct Reference
 
 
-
-### 🎹 **ReSid Struct** (SID Emulation)
+#### 🎹 **ReSid Struct** (SID Emulation)
 
 - `init(allocator: std.mem.Allocator, name: [*:0]const u8) !ReSid`: Initializes a **SID instance** with a given name.
 - `deinit()`: Frees the **SID instance**.
@@ -604,7 +604,7 @@ This project bridges the gap between C++, C, and Zig:
 <br>
 
 
-### 🎛️ **DumpPlayer Struct** (Playback Controller)
+#### 🎛️ **DumpPlayer Struct** (Playback Controller)
 
 - `init(allocator: std.mem.Allocator, resid: *c.ReSid) !DumpPlayer`: Creates a **player instance** linked to a **SID instance**.
 - `deinit()`: Frees the **player instance**.
@@ -628,7 +628,7 @@ This project bridges the gap between C++, C, and Zig:
 
 <br>
 
-### 🎹 **SdlDumpPlayer Struct** (Simplified SDL Player)
+#### 🎹 **SdlDumpPlayer Struct** (Simplified SDL Player)
 
 - `init(allocator: std.mem.Allocator, name: [*:0]const u8) !*SdlDumpPlayer`: Creates a new SdlDumpPlayer instance, initializes ReSid, DumpPlayer, and SDL.
 - `deinit(self: *SdlDumpPlayer) void`: Cleans up the instance by stopping playback, closing SDL, and freeing memory.
@@ -639,11 +639,11 @@ This project bridges the gap between C++, C, and Zig:
 
 <br>
 
-### 🎛️ **DmpPlayerContext Struct**  
+#### 🎛️ **DmpPlayerContext Struct**  
 
 The `DmpPlayerContext` struct represents the **internal state** and **buffer management** for the `DumpPlayer`. It manages **audio buffer double-buffering**, **playback state**, and **runtime statistics** to ensure **smooth and continuous SID sound playback**.
 
-#### 🧩 **Zig Struct Definition**:
+##### 🧩 **Zig Struct Definition**:
 ```zig
 const CFG_AUDIO_BUF_SIZE = 4096; // Adjust if needed
 
@@ -670,7 +670,7 @@ const DmpPlayerContext = extern struct {
 };
 ```
 
-#### **Fields Overview**:
+##### **Fields Overview**:
 
 - **🎼 Audio Buffers**:  
   - **`buf1`, `buf2`** (`[CFG_AUDIO_BUF_SIZE]i16`):  
