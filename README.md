@@ -249,30 +249,30 @@ const SDL = @cImport({
 });
 const ReSid = @import("resid");      // import zigreSID
 ```
-```
+```zig
 const Sid = ReSid.Sid;               // struct Sid for audio generation
 const DumpPlayer = ReSid.DumpPlayer; // struct DumpPlayer for controlling the Sid using a buffer
 ```
-```
+```zig
 pub fn main() !void {
     const gpa = std.heap.page_allocator;
     const stdout = std.io.getStdOut().writer();
 
     try stdout.print("[EXE] dump player demo!\n", .{});
 ```
-```
+```zig
     // create a ReSid instance and configure it
     var sid = try Sid.init("zigsid#1");
     defer sid.deinit();
 ```
-```
+```zig
     // create a DumpPlayer instance and initialize it with the ReSid instance
     var player = try DumpPlayer.init(gpa, sid.ptr);
     defer player.deinit();
     // load dump
     try player.loadDmp("data/plasmaghost.sid.dmp");
 ```
-```
+```zig
     // -- init sdl with a callback to our player
     var spec = SDL.SDL_AudioSpec{
         .freq = sid.getSamplingRate(),
@@ -300,10 +300,10 @@ pub fn main() !void {
     try stdout.print("[EXE] sdl audio started at {d} Hz.\n", .{sid.getSamplingRate()});
     // -- end of SDL initialization
 ```
-```
+```zig
     player.play();
 ```
-```
+```zig
     // do something in main: print the Sid registers, and player stats
     for (1..10) |_| {
         const regs = sid.getRegs(); // [25]u8 array
@@ -323,7 +323,7 @@ pub fn main() !void {
         std.time.sleep(0.5 * std.time.ns_per_s);
     }
 ```
-```
+```zig
     try stdout.print("[EXE] press enter to exit\n", .{});
     _ = std.io.getStdIn().reader().readByte() catch null;
 
