@@ -13,7 +13,7 @@ pub fn main() !void {
 
     try stdout.print("[EXE] dump player demo!\n", .{});
 
-    // create a ReSid instance and configure it
+    // create a Sid instance and configure it
     var sid = try Sid.init("zigsid#1");
     defer sid.deinit();
 
@@ -24,7 +24,7 @@ pub fn main() !void {
     // load dump
     try player.loadDmp("data/plasmaghost.sid.dmp");
 
-    // init sdl with a callback to our player
+    // -- init sdl with a callback to our player
     var spec = SDL.SDL_AudioSpec{
         .freq = sid.getSamplingRate(),
         .format = SDL.AUDIO_S16,
@@ -49,7 +49,7 @@ pub fn main() !void {
 
     SDL.SDL_PauseAudioDevice(dev, 0); // Start SDL audio
     try stdout.print("[EXE] sdl audio started at {d} Hz.\n", .{sid.getSamplingRate()});
-    // end of SDL initialization
+    // -- end of SDL initialization
 
     player.play();
 
@@ -63,7 +63,11 @@ pub fn main() !void {
         }
         try stdout.print("\n", .{});
 
-        try stdout.print("[EXE] {d} buffers played, {d} buffer underruns, {d} Sid frames\n", .{ player.getPlayerContext().stat_bufwrites, player.getPlayerContext().stat_buf_underruns, player.getPlayerContext().stat_framectr });
+        try stdout.print("[EXE] {d} buffers played, {d} buffer underruns, {d} Sid frames\n", .{
+            player.getPlayerContext().stat_bufwrites,
+            player.getPlayerContext().stat_buf_underruns,
+            player.getPlayerContext().stat_framectr,
+        });
 
         std.time.sleep(0.5 * std.time.ns_per_s);
     }

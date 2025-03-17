@@ -78,7 +78,11 @@ pub fn main() !void {
         }
         try stdout.print("\n", .{});
 
-        try stdout.print("[EXE] {d} buffers played, {d} buffer underruns, {d} Sid frames\n", .{ player.getPlayerContext().stat_bufwrites, player.getPlayerContext().stat_buf_underruns, player.getPlayerContext().stat_framectr });
+        try stdout.print("[EXE] {d} buffers played, {d} buffer underruns, {d} Sid frames\n", .{
+            player.getPlayerContext().stat_bufwrites,
+            player.getPlayerContext().stat_buf_underruns,
+            player.getPlayerContext().stat_framectr,
+        });
 
         std.time.sleep(0.5 * std.time.ns_per_s);
     }
