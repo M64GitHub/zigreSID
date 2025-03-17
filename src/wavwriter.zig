@@ -48,11 +48,24 @@ pub const WavWriter = struct {
         try self.writeToFile(wav_data);
     }
 
+    pub fn writeMono(self: *WavWriter) !void {
+        const wav_data = try self.createWavBufferWithBuffer(
+            self.buffer,
+            1,
+        );
+        defer self.allocator.free(wav_data);
+        try self.writeToFile(wav_data);
+    }
+
     fn createWavBuffer(self: *WavWriter) ![]u8 {
         return self.createWavBufferWithBuffer(self.buffer, self.num_channels);
     }
 
-    fn createWavBufferWithBuffer(self: *WavWriter, pcm_buffer: []i16, num_channels: u16) ![]u8 {
+    fn createWavBufferWithBuffer(
+        self: *WavWriter,
+        pcm_buffer: []i16,
+        num_channels: u16,
+    ) ![]u8 {
         const bits_per_sample: u16 = 16;
         const block_align: u16 = num_channels * (bits_per_sample / 8);
         const byte_rate: u32 = self.sample_rate * @as(u32, block_align);
