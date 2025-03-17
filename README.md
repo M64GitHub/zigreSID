@@ -672,40 +672,21 @@ const DmpPlayerContext = extern struct {
 
 ##### **Fields Overview**:
 
-- **🎼 Audio Buffers**:  
-  - **`buf1`, `buf2`** (`[CFG_AUDIO_BUF_SIZE]i16`):  
-    Double audio buffers storing **16-bit PCM audio samples**. Used alternately for continuous playback.  
-  - **`buf_ptr_playing`** (`*i16`):  
-    Pointer to the **currently playing** buffer.  
-  - **`buf_ptr_next`** (`*i16`):  
-    Pointer to the **next buffer** to be played after `buf_ptr_playing` is consumed.
+| **Category**              | **Variable & Type**                                 | **Description** |
+|--------------------------|-------------------------------------------------|-------------------------------------------------|
+| 🎼 **Audio Buffers**       | **`buf1`, `buf2`** (`[CFG_AUDIO_BUF_SIZE]i16`) | Double audio buffers storing **16-bit PCM audio samples**. Used alternately for continuous playback. |
+|                          | **`buf_ptr_playing`** (`*i16`)                   | Pointer to the **currently playing** buffer. |
+|                          | **`buf_ptr_next`** (`*i16`)                      | Pointer to the **next buffer** to be played after `buf_ptr_playing` is consumed. |
+| 🔒 **Buffer Management Flags** | **`buf_consumed`** (`bool`)                      | **Flag** indicating whether the **current buffer** has been fully consumed (ie by SDL). |
+|                          | **`buf_lock`** (`bool`)                          | Used to **lock the buffer** during updates to prevent **race conditions**. |
+|                          | **`play_state`** (`DP_PLAYSTATE`)               | **Playback state flag**, see enum `DP_PLAYSTATE`. |
+|                          | **`updates_external`** (`bool`)                 | Indicates if **buffer updates** are controlled **externally** (e.g., in **threaded mode**). |
+|                          | **`buf_calculated`** (`bool`)                   | Indicates if the last call to the `player.update()` function calculated new audio. |
+| 📊 **Playback Statistics** | **`stat_cnt`** (`u64`)                          | **Playback cycle counter**, tracking the total number of processed cycles. |
+|                          | **`stat_bufwrites`** (`u64`)                     | Counts the **total buffer writes**, useful for **performance monitoring**. |
+|                          | **`stat_buf_underruns`** (`u64`)                 | Tracks **buffer underruns**, which occur when buffer generation takes longer than buffer playback. |
+|                          | **`stat_framectr`** (`u64`)                      | **Frame counter**, number of SID audio frames played, synchronized to the **50.125 Hz** **PAL vertical sync**. |
 
-<br>
-
-- **🔒 Buffer Management Flags**:  
-  - **`buf_consumed`** (`bool`):  
-    **Flag** indicating whether the **current buffer** has been fully consumed (ie by SDL).  
-  - **`buf_lock`** (`bool`):  
-    Used to **lock the buffer** during updates to prevent **race conditions**.  
-  - **`play_state`** (`DP_PLAYSTATE`):  
-    **Playback state flag** see enum `DP_PLAYSTATE`.  
-  - **`updates_external`** (`bool`):  
-    Indicates if **buffer updates** are controlled **externally** (e.g., in **threaded mode**).
-  - **`buf_calculated`** (`bool`):  
-    Indicates if the last call to the `player.update()` function calculated new audio
-    
-
-<br>
-
-- **📊 Playback Statistics**:  
-  - **`stat_cnt`** (`u64`):  
-    **Playback cycle counter**, tracking the total number of processed cycles.  
-  - **`stat_bufwrites`** (`u64`):  
-    Counts the **total buffer writes**, useful for **performance monitoring**.  
-  - **`stat_buf_underruns`** (`u64`):  
-    Tracks **buffer underruns**, which occur when buffer generation takes longer than buffer playback.  
-  - **`stat_framectr`** (`u64`):  
-    **Frame counter** number of SID audio frames played, synchronized to the **50.125 Hz** **PAL vertical sync**.
     
 <br>
 
