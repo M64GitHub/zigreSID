@@ -262,7 +262,7 @@ pub fn main() !void {
     try stdout.print("[EXE] dump player demo!\n", .{});
 ```
 ```zig
-    // create a ReSid instance and configure it
+    // create a Sid instance and configure it
     var sid = try Sid.init("zigsid#1");
     defer sid.deinit();
 ```
