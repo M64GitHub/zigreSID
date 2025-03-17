@@ -651,6 +651,103 @@ const DmpPlayerContext = extern struct {
     
 <br>
 
+### WavWriter Struct
+```zig
+allocator: std.mem.Allocator,
+filename: []const u8,
+buffer: []i16 = &.{}, // Empty by default
+sample_rate: u32 = 44100,
+num_channels: u16 = 1,
+
+pub fn init(allocator: std.mem.Allocator, filename: []const u8) WavWriter
+pub fn setMonoBuffer(self: *WavWriter, buffer: []i16) void
+pub fn write(self: *WavWriter) !void
+pub fn writeStereo(self: *WavWriter) !void
+pub fn writeMono(self: *WavWriter) !void
+```
+
+#### WavHeader Struct
+```zig
+pub const WavHeader = extern struct {
+    chunk_id: [4]u8 = .{ 'R', 'I', 'F', 'F' },
+    chunk_size: u32, // 4 + (8 + subchunk1_size) + (8 + subchunk2_size)
+    format: [4]u8 = .{ 'W', 'A', 'V', 'E' },
+    subchunk1_id: [4]u8 = .{ 'f', 'm', 't', ' ' },
+    subchunk1_size: u32 = 16, // PCM header size
+    audio_format: u16 = 1, // PCM = 1
+    num_channels: u16,
+    sample_rate: u32,
+    byte_rate: u32,
+    block_align: u16,
+    bits_per_sample: u16,
+    subchunk2_id: [4]u8 = .{ 'd', 'a', 't', 'a' },
+    subchunk2_size: u32, // Number of bytes in the audio data
+};
+````
+
+<br>
+
+### SidFile Struct
+```zig
+data: []u8,
+header: SidHeader,
+file_size: u32,
+file_name: []u8,
+loaded: bool,
+pub fn init() SidFile
+pub fn load(self: *SidFile, allocator: std.mem.Allocator,filename: []const u8)
+pub fn parseHeader(self: *SidFile) !void
+pub fn getSidDataSlice(self: *const SidFile) []const u8
+pub fn getId(self: *SidFile) []const u8
+pub fn getName(self: *SidFile) []const u8
+pub fn getAuthor(self: *SidFile) []const u8
+pub fn getRelease(self: *SidFile) []const u8
+fn toBigEndianU16(value: u16) u16
+fn toBigEndianU32(value: u32) u32
+pub fn deinit(self: *SidFile, allocator: std.mem.Allocator) void
+pub fn printHeader(self: *SidFile) !void
+```
+
+#### SidHeader Struct
+```zig
+const SidHeader = packed struct {
+    // id: [4]u8, // "PSid" or "RSid"
+    id: @Vector(4, u8), // "PSid" or "RSid"
+    version: u16, // Version number (usually 2 or 4)
+    data_offset: u16, // Offset where Sid data begins
+    load_address: u16, // Where to load the Sid data
+    init_address: u16, // Init routine address
+    play_address: u16, // Play routine address
+    num_songs: u16, // Number of subsongs
+    start_song: u16, // Default song index
+    speed: u32, // Bit 0: 0 = 50Hz PAL, 1 = CIA Timer
+    name: @Vector(32, u8), // ASCII song name
+    author: @Vector(32, u8), // ASCII composer name
+    released: @Vector(32, u8), // ASCII release info
+    flags: u16, // PAL/NTSC compatibility flags
+    start_page: u16, // Only for RSid (usually 0x00)
+    page_length: u16, // Only for RSid (usually 0x00)
+};
+```
+
+<br>
+
+### SidPlayer Struct
+```zig
+sid_file: SidFile,
+// we must allocate c64 later, when we know the VIC type from the sid_file
+c64: *C64,
+dbg_enabled: bool,
+
+pub fn init(allocator: std.mem.Allocator, sid_file: SidFile) !*SidPlayer
+pub fn loadFile(self: *SidPlayer, allocator: std.mem.Allocator, file_name: []const u8) !void
+
+pub fn sidInit(self: *SidPlayer, tune: u16) !void
+pub fn sidPlay(self: *SidPlayer) !void
+```
+
+<br>
+
 ## 🔓 License
 
 This project uses the **reSID** library and follows its licensing terms. The Zig, C++, and C bindings code is provided under the **MIT License**.
