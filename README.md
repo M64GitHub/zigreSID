@@ -223,12 +223,13 @@ zig-out/bin/
 
 
 ## 🧬 **Example Code**
+Working with zigreSID is best demonstrated by examples. The following two examples show the usage of the `DumpPlayer` struct, in two different modes of operation. You will see it is quite simple to setup playback. Most of the code deals with setting up an SDL audio stream.  
 
 ### SID Dump Player (`sid-dump-player.zig`)
 
 This is a full example, and it demonstrates the simplest way to play a SID dump using the `DumpPlayer`.  
 The player processes SID register values for each virtual frame, synchronized to a virtual PAL video standard vertical sync for accurate timing. That means it reads a set of SID register values from the dump and writes them to reSID, for each step.   
-The internal audio generation clocks the SID in the background and uses the output to fill an audio buffer. When the vertical sync frequency is reached, the next set of register values is read from the dump.
+The internal audio generation clocks the SID in the background and uses the output to fill an audio buffer. When the vertical sync frequency is reached, the next set of register values is read from the dump.  
 
 You can generate your own SID dumps using a siddump utility. In this demo, the SID dump is loaded from a file:
 - After initializing the `sid` and `player` struct instances, load the []u8 dump for the player:  
@@ -243,6 +244,7 @@ You can generate your own SID dumps using a siddump utility. In this demo, the S
 - -> Audio generation runs entirely within the SDL audio thread.
 
 `Code`:
+Include zigreSID, define and init `Sid` and a `DumpPlayer`
 ```zig
 const std = @import("std");
 const SDL = @cImport({
@@ -271,6 +273,7 @@ pub fn main() !void {
     // load dump
     try player.loadDmp("data/plasmaghost.sid.dmp");
 ```
+Setup and initialize SDL with an audio-callback to the `DumpPlayer`
 ```zig
     // -- init sdl with a callback to our player
     var spec = SDL.SDL_AudioSpec{
@@ -299,6 +302,7 @@ pub fn main() !void {
     try stdout.print("[EXE] sdl audio started at {d} Hz.\n", .{sid.getSamplingRate()});
     // -- end of SDL initialization
 ```
+Start playback
 ```zig
     player.play();
 ```
@@ -322,6 +326,7 @@ pub fn main() !void {
         std.time.sleep(0.5 * std.time.ns_per_s);
     }
 ```
+Stop playback
 ```zig
     try stdout.print("[EXE] press enter to exit\n", .{});
     _ = std.io.getStdIn().reader().readByte() catch null;
