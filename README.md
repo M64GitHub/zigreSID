@@ -306,6 +306,7 @@ Start playback
 ```zig
     player.play();
 ```
+Dummy code to display the main thread is not blocked
 ```zig
     // do something in main: print the Sid registers, and player stats
     for (1..10) |_| {
