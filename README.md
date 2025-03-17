@@ -128,7 +128,7 @@ pub fn main() !void {
 
     try player.loadDmp("data/plasmaghost.sid.dmp");
 
-    // render 50 * 10 frames into PCM audio buffer
+    // render 50 * 10 frames into PCM audio buffer, from frame 0.
     // sid updates (audio frames) are executed at virtually 50.125 Hz
     // this will create 10 seconds audio
     const steps_rendered = player.renderAudio(0, 50 * 10, pcm_buffer);
@@ -590,18 +590,20 @@ This project bridges the gap between C++, C, and Zig:
 ### 🔤 Struct Reference
 
 
-#### 🎹 **ReSid Struct** (SID Emulation)
+#### 🎹 **Sid Struct** (SID Emulation)
 
 | **Function**                                      | **Description** |
 |--------------------------------------------------|-------------------------------------------------|
-| **`init(allocator: std.mem.Allocator, name: [*:0]const u8) !ReSid`** | Initializes a **SID instance** with a given name. |
-| **`deinit()`**                                   | Frees the **SID instance** and releases memory. |
-| **`getName() [*:0]const u8`**                   | Returns the **name** of the SID instance. |
-| **`setChipModel(model: [*:0]const u8) bool`**   | Sets the **SID chip model** (`"MOS6581"` or `"MOS8580"`, default is **MOS8580**). |
-| **`setSamplingRate(rate: c_int)`**              | Sets the **sampling rate** (default **44100 Hz**). |
-| **`getSamplingRate() c_int`**                   | Returns the **current sampling rate**. |
-| **`writeRegs(self: *ReSid, regs: *[25]u8) void`** | **Bulk register write** function for direct **SID manipulation**. |
-| **`getRegs(self: *ReSid) [25]u8`**              | Reads the **current values** of the SID registers. |
+| **`init(name: [*:0]const u8) !Sid`** | Initializes a **SID instance** with a given name. |
+| **`deinit(self: *Sid)`**                                   | Frees the **SID instance** and releases memory. |
+| **`getName(self: *Sid) [*:0]const u8`**                   | Returns the **name** of the SID instance. |
+| **`setChipModel(self: *Sid, model: [*:0]const u8) bool`**   | Sets the **SID chip model** (`"MOS6581"` or `"MOS8580"`, default is **MOS8580**). |
+| **`setSamplingRate(rate: i32)`**              | Sets the **sampling rate** (default **44100 Hz**). |
+| **`getSamplingRate(self: *Sid) i32`**                   | Returns the **current sampling rate**. |
+| **`writeRegs(self: *Sid, regs: *[25]u8) void`** | **Bulk register write** function for direct **SID manipulation**. |
+| **`getRegs(self: *Sid) [25]u8`**              | Reads the **current values** of the SID registers. |
+| **`clock(self: *Sid, cycle_count: u32, buf: []i16) i32`**              | Clocks the SID and generates audio. |
+
 
 <br>
 
@@ -610,24 +612,24 @@ This project bridges the gap between C++, C, and Zig:
 
 | **Function**                                         | **Description** |
 |------------------------------------------------------|-------------------------------------------------|
-| **`init(allocator: std.mem.Allocator, resid: *c.ReSid) !DumpPlayer`** | Creates a **player instance** linked to a **SID instance**. |
-| **`deinit()`**                                       | Frees the **player instance** and releases memory. |
-| **`play()`**                                         | Starts **playback** from the beginning. |
-| **`stop()`**                                         | **Stops** and **resets** playback. |
-| **`pause()`**                                        | **Pauses** playback (audio generation stops). |
-| **`continue_play()`**                                | **Continues** playback after pausing. |
-| **`update()`**                                       | **Updates** the **audio buffer**; call this when not using callbacks. Returns `false` when playback ends. |
-| **`setDmp(dump: []u8)`**                             | Loads a **SID dump** for playback (**must be called before** `play()`). |
-| **`loadDmp(filename: []const u8) !void`**           | **Loads a SID dump** from a file. |
-| **`getPlayerContext() *c.DmpPlayerContext`**         | Returns a **pointer to playback data**. |
-| **`updateExternal(b: bool)`**                        | Allows external control of the **audio update process**. |
-| **`isPlaying() bool`**                               | Checks if **playback is currently active**. |
-| **`fillAudioBuffer() bool`**                         | Internal function called by `update()`. Returns `true` when end of dump is reached. |
-| **`getPlayState() DP_PLAYSTATE`**                    | Returns the **current playback state** as an enum:<br> 🔹 `DP_PLAYSTATE.stopped`<br> 🔹 `DP_PLAYSTATE.playing`<br> 🔹 `DP_PLAYSTATE.paused` |
-| **`renderAudio(start_step: u32, num_steps: u32, buffer: []i16) u32`** | Generates a **mono raw PCM buffer** from the dump (see **Note** below). |
+| **`init(allocator: std.mem.Allocator, resid: *Sid) !DumpPlayer`** | Creates a **player instance** linked to a **SID instance**. |
+| **`deinit(self: *DumpPlayer)`**                                       | Frees the **player instance** and releases memory. |
+| **`play(self: *DumpPlayer)`**                                         | Starts **playback** from the beginning. |
+| **`stop(self: *DumpPlayer)`**                                         | **Stops** and **resets** playback. |
+| **`pause(self: *DumpPlayer)`**                                        | **Pauses** playback (audio generation stops). |
+| **`continuePlayback(self: *DumpPlayer)`**                                | **Continues** playback after pausing. |
+| **`update(self: *DumpPlayer)`**                                       | **Updates** the **audio buffer**; call this when not using callbacks. Returns `false` when playback ends. |
+| **`setDmp(self: *DumpPlayer, dump: []u8)`**                             | Loads a **SID dump** for playback (**must be called before** `play()`). |
+| **`loadDmp(self: *DumpPlayer, filename: []const u8) !void`**           | **Loads a SID dump** from a file. |
+| **`getPlayerContext() *wrapper.DmpPlayerContext`**         | Returns a **pointer to playback data**. |
+| **`updateExternal(self: *DumpPlayer, b: bool)`**                        | Allows external control of the **audio update process**. |
+| **`isPlaying(self: *DumpPlayer) bool`**                               | Checks if **playback is currently active**. |
+| **`fillAudioBuffer(self: *DumpPlayer) bool`**                         | Internal function called by `update()`. Returns `true` when end of dump is reached. |
+| **`getPlayState(self: *DumpPlayer) DP_PLAYSTATE`**                    | Returns the **current playback state** as an enum:<br> 🔹 `DP_PLAYSTATE.stopped`<br> 🔹 `DP_PLAYSTATE.playing`<br> 🔹 `DP_PLAYSTATE.paused` |
+| **`renderAudio(self: *DumpPlayer, start_step: u32, num_steps: u32, buffer: []i16) u32`** | Generates a **mono raw PCM buffer** from the dump (see **Note** below). |
 
 > ### 📝 **Note on `renderAudio()`**
-> The `renderAudio(start_step, num_steps, buffer)` function generates **raw PCM audio** from the **SID dump**,  
+> The `renderAudio()` function generates **raw PCM audio** from the **SID dump**,  
 > processing **`num_steps`** register updates starting from **`start_step`**.  
 > The function **always fills the buffer completely**, meaning:  
 > - If the **end of the dump is reached** before filling the buffer, the SID **continues clocking** without register updates.  
@@ -641,10 +643,10 @@ This project bridges the gap between C++, C, and Zig:
 |----------|-------------|
 | `init(allocator: std.mem.Allocator, name: [*:0]const u8) !*SdlDumpPlayer` | Creates a new **SdlDumpPlayer** instance, initializes **ReSid**, **DumpPlayer**, and **SDL**. |
 | `deinit(self: *SdlDumpPlayer) void` | Cleans up the instance by stopping playback, closing **SDL**, and freeing memory. |
-| `setDmp(dump: []u8)` | Loads a **SID dump** for playback (**must be called before** `play()`). |
-| `loadDmp(filename: []const u8) !void` | **Loads a dump** from file. |
-| `play() void` | Starts playing the loaded **SID dump**. |
-| `stop() void` | **Stops** playback. |
+| `setDmp(self: *SdlDumpPlayer, dump: []u8)` | Loads a **SID dump** for playback (**must be called before** `play()`). |
+| `loadDmp(self: *SdlDumpPlayer, filename: []const u8) !void` | **Loads a dump** from file. |
+| `play(self: *SdlDumpPlayer) void` | Starts playing the loaded **SID dump**. |
+| `stop(self: *SdlDumpPlayer) void` | **Stops** playback. |
 
 
 <br>
