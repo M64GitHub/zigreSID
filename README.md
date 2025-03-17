@@ -222,27 +222,29 @@ zig-out/bin/
 
 
 
-## 🧬 **Example Code**
+## 🧬 Playback Example Code
+Working with zigreSID is best demonstrated by examples. The following two examples show the usage of the `DumpPlayer` struct, in two different modes of operation. You will see it is quite simple to setup playback. Most of the code deals with setting up an SDL audio stream.  
 
 ### SID Dump Player (`sid-dump-player.zig`)
-#### audio buffer calculation in the SDL callback
 
-This example demonstrates the simplest way to play a SID dump using the `DumpPlayer`.  
-The player processes SID register values for each virtual frame, synchronized to a virtual PAL video standard vertical sync for accurate timing. That means it reads a set of SID register values from the dump and writes them to reSID, for each step.   The internal audio generation clocks the SID in the background and uses the output to fill an audio buffer. When the vertical sync frequency is reached, the next set of register values is read from the dump.
+This is a full example, and it demonstrates the simplest way to play a SID dump using the `DumpPlayer`.  
+The player processes SID register values for each virtual frame, synchronized to a virtual PAL video standard vertical sync for accurate timing. That means it reads a set of SID register values from the dump and writes them to reSID, for each step.   
+The internal audio generation clocks the SID in the background and uses the output to fill an audio buffer. When the vertical sync frequency is reached, the next set of register values is read from the dump.  
 
-You can generate your own SID dumps using a siddump utility. In this demo, the SID dump is included via a C header file generated using the `xxd -i` tool.
-- After initializing the `sid` and `player` struct instances, set the []u8 dump for the player:  
+You can generate your own SID dumps using a siddump utility. In this demo, the SID dump is loaded from a file:
+- After initializing the `sid` and `player` struct instances, load the []u8 dump for the player:  
   ```zig
-  player.setDmp(sounddata);
+  try player.loadDmp("data/plasmaghost.sid.dmp");
   ```
 - And to start playback, simply call:  
   ```zig
   player.play();
   ```  
-- SDL2 handles audio playback in the background using its audio callback mechanism. The audiodata is also updated in the callback routine.
-- Audio generation runs entirely within the SDL audio thread.
+- SDL2 handles audio playback in the background using its audio callback mechanism, the audiodata is updated in the callback routine.
+- -> Audio generation runs entirely within the SDL audio thread.
 
 `Code`:
+Include zigreSID, define and init `Sid` and a `DumpPlayer`
 ```zig
 const std = @import("std");
 const SDL = @cImport({
@@ -258,8 +260,6 @@ const DumpPlayer = ReSid.DumpPlayer; // struct DumpPlayer for controlling the Si
 pub fn main() !void {
     const gpa = std.heap.page_allocator;
     const stdout = std.io.getStdOut().writer();
-
-    try stdout.print("[EXE] dump player demo!\n", .{});
 ```
 ```zig
     // create a Sid instance and configure it
@@ -273,6 +273,7 @@ pub fn main() !void {
     // load dump
     try player.loadDmp("data/plasmaghost.sid.dmp");
 ```
+Setup and initialize SDL with an audio-callback to the `DumpPlayer`
 ```zig
     // -- init sdl with a callback to our player
     var spec = SDL.SDL_AudioSpec{
@@ -301,9 +302,11 @@ pub fn main() !void {
     try stdout.print("[EXE] sdl audio started at {d} Hz.\n", .{sid.getSamplingRate()});
     // -- end of SDL initialization
 ```
+Start playback
 ```zig
     player.play();
 ```
+Dummy code to display the main thread is not blocked
 ```zig
     // do something in main: print the Sid registers, and player stats
     for (1..10) |_| {
@@ -324,6 +327,7 @@ pub fn main() !void {
         std.time.sleep(0.5 * std.time.ns_per_s);
     }
 ```
+Stop playback
 ```zig
     try stdout.print("[EXE] press enter to exit\n", .{});
     _ = std.io.getStdIn().reader().readByte() catch null;
@@ -338,9 +342,8 @@ pub fn main() !void {
 <br>
 
 ### Threaded SID Dump Player (`sid-dump-player-threaded.zig`)
-#### audio buffer calculation in a **dedicated thread**
 
-This example demonstrates a more advanced approach to playing a SID dump.  
+This example demonstrates a more advanced approach to playing a SID dump. It performs the audio buffer calculation in a **dedicated thread**.
 The `sid` and `player` struct instances are initialized the same way as in the unthreaded version. Playback also starts by calling `player.play()`.  
 
 Before starting playback, the player must be instructed **not** to update the audio buffer within the SDL audio thread. This is done by calling:  
@@ -357,18 +360,18 @@ The dedicated thread runs this `update()` function in a loop and exits gracefull
 player.isPlaying();
 ```
 
-#### Realtime audio visualization and modification
+#### For Realtime audio visualization and modification
 
-Running `update()` in a separate thread enables **real-time audio visualization** and **manipulation**.  
+Running `update()` in a separate thread enables the possibility to access, and modify audio during playback.  
 The active audio buffer can be accessed via:  
 ```zig
 player.getPlayerContext().buf_ptr_playing : []i16
 ```
 
-The playback mechanism uses a **double-buffering strategy**:  
+The playback mechanism uses a double-buffering strategy:  
 - While SDL plays `player.getPlayerContext().buf_ptr_playing`,  
 - `player.getPlayerContext().buf_ptr_next` is prepared by `update()`. By modifying this buffer you can control the audio!    
-Once the playback buffer is fully consumed, the buffers are **swapped internally** to maintain seamless playback.
+Once the playback buffer is fully consumed, the buffers are swapped internally to maintain seamless playback.
 
 `Code:` main parts, differences to the example above
 ```zig
@@ -428,9 +431,9 @@ fn playerThreadFunc(player: *DumpPlayer) !void {
 <br>
 
 
-## 🔤 **API Documentation**
+## 🔤 **Documentation**
 ### Introduction
-#### 💡 How The reSID Zig Integration Works
+#### 💡 Structure of the reSID Zig Integration
 
 This project bridges the gap between C++, C, and Zig:
 
@@ -443,9 +446,9 @@ This project bridges the gap between C++, C, and Zig:
 
 #### 🎼 **Audio and SID Chip Details**
 
-- 🎵 **Stereo Audio Output**: The generated audio fills a **mono buffer**, providing the SID mono signal at equal levels on the left and right audio channel. A dual SID for a 6 voice true stereo sound is in progress.
+- 🎵 **Stereo Audio Output**: The generated audio fills a **mono buffer**, providing the **16bit** signed SID mono signal at equal levels on both channels.
 - 🎚️ **Sampling Rate**: Set to **44.1kHz** by default. The sampling rate is **changeable at runtime** via the provided API.
-- 🎛️ **SID Chip Model Selection**:
+- 🎛️ **SID Chip Model Selection**: both models are available:
   - **SID6581**: Classic SID sound with characteristic filter behavior, more bassy sound.
   - **SID8580**: Enhanced model with improved signal-to-noise ratio (**default**).
 - **Emulation Quality**: The emulation quality is set to the highest possible level supported by the reSID library: `SAMPLE_RESAMPLE_INTERPOLATE`.
@@ -454,42 +457,42 @@ This project bridges the gap between C++, C, and Zig:
 
 #### 🎼 About the **DumpPlayer**  
 ##### Realtime Audio Buffer Generation via Callback
-**`DumpPlayer`**  is the most efficient method for playing back complete SID tunes or sound effects. It provides a simple way to handle SID sound playback (see demo code below). Internally, it manages audio buffer generation and SID register updates, continuously reading and processing register values from a dump file in steps triggered by the audio-callback.
+**`DumpPlayer`**  is the most efficient method for playing back complete SID tunes or sound effects. It provides a simple way to handle SID sound playback (see example code). Internally, it manages audio buffer generation and SID register updates, continuously reading and processing register values from a dump file in steps triggered by the audio-callback.
 
 <br>
 
-##### 🧬 **How Realtime Audio Buffer Generation Works**  
+##### 🧬 **Realtime Audio Buffer Generation**  
 
-###### 🔄 **Frame-Based SID Register Processing**  
-- **SID dumps** contain **SID register values** representing audio frames.
+###### 🔄 **DumpPlayers Frame-Based SID Register Processing**  
+- **SID dumps** contain SID register values representing audio frames.
 - The player receives a dump via the `setDmp()` function
-- For each **virtual PAL frame** (**50.125 Hz**, synchronized to a virtual vertical sync), the **player** reads a set of **25 SID register values** from the dump.  
-- These registers are **bulk-written** to the **reSID engine** using `writeRegs()`.  
-- The **`fillAudioBuffer()`** function clocks the **reSID engine** internally, generating **audio samples** that form the **audio buffer**.  
+- For each virtual PAL frame (50.125 Hz, synchronized to a virtual vertical sync), the **player** reads a set of **25 SID register values** from the dump.  
+- These registers are bulk-written to the reSID engine using `writeRegs()`.  
+- The **`fillAudioBuffer()`** function clocks the reSID engine internally, generating audio samples that form the audio buffer.  
 
 ###### 🎵 **Audio Buffer Structure and Playback**  
-- The generated audio is stored in **double buffers**:  
-  - `buf_ptr_playing`: Currently being played by the **audio backend** (e.g., SDL2).  
-  - `buf_ptr_next`: Prepared by the player for **future playback**.  
-- Once the **audio backend** finishes playing `buf_ptr_playing`, the buffers are **swapped** internally to ensure **gapless playback**.  
+- The generated audio is stored in double buffers:  
+  - `buf_ptr_playing`: Currently being played by the audio backend (e.g., SDL2).  
+  - `buf_ptr_next`: Prepared by the player for future playback.  
+- Once the audio backend finishes playing `buf_ptr_playing`, the buffers are swapped internally to ensure gapless playback.  
 
 <br>
 
 ##### ⚡ **Buffer Generation Approaches**  
 
 ###### 🏃 **Unthreaded Mode** (Default, SDL Audio Callback Driven)  
-- The **audio buffer** is updated **automatically** within the **SDL audio thread**.  
-- The **SDL audio callback** invokes the player's internal audio generation methods, ensuring **continuous playback** without manual intervention.  
-- Suitable for **simpler use cases** where **real-time audio control** is **not required**.
+- The audio buffer** is updated automatically within the **SDL audio thread**.  
+- The **SDL audio callback** invokes the player's internal audio generation methods, ensuring continuous playback without manual intervention.  
+- Suitable for **simpler use cases** where real-time audio control is not required.
 - No extra code is required. All required for audio playback is to call `player.play()`
 
 
 ###### 🧵 **Threaded Mode** (Manual Audio Buffer Updates)  
-- The **user** gains full control over **buffer updates** by calling:  
+- The user gains full control over buffer updates by calling:  
   ```zig
   player.updateExternal(true);
   ```  
-- In this mode, the **audio backend** (SDL2) plays audio from the buffer but **does not trigger buffer generation**.
+- In this mode, the audio backend (SDL2) plays audio from the buffer but **does not trigger buffer generation**.
 - This approach allows for:  
   - 💡 **Real-time audio visualization**  
   - 🎚️ **Live audio manipulation**  
@@ -519,7 +522,6 @@ This project bridges the gap between C++, C, and Zig:
     }
   ```
 
-
 <br>
 
 ##### 🎛️ **Playback State and Audio Buffer Access**  
@@ -538,10 +540,9 @@ This project bridges the gap between C++, C, and Zig:
   ```  
 - Modify the buffer at `buf_ptr_next` during playback for **dynamic audio effects** or **custom processing**.  
 
-
 <br>
 
-##### 🔄 **SID Register Handling**  
+##### 🔄 **SID Register Access**  
 
 - The player reads **SID register values** per frame and writes them to the **reSID** engine using:
   ```zig
@@ -554,11 +555,9 @@ This project bridges the gap between C++, C, and Zig:
 
 <br>
 
+## 🔤 **API Reference**
 
-### 🔤 Struct Reference
-
-
-#### 🎹 **Sid Struct** (SID Emulation)
+### 🎹 **Sid Struct** (SID Emulation)
 
 | **Function**                                      | **Description** |
 |--------------------------------------------------|-------------------------------------------------|
@@ -576,7 +575,7 @@ This project bridges the gap between C++, C, and Zig:
 <br>
 
 
-#### 🎛️ **DumpPlayer Struct** (Playback Controller)
+### 🎛️ **DumpPlayer Struct** (Playback Controller)
 
 | **Function**                                         | **Description** |
 |------------------------------------------------------|-------------------------------------------------|
@@ -605,7 +604,7 @@ This project bridges the gap between C++, C, and Zig:
 
 <br>
 
-#### 🎹 **SdlDumpPlayer Struct** (Simplified SDL Player)
+### 🎹 **SdlDumpPlayer Struct** (Simplified SDL Player)
 
 | Function | Description |
 |----------|-------------|
@@ -619,11 +618,11 @@ This project bridges the gap between C++, C, and Zig:
 
 <br>
 
-#### 🎛️ **DmpPlayerContext Struct**  
+### 🎛️ **DmpPlayerContext Struct**  
 
 The `DmpPlayerContext` struct represents the **internal state** and **buffer management** for the `DumpPlayer`. It manages **audio buffer double-buffering**, **playback state**, and **runtime statistics** to ensure **smooth and continuous SID sound playback**.
 
-##### 🧩 **Zig Struct Definition**:
+🧩 **Zig Struct Definition**:
 ```zig
 const CFG_AUDIO_BUF_SIZE = 4096; // Adjust if needed
 
@@ -650,7 +649,7 @@ const DmpPlayerContext = extern struct {
 };
 ```
 
-##### **Fields Overview**:
+**Fields Overview**:
 
 | **Category**              | **Variable & Type**                                 | **Description** |
 |--------------------------|-------------------------------------------------|-------------------------------------------------|
