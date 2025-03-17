@@ -632,18 +632,20 @@ This project bridges the gap between C++, C, and Zig:
 > The function **always fills the buffer completely**, meaning:  
 > - If the **end of the dump is reached** before filling the buffer, the SID **continues clocking** without register updates.  
 > - If the **buffer is too small** to fit all `num_steps`, playback stops once the buffer is full.  
-> - This ensures **continuous SID emulation**, even when the dump data is exhausted.  
 
 <br>
 
 #### 🎹 **SdlDumpPlayer Struct** (Simplified SDL Player)
 
-- `init(allocator: std.mem.Allocator, name: [*:0]const u8) !*SdlDumpPlayer`: Creates a new SdlDumpPlayer instance, initializes ReSid, DumpPlayer, and SDL.
-- `deinit(self: *SdlDumpPlayer) void`: Cleans up the instance by stopping playback, closing SDL, and freeing memory.
-- `setDmp(dump: []u8)`: Loads a **SID dump** for playback (**must be called before** `play()`).
-- `loadDmp(filename: []const u8) !void`: **load dump** from file.
-- `play() void`: Starts playing the loaded SID dump.
-- `stop() void`: Stops playback.
+| Function | Description |
+|----------|-------------|
+| `init(allocator: std.mem.Allocator, name: [*:0]const u8) !*SdlDumpPlayer` | Creates a new **SdlDumpPlayer** instance, initializes **ReSid**, **DumpPlayer**, and **SDL**. |
+| `deinit(self: *SdlDumpPlayer) void` | Cleans up the instance by stopping playback, closing **SDL**, and freeing memory. |
+| `setDmp(dump: []u8)` | Loads a **SID dump** for playback (**must be called before** `play()`). |
+| `loadDmp(filename: []const u8) !void` | **Loads a dump** from file. |
+| `play() void` | Starts playing the loaded **SID dump**. |
+| `stop() void` | **Stops** playback. |
+
 
 <br>
 
