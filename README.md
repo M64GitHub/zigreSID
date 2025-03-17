@@ -431,7 +431,7 @@ fn playerThreadFunc(player: *DumpPlayer) !void {
 <br>
 
 
-## 🔤 **API Documentation**
+## 🔤 **Documentation**
 ### Introduction
 #### 💡 Structure of the reSID Zig Integration
 
@@ -555,11 +555,9 @@ This project bridges the gap between C++, C, and Zig:
 
 <br>
 
+## 🔤 **API Reference**
 
-### 🔤 Struct Reference
-
-
-#### 🎹 **Sid Struct** (SID Emulation)
+### 🎹 **Sid Struct** (SID Emulation)
 
 | **Function**                                      | **Description** |
 |--------------------------------------------------|-------------------------------------------------|
@@ -577,7 +575,7 @@ This project bridges the gap between C++, C, and Zig:
 <br>
 
 
-#### 🎛️ **DumpPlayer Struct** (Playback Controller)
+### 🎛️ **DumpPlayer Struct** (Playback Controller)
 
 | **Function**                                         | **Description** |
 |------------------------------------------------------|-------------------------------------------------|
@@ -606,7 +604,7 @@ This project bridges the gap between C++, C, and Zig:
 
 <br>
 
-#### 🎹 **SdlDumpPlayer Struct** (Simplified SDL Player)
+### 🎹 **SdlDumpPlayer Struct** (Simplified SDL Player)
 
 | Function | Description |
 |----------|-------------|
@@ -620,11 +618,11 @@ This project bridges the gap between C++, C, and Zig:
 
 <br>
 
-#### 🎛️ **DmpPlayerContext Struct**  
+### 🎛️ **DmpPlayerContext Struct**  
 
 The `DmpPlayerContext` struct represents the **internal state** and **buffer management** for the `DumpPlayer`. It manages **audio buffer double-buffering**, **playback state**, and **runtime statistics** to ensure **smooth and continuous SID sound playback**.
 
-##### 🧩 **Zig Struct Definition**:
+🧩 **Zig Struct Definition**:
 ```zig
 const CFG_AUDIO_BUF_SIZE = 4096; // Adjust if needed
 
@@ -651,7 +649,7 @@ const DmpPlayerContext = extern struct {
 };
 ```
 
-##### **Fields Overview**:
+**Fields Overview**:
 
 | **Category**              | **Variable & Type**                                 | **Description** |
 |--------------------------|-------------------------------------------------|-------------------------------------------------|
