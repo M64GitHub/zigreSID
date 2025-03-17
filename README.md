@@ -449,7 +449,6 @@ This project bridges the gap between C++, C, and Zig:
 
 ### 🛠️ Working with zigreSID
 #### 🎼 About the **DumpPlayer**  
-##### Realtime Audio Buffer Generation via Callback
 **`DumpPlayer`**  is the most efficient method for playing back complete SID tunes or sound effects. It provides a simple way to handle SID sound playback (see example code). Internally, it manages audio buffer generation and SID register updates, continuously reading and processing register values from a dump file in steps triggered by the audio-callback.  
 
 ##### Realtime Audio Buffer Generation  
