@@ -25,7 +25,7 @@ The generated audio can be played in real-time or exported as high-quality `.wav
 - 🧵 **Dedicated Thread Support** – Choose between simple single-threaded playback or advanced multi-threaded execution for performance gains, real-time audio visualization, and modifications.  
 - 🔧 **Simplified API** – All complex timing calculations and buffer management are handled automatically!  
 - 🏁 **Full 6510 CPU Emulation** – Features a cycle-accurate 6510 CPU emulator with real C64 timing and behavior.  
-- 🗂️**Lots of Examples!** - Create SID `register dumps`, `convert` SID songs `to wav audio` files, and examples for all major structs!
+- 🗂️ **Lots of Examples!** - Create SID `register dumps`, `convert` SID songs `to wav audio` files, and examples for all major structs!
 - 🛠️ **Fully Integrated in Zig** – A seamless Zig-native implementation, making SID emulation more accessible than ever!  
 - ⚡ **Powered by reSID** – Uses the proven reSID C++ library for high-quality sound emulation. ([reSID on GitHub](https://github.com/daglem/reSID))
 - 🏆 **Powered by zig64** – A high-performance C64 emulator core written in Zig, ensuring accurate 6510 CPU execution and SID register emulation. ([zig64 on GitHub](https://github.com/M64GitHub/zig64))  
