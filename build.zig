@@ -1,4 +1,3 @@
-// build.zig
 const std = @import("std");
 
 const resid_include_path = "resid-cpp/";
@@ -46,15 +45,27 @@ pub fn build(b: *std.Build) void {
         },
         .flags = &.{ "-x", "c++", "-DVERSION=\"m64-000\"", "-Ofast" },
     });
+    b.installArtifact(resid_lib);
 
     // sub modules
 
     // original resid
+
     const mod_resid_cpp = b.addModule("resid_cpp", .{
         .root_source_file = b.path("src/resid-cpp.zig"),
     });
-    mod_resid_cpp.addIncludePath(.{ .cwd_relative = resid_include_path });
     mod_resid_cpp.linkLibrary(resid_lib);
+
+    const install_headers = b.addInstallDirectory(.{
+        .source_dir = b.path("resid-cpp"),
+        .install_dir = .header,
+        .install_subdir = "resid-cpp",
+    });
+    b.getInstallStep().dependOn(&install_headers.step);
+    mod_resid_cpp.addIncludePath(b.path("resid-cpp")); // Source path for local build
+    mod_resid_cpp.addIncludePath(.{
+        .cwd_relative = b.getInstallPath(.header, "resid-cpp"),
+    }); // Installed path for dependents
 
     // residsdl
     const mod_resid_sdl = b.addModule("resid_sdl", .{
@@ -83,24 +94,27 @@ pub fn build(b: *std.Build) void {
         },
     });
 
-    // ---
+    // --
 
     // Create the main `resid` module (which includes everything)
     const mod_resid = b.addModule("resid", .{
         .root_source_file = b.path("src/resid.zig"),
     });
-
-    // Add all submodules to `resid`
     mod_resid.addImport("sidfile", mod_sidfile);
     mod_resid.addImport("wavwriter", mod_wavwriter);
-    mod_resid.addImport("resid_cpp", mod_resid_cpp); // C++ Wrapper
+    mod_resid.addImport("resid_cpp", mod_resid_cpp);
     mod_resid.addImport("resid_sdl", mod_resid_sdl);
     mod_resid.addImport("sidplayer", mod_sidplayer);
     mod_resid.addImport("zig64", mod_zig64);
+    mod_resid.addIncludePath(b.path("resid-cpp")); // Source path for local build
+    mod_resid.addIncludePath(.{
+        .cwd_relative = b.getInstallPath(.header, "resid-cpp"),
+    }); // Installed path for dependents
+    mod_resid.linkLibrary(resid_lib);
 
-    // ---
+    // --
 
-    // Build Dump Player Executable
+    // Build all executables (unchanged until here)
     const exe_dumpplayer = b.addExecutable(.{
         .name = "dump-player",
         .root_source_file = b.path("src/examples/sid-dump-player.zig"),
@@ -112,7 +126,6 @@ pub fn build(b: *std.Build) void {
     exe_dumpplayer.linkSystemLibrary("SDL2");
     b.installArtifact(exe_dumpplayer);
 
-    // Build Threaded Dump Player Executable
     const exe_threaded = b.addExecutable(.{
         .name = "dump-player-threaded",
         .root_source_file = b.path("src/examples/sid-dump-player-threaded.zig"),
@@ -124,7 +137,6 @@ pub fn build(b: *std.Build) void {
     exe_threaded.linkSystemLibrary("SDL2");
     b.installArtifact(exe_threaded);
 
-    // Build SDL Executable
     const exe_sdl = b.addExecutable(.{
         .name = "sdl-dump-player",
         .root_source_file = b.path("src/examples/sdl-sid-dump-player.zig"),
@@ -136,7 +148,6 @@ pub fn build(b: *std.Build) void {
     exe_sdl.root_module.addImport("resid", mod_resid);
     b.installArtifact(exe_sdl);
 
-    // Build RenderAudio Executable
     const exe_renderaudio = b.addExecutable(.{
         .name = "sid-render-audio",
         .root_source_file = b.path("src/examples/render-audio-example.zig"),
@@ -148,7 +159,6 @@ pub fn build(b: *std.Build) void {
     exe_renderaudio.linkSystemLibrary("SDL2");
     b.installArtifact(exe_renderaudio);
 
-    // Build WavWriter Executable
     const exe_wavwriter = b.addExecutable(.{
         .name = "siddump-wav-writer",
         .root_source_file = b.path("src/examples/wav-writer-example.zig"),
@@ -156,10 +166,8 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     exe_wavwriter.root_module.addImport("resid", mod_resid);
-    // exe_wavwriter.root_module.addImport("wavwriter", mod_wavwriter);
     b.installArtifact(exe_wavwriter);
 
-    // Build .sid-file Dump Executable
     const exe_sidfile = b.addExecutable(.{
         .name = "sid-dump",
         .root_source_file = b.path("src/examples/sidfile-dump.zig"),
@@ -167,12 +175,8 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     exe_sidfile.root_module.addImport("resid", mod_resid);
-    // exe_sidfile.root_module.addImport("sidfile", mod_sidfile);
-    // exe_sidfile.root_module.addImport("zig64", mod_zig64);
-    // exe_sidfile.root_module.addImport("sidplayer", mod_sidplayer);
     b.installArtifact(exe_sidfile);
 
-    // Build .sid player Executable
     const exe_sidplayer = b.addExecutable(.{
         .name = "zigreSID-play-sidfile",
         .root_source_file = b.path("src/examples/sid-player.zig"),
@@ -180,18 +184,24 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     exe_sidplayer.root_module.addImport("resid", mod_resid);
-    // exe_sidplayer.root_module.addImport("zig64", mod_zig64);
-    // exe_sidplayer.root_module.addImport("sidfile", mod_sidfile);
-    // exe_sidplayer.root_module.addImport("sidplayer", mod_sidplayer);
-    b.installArtifact(exe_sidfile);
+    b.installArtifact(exe_sidplayer);
 
-    // Run steps for all
+    // Ensure all artifacts depend on the headers being installed
+    const install_step = b.getInstallStep();
+    install_step.dependOn(&b.addInstallArtifact(exe_dumpplayer, .{}).step);
+    install_step.dependOn(&b.addInstallArtifact(exe_threaded, .{}).step);
+    install_step.dependOn(&b.addInstallArtifact(exe_sdl, .{}).step);
+    install_step.dependOn(&b.addInstallArtifact(exe_renderaudio, .{}).step);
+    install_step.dependOn(&b.addInstallArtifact(exe_wavwriter, .{}).step);
+    install_step.dependOn(&b.addInstallArtifact(exe_sidfile, .{}).step);
+    install_step.dependOn(&b.addInstallArtifact(exe_sidplayer, .{}).step);
+
+    // Run steps (unchanged)
     const run_dumpplayer = b.addRunArtifact(exe_dumpplayer);
     const run_threaded = b.addRunArtifact(exe_threaded);
     const run_sdl = b.addRunArtifact(exe_sdl);
     const run_renderaudio = b.addRunArtifact(exe_renderaudio);
     const run_wavwriter = b.addRunArtifact(exe_wavwriter);
-
     const run_sidfile = b.addRunArtifact(exe_sidfile);
 
     if (b.args) |args| {
@@ -203,21 +213,39 @@ pub fn build(b: *std.Build) void {
         run_sidfile.addArgs(args);
     }
 
-    const run_step_dumpplayer = b.step("run-dump-play", "Run the unthreaded dump player");
+    const run_step_dumpplayer = b.step(
+        "run-dump-play",
+        "Run the unthreaded dump player",
+    );
     run_step_dumpplayer.dependOn(&run_dumpplayer.step);
 
-    const run_step_threaded = b.step("run-dump-play-threaded", "Run the threaded dump player");
+    const run_step_threaded = b.step(
+        "run-dump-play-threaded",
+        "Run the threaded dump player",
+    );
     run_step_threaded.dependOn(&run_threaded.step);
 
-    const run_step_sdl = b.step("run-sdl-player", "Run the SDL dump player");
+    const run_step_sdl = b.step(
+        "run-sdl-player",
+        "Run the SDL dump player",
+    );
     run_step_sdl.dependOn(&run_sdl.step);
 
-    const run_step_renderaudio = b.step("run-render-audio", "Run the RenderAudio() demo");
+    const run_step_renderaudio = b.step(
+        "run-render-audio",
+        "Run the RenderAudio() demo",
+    );
     run_step_renderaudio.dependOn(&run_renderaudio.step);
 
-    const run_step_wavwriter = b.step("run-wav-writer", "Run the Wav-Writer demo");
+    const run_step_wavwriter = b.step(
+        "run-wav-writer",
+        "Run the Wav-Writer demo",
+    );
     run_step_wavwriter.dependOn(&run_wavwriter.step);
 
-    const run_step_sidfile = b.step("run-sidfile", "Run the .sid file player test");
+    const run_step_sidfile = b.step(
+        "run-sidfile",
+        "Run the .sid file player test",
+    );
     run_step_sidfile.dependOn(&run_sidfile.step);
 }
