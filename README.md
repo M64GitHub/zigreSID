@@ -592,39 +592,47 @@ This project bridges the gap between C++, C, and Zig:
 
 #### 🎹 **ReSid Struct** (SID Emulation)
 
-- `init(allocator: std.mem.Allocator, name: [*:0]const u8) !ReSid`: Initializes a **SID instance** with a given name.
-- `deinit()`: Frees the **SID instance**.
-- `getName() [*:0]const u8`: Returns the **name** of the SID instance.
-- `setChipModel(model: [*:0]const u8) bool`: Sets the **SID chip model** (**"MOS6581"** or **"MOS8580"**, default is MOS8580).
-- `setSamplingRate(rate: c_int)`: Sets the **sampling rate** (default **44100 Hz**).
-- `getSamplingRate() c_int`: Returns the **current sampling rate**.
-- `writeRegs(self: *ReSid, regs: *[25]u8) void`: Bulk register write function for direct SID manipulation.
-- `getRegs(self: *ReSid) [25]u8`: Read the current values of the SID registers
+| **Function**                                      | **Description** |
+|--------------------------------------------------|-------------------------------------------------|
+| **`init(allocator: std.mem.Allocator, name: [*:0]const u8) !ReSid`** | Initializes a **SID instance** with a given name. |
+| **`deinit()`**                                   | Frees the **SID instance** and releases memory. |
+| **`getName() [*:0]const u8`**                   | Returns the **name** of the SID instance. |
+| **`setChipModel(model: [*:0]const u8) bool`**   | Sets the **SID chip model** (`"MOS6581"` or `"MOS8580"`, default is **MOS8580**). |
+| **`setSamplingRate(rate: c_int)`**              | Sets the **sampling rate** (default **44100 Hz**). |
+| **`getSamplingRate() c_int`**                   | Returns the **current sampling rate**. |
+| **`writeRegs(self: *ReSid, regs: *[25]u8) void`** | **Bulk register write** function for direct **SID manipulation**. |
+| **`getRegs(self: *ReSid) [25]u8`**              | Reads the **current values** of the SID registers. |
 
 <br>
 
 
 #### 🎛️ **DumpPlayer Struct** (Playback Controller)
 
-- `init(allocator: std.mem.Allocator, resid: *c.ReSid) !DumpPlayer`: Creates a **player instance** linked to a **SID instance**.
-- `deinit()`: Frees the **player instance**.
-- `play()`: Starts **playback** from the beginning.
-- `stop()`: **Stops** and **resets** playback.
-- `pause()`: **Pauses** playback (audio generation stops).
-- `continue_play()`: **Continues** playback after pausing.
-- `update()`: **Updates** the **audio buffer**; call this when not using callbacks. Returns false when playback ends.
-- `setDmp(dump: []u8)`: Loads a **SID dump** for playback (**must be called before** `play()`).
-- `loadDmp(filename: []const u8) !void`: **load dump** from file.
-- `getPlayerContext() *c.DmpPlayerContext`: Returns a **pointer to playback data**.
-- `updateExternal(b: bool)`: Allows external control of the audio update process.
-- `isPlaying() bool`: Checks if playback is currently active.
-- `fillAudioBuffer() bool`: internal function called by `update()`. Returns true at end of dump reached.
-- `getPlayState() DP_PLAYSTATE`: Returns the **current playback state** as an enum:
-  - `DP_PLAYSTATE.stopped`
-  - `DP_PLAYSTATE.playing`
-  - `DP_PLAYSTATE.paused`
- - `renderAudio(start_step: u32, num_steps: u32, buffer: []i16) u32`:
-    Generates a mono raw PCM buffer (signed 16 bit) from the dump, or a part of it. `start_step` and `num_steps` specify the part of the dump (25 register values per step). The buffer will allways be completely filled while clocking the sid. This means when the end of dump is reached before buffer end, the sid is clocked without any register changes until the end of the buffer is reached. It also stops at the end of the buffer in case the steps would not fit into the buffer. The function returns the number of steps processed.
+| **Function**                                         | **Description** |
+|------------------------------------------------------|-------------------------------------------------|
+| **`init(allocator: std.mem.Allocator, resid: *c.ReSid) !DumpPlayer`** | Creates a **player instance** linked to a **SID instance**. |
+| **`deinit()`**                                       | Frees the **player instance** and releases memory. |
+| **`play()`**                                         | Starts **playback** from the beginning. |
+| **`stop()`**                                         | **Stops** and **resets** playback. |
+| **`pause()`**                                        | **Pauses** playback (audio generation stops). |
+| **`continue_play()`**                                | **Continues** playback after pausing. |
+| **`update()`**                                       | **Updates** the **audio buffer**; call this when not using callbacks. Returns `false` when playback ends. |
+| **`setDmp(dump: []u8)`**                             | Loads a **SID dump** for playback (**must be called before** `play()`). |
+| **`loadDmp(filename: []const u8) !void`**           | **Loads a SID dump** from a file. |
+| **`getPlayerContext() *c.DmpPlayerContext`**         | Returns a **pointer to playback data**. |
+| **`updateExternal(b: bool)`**                        | Allows external control of the **audio update process**. |
+| **`isPlaying() bool`**                               | Checks if **playback is currently active**. |
+| **`fillAudioBuffer() bool`**                         | Internal function called by `update()`. Returns `true` when end of dump is reached. |
+| **`getPlayState() DP_PLAYSTATE`**                    | Returns the **current playback state** as an enum:<br> 🔹 `DP_PLAYSTATE.stopped`<br> 🔹 `DP_PLAYSTATE.playing`<br> 🔹 `DP_PLAYSTATE.paused` |
+| **`renderAudio(start_step: u32, num_steps: u32, buffer: []i16) u32`** | Generates a **mono raw PCM buffer** from the dump (see **Note** below). |
+
+> ### 📝 **Note on `renderAudio()`**
+> The `renderAudio(start_step, num_steps, buffer)` function generates **raw PCM audio** from the **SID dump**,  
+> processing **`num_steps`** register updates starting from **`start_step`**.  
+> The function **always fills the buffer completely**, meaning:  
+> - If the **end of the dump is reached** before filling the buffer, the SID **continues clocking** without register updates.  
+> - If the **buffer is too small** to fit all `num_steps`, playback stops once the buffer is full.  
+> - This ensures **continuous SID emulation**, even when the dump data is exhausted.  
 
 <br>
 
