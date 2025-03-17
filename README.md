@@ -581,7 +581,7 @@ This project bridges the gap between C++, C, and Zig:
 | **`update(self: *DumpPlayer)`**                                       | **Updates** the **audio buffer**; call this when not using callbacks. Returns `false` when playback ends. |
 | **`setDmp(self: *DumpPlayer, dump: []u8)`**                             | Loads a **SID dump** for playback (**must be called before** `play()`). |
 | **`loadDmp(self: *DumpPlayer, filename: []const u8) !void`**           | **Loads a SID dump** from a file. |
-| **`getPlayerContext() *wrapper.DmpPlayerContext`**         | Returns a **pointer to playback data**. |
+| **`getPlayerContext() *Cpp.DmpPlayerContext`**         | Returns a **pointer to playback data**. |
 | **`updateExternal(self: *DumpPlayer, b: bool)`**                        | Allows external control of the **audio update process**. |
 | **`isPlaying(self: *DumpPlayer) bool`**                               | Checks if **playback is currently active**. |
 | **`fillAudioBuffer(self: *DumpPlayer) bool`**                         | Internal function called by `update()`. Returns `true` when end of dump is reached. |
