@@ -3,6 +3,7 @@ const SDL = @cImport({
     @cInclude("SDL2/SDL.h");
 });
 const ReSid = @import("resid");
+const flagz = @import("flagz");
 
 const Sid = ReSid.Sid;
 const DumpPlayer = ReSid.DumpPlayer;
@@ -10,6 +11,12 @@ const DumpPlayer = ReSid.DumpPlayer;
 pub fn main() !void {
     const gpa = std.heap.page_allocator;
     const stdout = std.io.getStdOut().writer();
+
+    const my_args = struct {
+        filename: []u8,
+    };
+
+    const parsed = try flagz.parse(my_args, gpa);
 
     const sampling_rate = 44100;
     const pcm_buffer = try gpa.alloc(i16, sampling_rate * 10);
@@ -27,7 +34,7 @@ pub fn main() !void {
     defer player.deinit();
 
     // load dump
-    try player.loadDmp("data/plasmaghost.sid.dmp");
+    try player.loadDmp(parsed.filename);
 
     // render 8 seconds audio into PCM audio buffer
     const steps_rendered = player.renderAudio(0, 50 * 8, pcm_buffer);

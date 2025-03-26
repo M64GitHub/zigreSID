@@ -1,6 +1,7 @@
 const std = @import("std");
 const SidFile = @import("sidfile").SidFile;
 const C64 = @import("zig64");
+const stdout = std.io.getStdOut().writer();
 
 pub const SidPlayer = struct {
     sid_file: SidFile,
@@ -36,7 +37,6 @@ pub const SidPlayer = struct {
         allocator: std.mem.Allocator,
     ) !void {
         if (!self.sid_file.loaded) return error.SidFileNotLoaded;
-        const stdout = std.io.getStdOut().writer();
         const sid_rawmem: []const u8 = self.sid_file.getSidDataSlice();
 
         var mem_address: u16 = 0;
@@ -90,5 +90,11 @@ pub const SidPlayer = struct {
         if (!self.sid_file.loaded) return error.SidFileNotLoaded;
 
         self.c64.call(self.sid_file.header.play_address);
+        if (self.dbg_enabled) {
+            try stdout.print(
+                "[sidPlay] mem.data[$D417] = {X:02}, sid.registers[23] = {X:02}\n",
+                .{ self.c64.mem.data[0xD417], self.c64.sid.registers[23] },
+            );
+        }
     }
 };

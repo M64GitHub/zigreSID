@@ -7,8 +7,12 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = std.builtin.OptimizeMode.ReleaseFast;
 
+    // -- dependencies
     const dep_zig64 = b.dependency("zig64", .{});
     const mod_zig64 = dep_zig64.module("zig64");
+
+    const dep_flagz = b.dependency("flagz", .{});
+    const mod_flagz = dep_flagz.module("flagz");
 
     // build reSID C++ shared library and C wrapper
     const resid_lib = b.addStaticLibrary(.{
@@ -47,10 +51,9 @@ pub fn build(b: *std.Build) void {
     });
     b.installArtifact(resid_lib);
 
-    // sub modules
+    // -- sub modules
 
-    // original resid
-
+    // original resid cpp, cpp- and c-wrapper
     const mod_resid_cpp = b.addModule("resid_cpp", .{
         .root_source_file = b.path("src/resid-cpp.zig"),
     });
@@ -62,10 +65,12 @@ pub fn build(b: *std.Build) void {
         .install_subdir = "resid-cpp",
     });
     b.getInstallStep().dependOn(&install_headers.step);
-    mod_resid_cpp.addIncludePath(b.path("resid-cpp")); // Source path for local build
+    // Source path for local build
+    mod_resid_cpp.addIncludePath(b.path("resid-cpp"));
+    // Installed path for dependents
     mod_resid_cpp.addIncludePath(.{
         .cwd_relative = b.getInstallPath(.header, "resid-cpp"),
-    }); // Installed path for dependents
+    });
 
     // residsdl
     const mod_resid_sdl = b.addModule("resid_sdl", .{
@@ -156,6 +161,7 @@ pub fn build(b: *std.Build) void {
     });
     exe_renderaudio.addIncludePath(.{ .cwd_relative = usr_include_path });
     exe_renderaudio.root_module.addImport("resid", mod_resid);
+    exe_renderaudio.root_module.addImport("flagz", mod_flagz);
     exe_renderaudio.linkSystemLibrary("SDL2");
     b.installArtifact(exe_renderaudio);
 
@@ -196,7 +202,7 @@ pub fn build(b: *std.Build) void {
     install_step.dependOn(&b.addInstallArtifact(exe_sidfile, .{}).step);
     install_step.dependOn(&b.addInstallArtifact(exe_sidplayer, .{}).step);
 
-    // Run steps (unchanged)
+    // Run steps
     const run_dumpplayer = b.addRunArtifact(exe_dumpplayer);
     const run_threaded = b.addRunArtifact(exe_threaded);
     const run_sdl = b.addRunArtifact(exe_sdl);
