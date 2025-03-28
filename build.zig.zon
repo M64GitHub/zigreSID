@@ -1,21 +1,18 @@
 .{
     .name = .resid,
-    .version = "0.1.0",
+    .version = "0.2.0",
     .minimum_zig_version = "0.14.0",
     .fingerprint = 0xe19fe0250281362f,
     .dependencies = .{
         .zig64 = .{
-            // .url = "https://github.com/M64GitHub/zig64/archive/refs/tags/v0.0.1-alpha.tar.gz",
-            // .hash = "1220a3d60d010d4508e775e069152a722a52bcf3b4a9130219c5f0482f76aec1fa59",
-            .path = "../zig64/",
+            .url = "https://github.com/M64GitHub/zig64/archive/refs/tags/v0.2.0-alpha.tar.gz",
+            .hash = "zig64-0.2.0-v6FnenGTAwDaoHtbiQl5nw2ym9S_fgTm1k7e-4ouFD4f",
         },
         .flagz = .{
-            // .url = "https://github.com/M64GitHub/zig64/archive/refs/tags/v0.0.1-alpha.tar.gz",
-            // .hash = "1220a3d60d010d4508e775e069152a722a52bcf3b4a9130219c5f0482f76aec1fa59",
-            .path = "../flagZ/",
+            .url = "https://github.com/M64GitHub/flagZ/archive/refs/tags/v1.0.0.tar.gz",
+            .hash = "flagz-1.0.0-vdU1bCRQAQD3QOyKf6gAVpJuhTnlOoA10UmxO_XTycHm",
         },
     },
-
     .paths = .{
         "build.zig",
         "build.zig.zon",

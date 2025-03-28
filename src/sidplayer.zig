@@ -59,7 +59,7 @@ pub const SidPlayer = struct {
         self.c64 = try C64.init(allocator, C64.Vic.Model.pal, 0x0000);
         var local_c64 = self.c64;
 
-        // write the sid player routine and data into the c64lator memory
+        // write the sid player routine and data into the emulator memory
         if (is_prg) {
             const loaded_addr = try local_c64.setPrg(sid_rawmem, false);
             if (self.dbg_enabled) {
@@ -72,7 +72,7 @@ pub const SidPlayer = struct {
             self.c64.cpu.writeMem(sid_rawmem, mem_address);
             if (self.dbg_enabled) {
                 try stdout.print(
-                    "[sidplayer] sid file loaded to address : {X:0>4}\n",
+                    "[sidplayer] sid file loaded to address : {X:0>4} via memcpy\n",
                     .{mem_address},
                 );
             }
@@ -83,18 +83,17 @@ pub const SidPlayer = struct {
         if (!self.sid_file.loaded) return error.SidFileNotLoaded;
 
         self.c64.cpu.a = @as(u8, @truncate(tune));
+        self.c64.cpu.x = 0;
+        self.c64.cpu.y = 0;
         self.c64.call(self.sid_file.header.init_address);
     }
 
     pub fn sidPlay(self: *SidPlayer) !void {
         if (!self.sid_file.loaded) return error.SidFileNotLoaded;
 
+        self.c64.cpu.a = 0;
+        self.c64.cpu.x = 0;
+        self.c64.cpu.y = 0;
         self.c64.call(self.sid_file.header.play_address);
-        if (self.dbg_enabled) {
-            try stdout.print(
-                "[sidPlay] mem.data[$D417] = {X:02}, sid.registers[23] = {X:02}\n",
-                .{ self.c64.mem.data[0xD417], self.c64.sid.registers[23] },
-            );
-        }
     }
 };
