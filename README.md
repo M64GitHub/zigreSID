@@ -1,7 +1,8 @@
 # SID Soundchip Emulation in Zig  
 ![License](https://img.shields.io/badge/license-MIT-brightgreen?style=flat)
-![Version](https://img.shields.io/badge/version-0.2.0-8a2be2?style=flat)
-![Zig](https://img.shields.io/badge/Zig-0.14.0-orange?style=flat)
+![Version](https://img.shields.io/badge/version-0.3.0-8a2be2?style=flat)
+![Zig](https://img.shields.io/badge/Zig-0.14.0-orange?style=flat)  
+
 Experience authentic MOS 6581/8580 SID soundchip emulation with Zig! This project provides SID audio generation, processing, and playback, designed for precision and flexibility.
 
 ### 🚀 **Powered by reSID**
