@@ -4,13 +4,13 @@
     .minimum_zig_version = "0.14.0",
     .fingerprint = 0xe19fe0250281362f,
     .dependencies = .{
-        .zig64 = .{
-            .url = "https://github.com/M64GitHub/zig64/archive/refs/tags/v0.2.0-alpha.tar.gz",
-            .hash = "zig64-0.2.0-v6FnenGTAwDaoHtbiQl5nw2ym9S_fgTm1k7e-4ouFD4f",
-        },
         .flagz = .{
             .url = "https://github.com/M64GitHub/flagZ/archive/refs/tags/v1.0.0.tar.gz",
             .hash = "flagz-1.0.0-vdU1bCRQAQD3QOyKf6gAVpJuhTnlOoA10UmxO_XTycHm",
+        },
+        .zig64 = .{
+            .url = "https://github.com/M64GitHub/zig64/archive/refs/tags/v0.2.0-alpha.tar.gz",
+            .hash = "zig64-0.2.0-v6FneuiXAwDZ6n7QNBVykEJsMxkbIyfHTNqdjy_ZZ_3l",
         },
     },
     .paths = .{
