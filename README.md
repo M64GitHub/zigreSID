@@ -168,7 +168,7 @@ This will add the dependency to your `build.zig.zon`:
 .dependencies = .{
     .resid = .{
         .url = "https://github.com/M64GitHub/zigreSID/archive/refs/tags/v0.3.0-alpha.tar.gz",
-        .hash = "resid-0.3.0-LzaBAicpCwCZOvwy9uqL9jmRhFDincjJKCkT5CSjMF0H",
+        .hash = "resid-0.3.0-LzaBAvQpCwD3HuPRq4UHYf_V1MEILa1z5hIdZZhY_Ulg",
     },
 },
 ```
