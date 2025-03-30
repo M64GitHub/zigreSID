@@ -43,7 +43,7 @@ The generated audio can be played in real-time or exported as high-quality `.wav
   
 - ⚡ **Powered by reSID** – Uses the proven reSID C++ library for high-quality sound emulation. ([reSID on GitHub](https://github.com/daglem/reSID))
   
-- 🏆 **Powered by zig64** – A high-performance C64 emulator core written in Zig, ensuring accurate 6510 CPU execution and SID register emulation. ([zig64 on GitHub](https://github.com/M64GitHub/zig64))  
+- 🏆 **Powered by zig64** – A high-accuracy C64 emulator core written in Zig. ([zig64 on GitHub](https://github.com/M64GitHub/zig64))  
 
 <br>
 
