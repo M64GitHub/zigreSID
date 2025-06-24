@@ -5,72 +5,72 @@
 
 Experience authentic MOS 6581/8580 SID soundchip emulation with Zig! This project provides SID audio generation, processing, and playback, designed for precision and flexibility.
 
-### 🚀 **Powered by reSID**
+### **Powered by reSID**
 The proven C++ SID emulation library, which forms the core of the audio processing and ensures authentic sound.
 
-### 🔥 **Powered by zig64!**
+### **Powered by zig64!**
 Seamless `.sid` file support enables you to load and execute real **C64 SID music** with full playback precision. A **Zig-native, cycle-accurate MOS 6510 CPU emulator** ensures faithful replication of C64 hardware behavior. With precise PAL & NTSC timing, full register state tracking, and real-time playback integration, it provides everything needed for accurate SID music playback, debugging, and deep analysis.  
 
 The generated audio can be played in real-time or exported as high-quality `.wav` files, making it ideal for both live playback and post-processing. Seamlessly combining reSID's authentic SID emulation with Zig’s simplicity, safety, and modern efficiency, **this project makes high-quality SID audio more accessible than ever**.  
 
-💡 Whether you're composing retro music, analyzing SID tunes, or integrating SID emulation into your projects, this is your ultimate tool!  
+Whether you're composing retro music, analyzing SID tunes, or integrating SID emulation into your projects, this is your ultimate tool!  
 
-🎵 **Reviving the C64 SID sound with the power of Zig!** 🎵  
+**Reviving the C64 SID sound with the power of Zig!** 
 
 <br>
 
-## **🔥 Features**  
+## **Features**  
 
-- 💾 **`.sid` File Support** – Load and execute real C64 SID music effortlessly!
+- **`.sid` File Support** – Load and execute real C64 SID music effortlessly!
   
-- 📀 **`.wav` File Support (Mono & Stereo)** – Save your SID-generated audio as `.wav` files, ideal for archiving, music production, and retro inspired projects.
+- **`.wav` File Support (Mono & Stereo)** – Save your SID-generated audio as `.wav` files, ideal for archiving, music production, and retro inspired projects.
   
-- 🎧 **Flexible Audio Backends** – Seamlessly integrates with various audio libraries for playback.
+- **Flexible Audio Backends** – Seamlessly integrates with various audio libraries for playback.
   
-- ⚡ **Non-Blocking Audio Playback** – Music playback fully runs in the background keeping your code responsive!
+- **Non-Blocking Audio Playback** – Music playback fully runs in the background keeping your code responsive!
    
-- 🎼 **Dynamic Audio Buffer Rendering** – Generate high-fidelity PCM audio buffers from SID music, perfect for playback, processing, and visualization.
+- **Dynamic Audio Buffer Rendering** – Generate high-fidelity PCM audio buffers from SID music, perfect for playback, processing, and visualization.
   
-- 🧵 **Dedicated Thread Support** – Choose between simple single-threaded playback or advanced multi-threaded execution for performance gains, real-time audio visualization, and modifications.
+- **Dedicated Thread Support** – Choose between simple single-threaded playback or advanced multi-threaded execution for performance gains, real-time audio visualization, and modifications.
   
-- 🔧 **Simplified API** – All complex timing calculations and buffer management are handled automatically!
+- **Simplified API** – All complex timing calculations and buffer management are handled automatically!
   
-- 🏁 **Full 6510 CPU Emulation** – Features a cycle-accurate 6510 CPU emulator with real C64 timing and behavior.
+- **Full 6510 CPU Emulation** – Features a cycle-accurate 6510 CPU emulator with real C64 timing and behavior.
   
-- 🗂️ **Lots of Examples!** - Create SID `register dumps`, `convert` SID songs `to wav audio` files, and examples for all major structs!
+- **Lots of Examples!** - Create SID `register dumps`, `convert` SID songs `to wav audio` files, and examples for all major structs!
   
-- 🛠️ **Fully Integrated in Zig** – A seamless Zig-native implementation, making SID emulation more accessible than ever!
+- **Fully Integrated in Zig** – A seamless Zig-native implementation, making SID emulation more accessible than ever!
   
-- ⚡ **Powered by reSID** – Uses the proven reSID C++ library for high-quality sound emulation. ([reSID on GitHub](https://github.com/daglem/reSID))
+- **Powered by reSID** – Uses the proven reSID C++ library for high-quality sound emulation. ([reSID on GitHub](https://github.com/daglem/reSID))
   
-- 🏆 **Powered by zig64** – A high-accuracy C64 emulator core written in Zig. ([zig64 on GitHub](https://github.com/M64GitHub/zig64))  
+- **Powered by zig64** – A high-accuracy C64 emulator core written in Zig. ([zig64 on GitHub](https://github.com/M64GitHub/zig64))  
 
 <br>
 
-### 🎧 **Audio Library Independence**  
+### **Audio Library Independence**  
 The SID emulation and playback logic are **fully independent of any audio library**. While examples use **SDL2** for cross-platform playback, you can easily integrate other audio backends or custom solutions. The playback engine supports both **automatic callbacks** for seamless integration and **manual buffer generation** for full control over the audio stream.
 
 <br>
 
-## 🎵 Getting Started  
+## Getting Started  
 
 Getting started is easy! Below are two minimal examples demonstrating how to generate WAV files or play back SID audio in real-time with just a few lines of code.  
 
 These examples use a `SID register dump`, a file containing the raw register changes of a `.sid` tune.  
 You can create your own SID dumps from `.sid` files using the included `sid-dump.zig` utility (see below).  
 
-> **📝 Note:** SID dumps are powerful because they eliminate CPU processing overhead compared to full `.sid` execution.  
+> **Note:** SID dumps are powerful because they eliminate CPU processing overhead compared to full `.sid` execution.  
 > They can be treated like **audio samples**, allowing you to extract, rearrange, and reuse specific parts of SID tunes or isolate particular sounds for creative remixing! A powerful tool for music experimentation and sound design! 
 
 
 
-### 🔊 Example: Real-Time Playback (SDL)
+### Example: Real-Time Playback (SDL)
 If you're using SDL, the `SdlDumpPlayer` struct offers a hassle-free way to handle playback.  
 It fully manages SDL initialization, audio callbacks, and buffer generation, making playback effortless and non-blocking. Since it runs in the background, your program remains fully responsive.  
 
 For more detailed examples, check the sections below.
 
-📌 **How It Works:**  
+**How It Works:**  
 - A **SdlDumpPlayer** instance is created and linked to an SDL audio stream internally.  
 - The **SID dump file** (`.dmp`) is loaded, containing all SID register changes from a `.sid` tune.  
 - Calling `player.play()` starts playback, with SDL handling audio processing in the background.  
@@ -103,19 +103,17 @@ pub fn main() !void {
 
 <br>
 
-### 🎵 Example: Render a SID Dump to a WAV File 
+### Example: Render a SID Dump to a WAV File 
 
 This example demonstrates how to **convert** a SID register dump into a WAV file.  
 It initializes a SID chip instance, loads a SID dump file (`.dmp`), and **renders PCM audio** from it.  
 The rendered audio is stored in a **stereo WAV file**, making it easy to use for playback, archiving, or further processing.  
 
-📌 **How It Works:**  
+**How It Works:**  
 - A **SID instance** is created for audio synthesis.  
 - A **DumpPlayer** loads and plays the `.dmp` file, simulating SID playback.  
 - The SID is **rendered frame-by-frame** at **50.125 Hz**, generating **10 seconds** of audio.  
 - The resulting PCM data is stored and saved to `sid-out.wav`.  
-
-🔊 **Now you can export SID music to WAV and use it anywhere!**  
 
 ```zig
 const std = @import("std");
@@ -160,8 +158,8 @@ pub fn main() !void {
 
 ## Building the Project
 #### Requirements
-- ⚡ **Zig** 0.13.0
-- 🎧 **SDL2** (optional, required for SDL-based playback, and building examples)
+- **Zig** 0.13.0
+- **SDL2** (optional, required for SDL-based playback, and building examples)
 
 #### Build
 ```sh
@@ -210,21 +208,21 @@ pub fn build(b: *std.Build) void {
 ```
 After adding the dependency, simply run `zig build` to compile your project!
 
-## 📜 Examples Included
+## Examples Included
 
 The following examples demonstrate different ways to use the **SID emulation and playback capabilities**.  
 Each example is built automatically and placed in `zig-out/bin/`.
 
 | **Executable**                 | **Description**                                                                 | **Source File**                                      |
 |--------------------------------|---------------------------------------------------------------------------------|------------------------------------------------------|
-| 🎹 `sdl-dump-player`           | Automatic SDL configuration, simple SID dump playback.                         | `src/examples/sdl-sid-dump-player.zig`             |
-| 🎛️ `dump-player`               | Manual SDL configuration, access to SID registers.                             | `src/examples/sid-dump-player.zig`                 |
-| ⚡ `dump-player-threaded`       | Manual SDL configuration, SID register access, and playback in a custom thread. | `src/examples/sid-dump-player-threaded.zig`        |
-| 📀 `siddump-wav-writer`        | Generate a SID-based PCM buffer and save it as a `.wav` file.                   | `src/examples/wav-writer-example.zig`              |
-| 🎧 `sid-render-audio`          | Generate a raw SID PCM buffer and play it directly using `SDL_QueueAudio()`.    | `src/examples/render-audio-example.zig`            |
-| 🎹 `sid-dump`                  | Convert `.sid` files into SID register dumps for further processing.             | `src/examples/sidfile-dump.zig`                    |
+| `sdl-dump-player`           | Automatic SDL configuration, simple SID dump playback.                         | `src/examples/sdl-sid-dump-player.zig`             |
+| `dump-player`               | Manual SDL configuration, access to SID registers.                             | `src/examples/sid-dump-player.zig`                 |
+| `dump-player-threaded`       | Manual SDL configuration, SID register access, and playback in a custom thread. | `src/examples/sid-dump-player-threaded.zig`        |
+| `siddump-wav-writer`        | Generate a SID-based PCM buffer and save it as a `.wav` file.                   | `src/examples/wav-writer-example.zig`              |
+| `sid-render-audio`          | Generate a raw SID PCM buffer and play it directly using `SDL_QueueAudio()`.    | `src/examples/render-audio-example.zig`            |
+| `sid-dump`                  | Convert `.sid` files into SID register dumps for further processing.             | `src/examples/sidfile-dump.zig`                    |
 
-### 📂 **Where to Find the Executables?**
+### **Where to Find the Executables?**
 After building the project, the compiled executables are placed in:
 ```sh
 zig-out/bin/
@@ -232,7 +230,7 @@ zig-out/bin/
 
 <br>
 
-## 🧬 Playback Example Code
+## Playback Example Code
 Working with zigreSID is best demonstrated by examples. The following two examples show the usage of the `DumpPlayer` struct, in two different modes of operation. You will see it is quite simple to setup playback. Most of the code deals with setting up an SDL audio stream.  
 
 ### SID Dump Player (`sid-dump-player.zig`)
@@ -440,9 +438,9 @@ fn playerThreadFunc(player: *DumpPlayer) !void {
 
 <br>
 
-## 🔤 **Documentation**
+## **Documentation**
 ### Introduction
-#### 💡 Structure of the reSID Zig Integration
+#### Structure of the reSID Zig Integration
 
 This project bridges the gap between C++, C, and Zig:
 
@@ -451,19 +449,19 @@ This project bridges the gap between C++, C, and Zig:
 3. **C Bindings**: Exposes the simpliefied framework through a clean C interface.
 4. **Zig Wrapper**: A clear and explicit Zig interface built with structs and associated functions, wrapping C bindings for seamless SID playback and control. 
 
-#### 🎼 **Audio and SID Chip Details**
+#### **Audio and SID Chip Details**
 
-- 🎵 **Stereo Audio Output**: The generated audio fills a **mono buffer**, providing the **16bit** signed SID mono signal at equal levels on both channels.
-- 🎚️ **Sampling Rate**: Set to **44.1kHz** by default. The sampling rate is **changeable at runtime** via the provided API.
-- 🎛️ **SID Chip Model Selection**: both models are available:
+- **Stereo Audio Output**: The generated audio fills a **mono buffer**, providing the **16bit** signed SID mono signal at equal levels on both channels.
+- **Sampling Rate**: Set to **44.1kHz** by default. The sampling rate is **changeable at runtime** via the provided API.
+- **SID Chip Model Selection**: both models are available:
   - **SID6581**: Classic SID sound with characteristic filter behavior, more bassy sound.
   - **SID8580**: Enhanced model with improved signal-to-noise ratio (**default**).
 - **Emulation Quality**: The emulation quality is set to the highest possible level supported by the reSID library: `SAMPLE_RESAMPLE_INTERPOLATE`.
 
 <br>
 
-### 🛠️ Working with zigreSID
-#### 🎼 About the **DumpPlayer**  
+### Working with zigreSID
+#### About the **DumpPlayer**  
 **`DumpPlayer`**  is the most efficient method for playing back complete SID tunes or sound effects. It provides a simple way to handle SID sound playback (see example code). Internally, it manages audio buffer generation and SID register updates, continuously reading and processing register values from a dump file in steps triggered by the audio-callback.  
 
 ##### Realtime Audio Buffer Generation  
@@ -495,9 +493,9 @@ This project bridges the gap between C++, C, and Zig:
   ```  
 - In this mode, the audio backend (SDL2) plays audio from the buffer but **does not trigger buffer generation**.
 - This approach allows for:  
-  - 💡 **Real-time audio visualization**  
-  - 🎚️ **Live audio manipulation**  
-  - 🚀 **Performance optimization** via **multithreading**  
+  - **Real-time audio visualization**  
+  - **Live audio manipulation**  
+  - **Performance optimization** via **multithreading**  
 - The user must run:
   ```zig
   player.update();
@@ -552,21 +550,21 @@ This project bridges the gap between C++, C, and Zig:
 
 <br>
 
-## 🔤 **API Reference**
+## **API Reference**
 
 ... switched to zig doc, will be linked soon ...
 
 <br>
 
-## 🔓 License
+## License
 
 This project uses the **reSID** library and follows its licensing terms. The Zig, C++, and C bindings code is provided under the **MIT License**.
 
 <br>
 
-## 🏆 Credits
+## Credits
 Developed with ❤️ by **M64**. Credits to the amazing `resid` library and its authors!  
 
 <br>  
 
-✨ *SID sound made simple. Powered by ReSid. Integrated with Zig. ✨
+*SID sound made simple. Powered by ReSid. Integrated with Zig. 
