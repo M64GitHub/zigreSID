@@ -3,7 +3,7 @@
 ![Version](https://img.shields.io/badge/version-0.3.0-8a2be2?style=flat)
 ![Zig](https://img.shields.io/badge/Zig-0.14.0-orange?style=flat)  
 
-Experience authentic MOS 6581/8580 SID soundchip emulation with Zig! This project provides SID audio generation, processing, and playback, designed for precision and flexibility.
+Authentic MOS 6581/8580 SID soundchip emulation with Zig! This project provides SID audio generation, processing, and playback, designed for precision and flexibility.
 
 ### **Powered by reSID**
 The proven C++ SID emulation library, which forms the core of the audio processing and ensures authentic sound.
