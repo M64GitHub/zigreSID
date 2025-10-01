@@ -13,8 +13,6 @@ Seamless `.sid` file support enables you to load and execute real **C64 SID musi
 
 The generated audio can be played in real-time or exported as high-quality `.wav` files, making it ideal for both live playback and post-processing. 
 
-Whether you're composing retro music, analyzing SID tunes, or integrating SID emulation into your projects, this sets out to become your ultimate tool!  
-
 <br>
 
 ## **Features**  
