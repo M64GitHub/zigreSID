@@ -7,6 +7,9 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = std.builtin.OptimizeMode.ReleaseFast;
 
+    // Build option to enable movy (for keyboard input in threaded-mix example)
+    const enable_movy = b.option(bool, "enable_movy", "Enable movy dependency and build threaded-mix example (default: false)") orelse false;
+
     // -- dependencies
     const dep_zig64 = b.dependency("zig64", .{});
     const mod_zig64 = dep_zig64.module("zig64");
@@ -85,6 +88,18 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("src/wavwriter.zig"),
     });
 
+    // wavloader
+    const mod_wavloader = b.addModule("wavloader", .{
+        .root_source_file = b.path("src/wavloader.zig"),
+    });
+
+    // resid_mixer
+    const mod_resid_mixer = b.addModule("resid_mixer", .{
+        .root_source_file = b.path("src/resid-mixer.zig"),
+    });
+    mod_resid_mixer.addImport("resid_cpp", mod_resid_cpp);
+    mod_resid_mixer.addIncludePath(.{ .cwd_relative = usr_include_path });
+
     // sidfile
     const mod_sidfile = b.addModule("sidfile", .{
         .root_source_file = b.path("src/sidfile.zig"),
@@ -107,8 +122,10 @@ pub fn build(b: *std.Build) void {
     });
     mod_resid.addImport("sidfile", mod_sidfile);
     mod_resid.addImport("wavwriter", mod_wavwriter);
+    mod_resid.addImport("wavloader", mod_wavloader);
     mod_resid.addImport("resid_cpp", mod_resid_cpp);
     mod_resid.addImport("resid_sdl", mod_resid_sdl);
+    mod_resid.addImport("resid_mixer", mod_resid_mixer);
     mod_resid.addImport("sidplayer", mod_sidplayer);
     mod_resid.addImport("zig64", mod_zig64);
     mod_resid.addIncludePath(b.path("resid-cpp")); // Source path for local build
@@ -192,6 +209,25 @@ pub fn build(b: *std.Build) void {
     exe_sidplayer.root_module.addImport("resid", mod_resid);
     b.installArtifact(exe_sidplayer);
 
+    // Conditional: only build threaded-mix example when movy is enabled
+    const exe_threaded_mix = if (enable_movy) blk: {
+        const dep_movy = b.dependency("movy", .{});
+        const mod_movy = dep_movy.module("movy");
+
+        const exe = b.addExecutable(.{
+            .name = "dump-player-threaded-mix",
+            .root_source_file = b.path("src/examples/dump-player-threaded-mix.zig"),
+            .target = target,
+            .optimize = optimize,
+        });
+        exe.addIncludePath(.{ .cwd_relative = usr_include_path });
+        exe.root_module.addImport("resid", mod_resid);
+        exe.root_module.addImport("movy", mod_movy);
+        exe.linkSystemLibrary("SDL2");
+        b.installArtifact(exe);
+        break :blk exe;
+    } else null;
+
     // Ensure all artifacts depend on the headers being installed
     const install_step = b.getInstallStep();
     install_step.dependOn(&b.addInstallArtifact(exe_dumpplayer, .{}).step);
@@ -201,6 +237,9 @@ pub fn build(b: *std.Build) void {
     install_step.dependOn(&b.addInstallArtifact(exe_wavwriter, .{}).step);
     install_step.dependOn(&b.addInstallArtifact(exe_sidfile, .{}).step);
     install_step.dependOn(&b.addInstallArtifact(exe_sidplayer, .{}).step);
+    if (exe_threaded_mix) |exe| {
+        install_step.dependOn(&b.addInstallArtifact(exe, .{}).step);
+    }
 
     // Run steps
     const run_dumpplayer = b.addRunArtifact(exe_dumpplayer);
@@ -218,6 +257,15 @@ pub fn build(b: *std.Build) void {
         run_wavwriter.addArgs(args);
         run_sidfile.addArgs(args);
     }
+
+    // Conditional run step for threaded-mix (only if movy is enabled)
+    const run_threaded_mix = if (exe_threaded_mix) |exe| blk: {
+        const run = b.addRunArtifact(exe);
+        if (b.args) |args| {
+            run.addArgs(args);
+        }
+        break :blk run;
+    } else null;
 
     const run_step_dumpplayer = b.step(
         "run-dump-play",
@@ -254,4 +302,13 @@ pub fn build(b: *std.Build) void {
         "Run the .sid file player test",
     );
     run_step_sidfile.dependOn(&run_sidfile.step);
+
+    // Conditional run step for threaded-mix (only if movy is enabled)
+    if (run_threaded_mix) |run| {
+        const run_step_threaded_mix = b.step(
+            "run-dump-play-mix",
+            "Run the threaded dump player with WAV mixing (requires -Denable_movy=true)",
+        );
+        run_step_threaded_mix.dependOn(&run.step);
+    }
 }

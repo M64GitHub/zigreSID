@@ -39,7 +39,9 @@ The generated audio can be played in real-time or exported as high-quality `.wav
   
 - **Powered by reSID** – Uses the proven reSID C++ library for high-quality sound emulation. ([reSID on GitHub](https://github.com/daglem/reSID))
   
-- **Powered by zig64** – A high-accuracy C64 emulator core written in Zig. ([zig64 on GitHub](https://github.com/M64GitHub/zig64))  
+- **Powered by zig64** – A high-accuracy C64 emulator core written in Zig. ([zig64 on GitHub](https://github.com/M64GitHub/zig64))
+
+- **Real-time WAV Mixing** – Mix up to 100 simultaneous WAV sound effects into SID music playback on-the-fly, perfect for game audio! Supports both mono and stereo WAV files.
 
 <br>
 
@@ -154,13 +156,19 @@ pub fn main() !void {
 
 ## Building the Project
 #### Requirements
-- **Zig** 0.14.0
-- **SDL2** (optional, required for SDL-based playback, and building examples)
+- **Zig** 0.14.0+
+- **SDL2** (optional, required for SDL-based playback and building examples)
 
 #### Build
 ```sh
 sudo apt install libsdl2-dev  # Ubuntu/Debian, optional
 zig build
+```
+
+**Note:** To build the WAV mixing example (`dump-player-threaded-mix`), use:
+```sh
+zig build -Denable_movy=true
+zig build run-dump-play-mix -Denable_movy=true
 ```
 
 ## Using zigreSID In Your Project
