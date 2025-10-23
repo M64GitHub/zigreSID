@@ -70,16 +70,24 @@ pub const MixingDumpPlayer = struct {
         // First, update the underlying DumpPlayer to fill buffer with SID audio
         const result = self.dump_player.update();
 
-        // Get the buffer that was just filled
+        // Get the context
         const ctx = self.dump_player.getPlayerContext();
+
+        // Only mix if a NEW buffer was actually calculated (not just update() returning true)
+        if (!ctx.buf_calculated) {
+            return result;
+        }
+
+        // Get the buffer that was just filled
         const buffer = ctx.buf_ptr_next;
-        const buffer_size: usize = 4096; // Fixed buffer size from audio-config.h
+        const buffer_size: usize = 4096; // Fixed buffer size (samples, not bytes)
 
         // Lock for accessing wav_sources
         self.mutex.lock();
         defer self.mutex.unlock();
 
         // Mix in active WAV sources
+        const stdout = std.io.getStdOut().writer();
         for (&self.wav_sources) |*slot| {
             if (slot.*) |*wav_src| {
                 if (!wav_src.active or wav_src.isFinished()) {
@@ -89,7 +97,18 @@ pub const MixingDumpPlayer = struct {
 
                 // Calculate how many samples we can mix from this WAV
                 const remaining = wav_src.total_samples - wav_src.position;
-                const samples_to_mix = @min(remaining, buffer_size);
+
+                // For stereo WAVs, we need 2x as many source samples to fill the mono buffer
+                const needed_samples = if (wav_src.num_channels == 2) buffer_size * 2 else buffer_size;
+                const samples_to_mix = @min(remaining, needed_samples);
+
+                stdout.print("[MIXER] WAV: position={}, remaining={}, samples_to_mix={}, needed={}, channels={}\n", .{
+                    wav_src.position,
+                    remaining,
+                    samples_to_mix,
+                    needed_samples,
+                    wav_src.num_channels,
+                }) catch {};
 
                 // Get source slice
                 const src_slice = wav_src.pcm_data[wav_src.position .. wav_src.position + samples_to_mix];
