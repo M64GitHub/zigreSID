@@ -165,11 +165,7 @@ sudo apt install libsdl2-dev  # Ubuntu/Debian, optional
 zig build
 ```
 
-**Note:** To build the WAV mixing example (`dump-player-threaded-mix`), use:
-```sh
-zig build -Denable_movy=true
-zig build run-dump-play-mix -Denable_movy=true
-```
+**Note:** The WAV mixing example (`dump-player-threaded-mix`) requires the [movy](https://github.com/M64GitHub/movy) library for keyboard input and is not built by default. The example source code is available in `src/examples/dump-player-threaded-mix.zig` and demonstrates how to use `MixingDumpPlayer` with keyboard input. When using zigreSID in your game project that already has movy, you can use this example as a reference or integrate it directly.
 
 ## Using zigreSID In Your Project
 To add zigreSID as a dependency, use:

@@ -87,7 +87,6 @@ pub const MixingDumpPlayer = struct {
         defer self.mutex.unlock();
 
         // Mix in active WAV sources
-        const stdout = std.io.getStdOut().writer();
         for (&self.wav_sources) |*slot| {
             if (slot.*) |*wav_src| {
                 if (!wav_src.active or wav_src.isFinished()) {
@@ -101,14 +100,6 @@ pub const MixingDumpPlayer = struct {
                 // For stereo WAVs, we need 2x as many source samples to fill the mono buffer
                 const needed_samples = if (wav_src.num_channels == 2) buffer_size * 2 else buffer_size;
                 const samples_to_mix = @min(remaining, needed_samples);
-
-                stdout.print("[MIXER] WAV: position={}, remaining={}, samples_to_mix={}, needed={}, channels={}\n", .{
-                    wav_src.position,
-                    remaining,
-                    samples_to_mix,
-                    needed_samples,
-                    wav_src.num_channels,
-                }) catch {};
 
                 // Get source slice
                 const src_slice = wav_src.pcm_data[wav_src.position .. wav_src.position + samples_to_mix];

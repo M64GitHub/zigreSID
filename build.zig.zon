@@ -12,9 +12,6 @@
             .url = "https://github.com/M64GitHub/zig64/archive/refs/tags/v0.2.0-alpha.tar.gz",
             .hash = "zig64-0.2.0-v6FneuiXAwDZ6n7QNBVykEJsMxkbIyfHTNqdjy_ZZ_3l",
         },
-        .movy = .{
-            .path = "../movy",
-        },
     },
     .paths = .{
         "build.zig",
