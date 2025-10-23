@@ -3,19 +3,15 @@
 ![Version](https://img.shields.io/badge/version-0.3.0-8a2be2?style=flat)
 ![Zig](https://img.shields.io/badge/Zig-0.14.0-orange?style=flat)  
 
-Experience authentic MOS 6581/8580 SID soundchip emulation with Zig! This project provides SID audio generation, processing, and playback, designed for precision and flexibility.
+Authentic MOS 6581/8580 SID soundchip emulation with Zig! This project provides SID audio generation, processing, and playback, designed for precision and flexibility.
 
 ### **Powered by reSID**
 The proven C++ SID emulation library, which forms the core of the audio processing and ensures authentic sound.
 
 ### **Powered by zig64!**
-Seamless `.sid` file support enables you to load and execute real **C64 SID music** with full playback precision. A **Zig-native, cycle-accurate MOS 6510 CPU emulator** ensures faithful replication of C64 hardware behavior. With precise PAL & NTSC timing, full register state tracking, and real-time playback integration, it provides everything needed for accurate SID music playback, debugging, and deep analysis.  
+Seamless `.sid` file support enables you to load and execute real **C64 SID music** with full playback precision. A **Zig-native, cycle-accurate MOS 6510 CPU emulator** ensures faithful replication of C64 hardware behavior. With precise PAL & NTSC timing, full register state tracking, and real-time playback integration, it provides everything you need for accurate SID music playback, debugging, and deep analysis.  
 
-The generated audio can be played in real-time or exported as high-quality `.wav` files, making it ideal for both live playback and post-processing. Seamlessly combining reSID's authentic SID emulation with Zig’s simplicity, safety, and modern efficiency, **this project makes high-quality SID audio more accessible than ever**.  
-
-Whether you're composing retro music, analyzing SID tunes, or integrating SID emulation into your projects, this is your ultimate tool!  
-
-**Reviving the C64 SID sound with the power of Zig!** 
+The generated audio can be played in real-time or exported as high-quality `.wav` files, making it ideal for both live playback and post-processing. 
 
 <br>
 
@@ -158,7 +154,7 @@ pub fn main() !void {
 
 ## Building the Project
 #### Requirements
-- **Zig** 0.13.0
+- **Zig** 0.14.0
 - **SDL2** (optional, required for SDL-based playback, and building examples)
 
 #### Build
@@ -564,7 +560,3 @@ This project uses the **reSID** library and follows its licensing terms. The Zig
 
 ## Credits
 Developed with ❤️ by **M64**. Credits to the amazing `resid` library and its authors!  
-
-<br>  
-
-*SID sound made simple. Powered by ReSid. Integrated with Zig. 
