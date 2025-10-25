@@ -204,6 +204,8 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     exe_sidplayer.root_module.addImport("resid", mod_resid);
+    exe_sidplayer.linkSystemLibrary("SDL2");
+    exe_sidplayer.linkLibC();
     b.installArtifact(exe_sidplayer);
 
     // Note: dump-player-threaded-mix example is not built by default
@@ -228,6 +230,7 @@ pub fn build(b: *std.Build) void {
     const run_renderaudio = b.addRunArtifact(exe_renderaudio);
     const run_wavwriter = b.addRunArtifact(exe_wavwriter);
     const run_sidfile = b.addRunArtifact(exe_sidfile);
+    const run_sidplayer = b.addRunArtifact(exe_sidplayer);
 
     if (b.args) |args| {
         run_dumpplayer.addArgs(args);
@@ -236,6 +239,7 @@ pub fn build(b: *std.Build) void {
         run_renderaudio.addArgs(args);
         run_wavwriter.addArgs(args);
         run_sidfile.addArgs(args);
+        run_sidplayer.addArgs(args);
     }
 
     const run_step_dumpplayer = b.step(
@@ -273,4 +277,10 @@ pub fn build(b: *std.Build) void {
         "Run the .sid file player test",
     );
     run_step_sidfile.dependOn(&run_sidfile.step);
+
+    const run_step_sidplayer = b.step(
+        "run-sid-player",
+        "Run the real-time .SID file player",
+    );
+    run_step_sidplayer.dependOn(&run_sidplayer.step);
 }

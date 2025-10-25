@@ -41,7 +41,7 @@ pub const Sid = struct {
     }
 
     pub fn clock(self: *Sid, cycle_count: u32, buf: []i16) i32 {
-        const buflen: c_int = @as(c_int, buf.len);
+        const buflen: c_int = @intCast(buf.len);
         return Cpp.ReSID_clock(self.ptr, cycle_count, buf.ptr, buflen);
     }
 };

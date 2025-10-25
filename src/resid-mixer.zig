@@ -4,7 +4,7 @@ const SDL = @cImport({
     @cInclude("SDL2/SDL.h");
 });
 
-const MAX_WAV_SOURCES = 100;
+const MAX_WAV_SOURCES = 256;
 
 const WavSource = struct {
     pcm_data: []const i16,
@@ -38,7 +38,10 @@ pub const MixingDumpPlayer = struct {
     mutex: std.Thread.Mutex,
     allocator: std.mem.Allocator,
 
-    pub fn init(allocator: std.mem.Allocator, dump_player: DumpPlayer) !MixingDumpPlayer {
+    pub fn init(
+        allocator: std.mem.Allocator,
+        dump_player: DumpPlayer,
+    ) !MixingDumpPlayer {
         return MixingDumpPlayer{
             .dump_player = dump_player,
             .wav_sources = [_]?WavSource{null} ** MAX_WAV_SOURCES,
@@ -51,7 +54,11 @@ pub const MixingDumpPlayer = struct {
         self.dump_player.deinit();
     }
 
-    pub fn addWavSource(self: *MixingDumpPlayer, pcm_data: []const i16, num_channels: u16) !void {
+    pub fn addWavSource(
+        self: *MixingDumpPlayer,
+        pcm_data: []const i16,
+        num_channels: u16,
+    ) !void {
         self.mutex.lock();
         defer self.mutex.unlock();
 
@@ -73,7 +80,7 @@ pub const MixingDumpPlayer = struct {
         // Get the context
         const ctx = self.dump_player.getPlayerContext();
 
-        // Only mix if a NEW buffer was actually calculated (not just update() returning true)
+        // Only mix if a NEW buffer was actually calculated
         if (!ctx.buf_calculated) {
             return result;
         }
@@ -98,7 +105,12 @@ pub const MixingDumpPlayer = struct {
                 const remaining = wav_src.total_samples - wav_src.position;
 
                 // For stereo WAVs, we need 2x as many source samples to fill the mono buffer
-                const needed_samples = if (wav_src.num_channels == 2) buffer_size * 2 else buffer_size;
+                const needed_samples =
+                    if (wav_src.num_channels == 2)
+                        buffer_size * 2
+                    else
+                        buffer_size;
+
                 const samples_to_mix = @min(remaining, needed_samples);
 
                 // Get source slice
@@ -155,7 +167,6 @@ pub const MixingDumpPlayer = struct {
     pub fn pause(self: *MixingDumpPlayer) void {
         self.dump_player.pause();
     }
-
     pub fn continuePlayback(self: *MixingDumpPlayer) void {
         self.dump_player.continuePlayback();
     }
@@ -174,5 +185,18 @@ pub const MixingDumpPlayer = struct {
 
     pub fn getPlayerContext(self: *MixingDumpPlayer) *@import("resid_cpp").Cpp.DmpPlayerContext {
         return self.dump_player.getPlayerContext();
+    }
+
+    pub fn getActiveSourceCount(self: *MixingDumpPlayer) usize {
+        self.mutex.lock();
+        defer self.mutex.unlock();
+
+        var count: usize = 0;
+        for (self.wav_sources) |slot| {
+            if (slot != null) {
+                count += 1;
+            }
+        }
+        return count;
     }
 };

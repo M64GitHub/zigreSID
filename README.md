@@ -41,7 +41,7 @@ The generated audio can be played in real-time or exported as high-quality `.wav
   
 - **Powered by zig64** – A high-accuracy C64 emulator core written in Zig. ([zig64 on GitHub](https://github.com/M64GitHub/zig64))
 
-- **Real-time WAV Mixing** – Mix up to 100 simultaneous WAV sound effects into SID music playback on-the-fly, perfect for game audio! Supports both mono and stereo WAV files.
+- **Real-time WAV Mixing** – Mix up to 256 simultaneous WAV sound effects into SID music playback on-the-fly, perfect for game audio! Supports both mono and stereo WAV files.
 
 <br>
 

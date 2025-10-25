@@ -48,7 +48,7 @@ unsigned char *Resid_getRegs(ReSID *resid)
     return resid->GetRegs();
 }
 
-int Resid_clock(ReSID *resid, unsigned int cyc_count, short *buf, int buflen)
+int ReSID_clock(ReSID *resid, unsigned int cyc_count, short *buf, int buflen)
 {
     return resid->Clock(cyc_count, buf, buflen);
 }
