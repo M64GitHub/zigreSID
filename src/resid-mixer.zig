@@ -171,6 +171,10 @@ pub const MixingDumpPlayer = struct {
         self.dump_player.continuePlayback();
     }
 
+    pub fn reset(self: *MixingDumpPlayer) void {
+        self.dump_player.reset();
+    }
+
     pub fn isPlaying(self: *MixingDumpPlayer) bool {
         return self.dump_player.isPlaying();
     }

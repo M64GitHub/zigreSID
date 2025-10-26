@@ -22,6 +22,7 @@ public:
     void Stop();     // stops and resets playback data
     void Pause();    // stops generation of new audio buffers only
     void Continue(); // continues updating audio buffer
+    void Reset();    // resets dump index and buffer state for looping
 
     bool IsPlaying();
     void UpdateExternal(bool b);

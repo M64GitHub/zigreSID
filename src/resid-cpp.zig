@@ -83,6 +83,10 @@ pub const DumpPlayer = struct {
         Cpp.ReSIDDmpPlayer_continue(self.ptr);
     }
 
+    pub fn reset(self: *DumpPlayer) void {
+        Cpp.ReSIDDmpPlayer_reset(self.ptr);
+    }
+
     pub fn update(self: *DumpPlayer) bool {
         return Cpp.ReSIDDmpPlayer_update(self.ptr);
     }

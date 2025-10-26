@@ -72,6 +72,26 @@ void ReSIDDmpPlayer::Continue()
     D->play_state = PLAYER_PLAYING;
 }
 
+void ReSIDDmpPlayer::Reset()
+{
+    // Reset dump index to beginning
+    dmp_idx = 0;
+
+    // Reset buffer state
+    D->buf_ptr_playing = 0;
+    D->buf_ptr_next = D->buf1;
+    D->buf_consumed = false;
+    D->buf_calculated = false;
+    D->buf_lock = false;
+
+    // Reset samples counter
+    samples2do = R->SAMPLES_PER_FRAME;
+
+    // Refill first buffer with data from beginning
+    set_next_regs();
+    FillAudioBuffer();
+}
+
 bool ReSIDDmpPlayer::IsPlaying()
 {
     if (D->play_state == PLAYER_PLAYING) return true;

@@ -85,6 +85,11 @@ void ReSIDDmpPlayer_continue(ReSIDDmpPlayer *dmpply)
     dmpply->Continue();
 }
 
+void ReSIDDmpPlayer_reset(ReSIDDmpPlayer *dmpply)
+{
+    dmpply->Reset();
+}
+
 bool ReSIDDmpPlayer_update(ReSIDDmpPlayer *dmpply)
 {
     return dmpply->Update();
