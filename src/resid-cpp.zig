@@ -101,7 +101,11 @@ pub const DumpPlayer = struct {
 
     pub fn setDmp(self: *DumpPlayer, dump: []u8) void {
         self.dump = dump;
-        Cpp.ReSIDDmpPlayer_setdmp(self.ptr, self.dump.ptr, @truncate(@as(u64, self.dump.len)));
+        Cpp.ReSIDDmpPlayer_setdmp(
+            self.ptr,
+            self.dump.ptr,
+            @truncate(@as(u64, self.dump.len)),
+        );
     }
 
     pub fn loadDmp(self: *DumpPlayer, filename: []const u8) !void {
@@ -117,14 +121,34 @@ pub const DumpPlayer = struct {
         setDmp(self, buffer);
     }
 
-    pub fn renderAudio(self: *DumpPlayer, start_step: u32, num_steps: u32, buffer: []i16) u32 {
+    pub fn renderAudio(
+        self: *DumpPlayer,
+        start_step: u32,
+        num_steps: u32,
+        buffer: []i16,
+    ) u32 {
         const buf_len: u32 = @truncate(buffer.len);
-        return Cpp.ReSIDDmpPlayer_RenderAudio(self.ptr, start_step, num_steps, buf_len, buffer.ptr);
+        return Cpp.ReSIDDmpPlayer_RenderAudio(
+            self.ptr,
+            start_step,
+            num_steps,
+            buf_len,
+            buffer.ptr,
+        );
     }
 
-    pub fn sdlAudioCallback(userdata: ?*anyopaque, stream: [*c]u8, len: c_int) callconv(.C) void {
+    pub fn sdlAudioCallback(
+        userdata: ?*anyopaque,
+        stream: [*c]u8,
+        len: c_int,
+    ) callconv(.c) void {
         const player: *DumpPlayer = @ptrCast(@alignCast(userdata));
-        Cpp.ReSIDDmpPlayer_SDL_audio_callback(player.ptr, userdata, stream, len);
+        Cpp.ReSIDDmpPlayer_SDL_audio_callback(
+            player.ptr,
+            userdata,
+            stream,
+            len,
+        );
     }
 
     pub fn updateExternal(self: *DumpPlayer, b: bool) void {
@@ -136,6 +160,9 @@ pub const DumpPlayer = struct {
     }
 
     pub fn getPlayState(self: *DumpPlayer) Playstate {
-        return @as(Playstate, @enumFromInt(Cpp.ReSIDDmpPlayer_getPlayerStatus(self.ptr)));
+        return @as(
+            Playstate,
+            @enumFromInt(Cpp.ReSIDDmpPlayer_getPlayerStatus(self.ptr)),
+        );
     }
 };

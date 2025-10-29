@@ -15,22 +15,27 @@ fn playerThreadFunc(player: *MixingDumpPlayer) !void {
     while (player.isPlaying()) {
         if (!player.update()) {
             player.stop();
-            const stdout = std.io.getStdOut().writer();
-            try stdout.print("[PLAYER] Player stopped!\n", .{});
+            std.debug.print("[PLAYER] Player stopped!\n", .{});
         }
-        std.time.sleep(35 * std.time.ns_per_ms);
+        std.Thread.sleep(35 * std.time.ns_per_ms);
     }
 }
 
 pub fn main() !void {
     const gpa = std.heap.page_allocator;
-    const stdout = std.io.getStdOut().writer();
+    var stdout_buffer: [1024]u8 = undefined;
+    var stdout_writer = std.fs.File.stdout().writer(&stdout_buffer);
+    const stdout = &stdout_writer.interface;
 
     try movy.terminal.beginRawMode();
     defer movy.terminal.endRawMode();
 
     try stdout.print("[EXE] Threaded Mixing Dump Player Example\n", .{});
-    try stdout.print("[EXE] Press '1' to trigger WAV 1, '2' to trigger WAV 2, ESC to exit\n\n", .{});
+    try stdout.print(
+        "[EXE] Press '1' to trigger WAV 1, '2' to trigger WAV 2, ESC to exit\n\n",
+        .{},
+    );
+    try stdout.flush();
 
     // Create a Sid instance and configure it
     var sid = try Sid.init("zigsid#1");
@@ -53,20 +58,32 @@ pub fn main() !void {
     var wav2 = try WavLoader.load(gpa, "data/explosion2.wav");
     defer wav2.deinit();
 
-    try stdout.print("[EXE] Loaded WAV 1: {d} samples, {d} Hz, {d} channels\n", .{
-        wav1.num_samples,
-        wav1.sample_rate,
-        wav1.num_channels,
-    });
-    try stdout.print("[EXE] Loaded WAV 2: {d} samples, {d} Hz, {d} channels\n", .{
-        wav2.num_samples,
-        wav2.sample_rate,
-        wav2.num_channels,
-    });
+    try stdout.print(
+        "[EXE] Loaded WAV 1: {d} samples, {d} Hz, {d} channels\n",
+        .{
+            wav1.num_samples,
+            wav1.sample_rate,
+            wav1.num_channels,
+        },
+    );
+    try stdout.print(
+        "[EXE] Loaded WAV 2: {d} samples, {d} Hz, {d} channels\n",
+        .{
+            wav2.num_samples,
+            wav2.sample_rate,
+            wav2.num_channels,
+        },
+    );
+    try stdout.flush();
 
     // Initialize SDL (audio only, no events)
     if (SDL.SDL_Init(SDL.SDL_INIT_AUDIO) < 0) {
-        try stdout.print("[EXE] Failed to initialize SDL: {s}\n", .{SDL.SDL_GetError()});
+        try stdout.print(
+            "[EXE] Failed to initialize SDL: {s}\n",
+            .{SDL.SDL_GetError()},
+        );
+        try stdout.flush();
+        try stdout.flush();
         return;
     }
     defer SDL.SDL_Quit();
@@ -83,7 +100,11 @@ pub fn main() !void {
 
     const dev = SDL.SDL_OpenAudioDevice(null, 0, &spec, null, 0);
     if (dev == 0) {
-        try stdout.print("[EXE] Failed to open SDL audio device: {s}\n", .{SDL.SDL_GetError()});
+        try stdout.print(
+            "[EXE] Failed to open SDL audio device: {s}\n",
+            .{SDL.SDL_GetError()},
+        );
+        try stdout.flush();
         return;
     }
     defer SDL.SDL_CloseAudioDevice(dev);
@@ -93,7 +114,11 @@ pub fn main() !void {
 
     // Start SDL audio
     SDL.SDL_PauseAudioDevice(dev, 0);
-    try stdout.print("[EXE] SDL audio started at {d} Hz.\n", .{sid.getSamplingRate()});
+    try stdout.print(
+        "[EXE] SDL audio started at {d} Hz.\n",
+        .{sid.getSamplingRate()},
+    );
+    try stdout.flush();
 
     // Start playback
     player.play();
@@ -111,6 +136,7 @@ pub fn main() !void {
         counter += 1;
         if (counter % 100 == 0) {
             try stdout.print("[MAIN] Counter: {d}\n", .{counter});
+            try stdout.flush();
         }
 
         // Input handling - using movy keyboard
@@ -120,16 +146,34 @@ pub fn main() !void {
                     switch (key.type) {
                         .Escape => {
                             running = false;
-                            try stdout.print("[MAIN] ESC pressed, exiting...\n", .{});
+                            try stdout.print(
+                                "[MAIN] ESC pressed, exiting...\n",
+                                .{},
+                            );
+                            try stdout.flush();
                         },
                         .Char => {
                             if (key.sequence.len == 1) {
                                 if (key.sequence[0] == '1') {
-                                    try stdout.print("[MAIN] Triggering WAV 1!\n", .{});
-                                    try player.addWavSource(wav1.pcm_data, wav1.num_channels);
+                                    try stdout.print(
+                                        "[MAIN] Triggering WAV 1!\n",
+                                        .{},
+                                    );
+                                    try stdout.flush();
+                                    try player.addWavSource(
+                                        wav1.pcm_data,
+                                        wav1.num_channels,
+                                    );
                                 } else if (key.sequence[0] == '2') {
-                                    try stdout.print("[MAIN] Triggering WAV 2!\n", .{});
-                                    try player.addWavSource(wav2.pcm_data, wav2.num_channels);
+                                    try stdout.print(
+                                        "[MAIN] Triggering WAV 2!\n",
+                                        .{},
+                                    );
+                                    try stdout.flush();
+                                    try player.addWavSource(
+                                        wav2.pcm_data,
+                                        wav2.num_channels,
+                                    );
                                 }
                             }
                         },
@@ -141,11 +185,12 @@ pub fn main() !void {
         }
 
         // Sleep to simulate frame timing
-        std.time.sleep(10 * std.time.ns_per_ms);
+        std.Thread.sleep(10 * std.time.ns_per_ms);
     }
 
     // Stop playback
     player.stop();
     SDL.SDL_PauseAudioDevice(dev, 1);
     try stdout.print("[EXE] SDL audio stopped.\n", .{});
+    try stdout.flush();
 }

@@ -13,9 +13,11 @@ pub const SdlDumpPlayer = struct {
     allocator: std.mem.Allocator,
 
     const samplingRate: i32 = 44100;
-    const stdout = std.io.getStdOut().writer();
 
-    pub fn init(allocator: std.mem.Allocator, name: [*:0]const u8) !*SdlDumpPlayer {
+    pub fn init(
+        allocator: std.mem.Allocator,
+        name: [*:0]const u8,
+    ) !*SdlDumpPlayer {
         var self = try std.heap.c_allocator.create(SdlDumpPlayer);
 
         self.resid = try ReSID.init(name);
@@ -49,13 +51,19 @@ pub const SdlDumpPlayer = struct {
         };
 
         if (SDL.SDL_Init(SDL.SDL_INIT_AUDIO) < 0) {
-            try stdout.print("[SdlDumpPlayer] Failed to initialize SDL audio: {s}\n", .{SDL.SDL_GetError()});
+            std.debug.print(
+                "[SdlDumpPlayer] Failed to initialize SDL audio: {s}\n",
+                .{SDL.SDL_GetError()},
+            );
             return error.FailedToInitSDL;
         }
 
         self.dev = SDL.SDL_OpenAudioDevice(null, 0, &spec, null, 0);
         if (self.dev == 0) {
-            try stdout.print("[SdlDumpPlayer] Failed to open SDL audio device: {s}\n", .{SDL.SDL_GetError()});
+            std.debug.print(
+                "[SdlDumpPlayer] Failed to open SDL audio device: {s}\n",
+                .{SDL.SDL_GetError()},
+            );
             return error.FailedToOpenSDLDevice;
         }
 

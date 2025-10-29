@@ -23,8 +23,11 @@ const AudioContext = struct {
     playing: bool,
 };
 
+var stdout_buffer: [1024]u8 = undefined;
+var stdout_writer = std.fs.File.stdout().writer(&stdout_buffer);
+const stdout = &stdout_writer.interface;
+
 fn playerThreadFunc(ctx: *AudioContext) !void {
-    const stdout = std.io.getStdOut().writer();
     const cycles_per_sample = 985248 / 44100; // PAL clock / sample rate
     const samples_per_frame = 880; // 44100 / 50.125 = 879.8 ≈ 880
     var buffer_pos: usize = 0;
@@ -45,7 +48,10 @@ fn playerThreadFunc(ctx: *AudioContext) !void {
 
         // Generate samples directly into buffer
         ctx.mutex.lock();
-        _ = ctx.sid.clock(cycles_per_sample * samples_per_frame, ctx.buf_ptr_next[buffer_pos..buffer_pos + samples_per_frame]);
+        _ = ctx.sid.clock(
+            cycles_per_sample * samples_per_frame,
+            ctx.buf_ptr_next[buffer_pos .. buffer_pos + samples_per_frame],
+        );
         buffer_pos += samples_per_frame;
 
         // If buffer is full, mark as ready and wait for SDL to consume
@@ -56,7 +62,7 @@ fn playerThreadFunc(ctx: *AudioContext) !void {
             // Wait until SDL consumes the buffer
             ctx.mutex.unlock();
             while (ctx.buf_ready and ctx.playing) {
-                std.time.sleep(1 * std.time.ns_per_ms);
+                std.Thread.sleep(1 * std.time.ns_per_ms);
             }
             ctx.mutex.lock();
         }
@@ -65,11 +71,15 @@ fn playerThreadFunc(ctx: *AudioContext) !void {
         ctx.mutex.unlock();
 
         // Sleep for one PAL frame (50.125 Hz = 19.950125 ms)
-        std.time.sleep(19950124);
+        std.Thread.sleep(19950124);
     }
 }
 
-fn audioCallback(userdata: ?*anyopaque, stream: [*c]u8, len: c_int) callconv(.C) void {
+fn audioCallback(
+    userdata: ?*anyopaque,
+    stream: [*c]u8,
+    len: c_int,
+) callconv(.c) void {
     const ctx: *AudioContext = @ptrCast(@alignCast(userdata));
 
     ctx.mutex.lock();
@@ -90,7 +100,6 @@ fn audioCallback(userdata: ?*anyopaque, stream: [*c]u8, len: c_int) callconv(.C)
 
 pub fn main() !void {
     const gpa = std.heap.page_allocator;
-    const stdout = std.io.getStdOut().writer();
 
     // Parse command-line arguments
     const args = try std.process.argsAlloc(gpa);
@@ -142,7 +151,10 @@ pub fn main() !void {
 
     // Initialize SDL audio
     if (SDL.SDL_Init(SDL.SDL_INIT_AUDIO) < 0) {
-        try stdout.print("[ERROR] Failed to initialize SDL: {s}\n", .{SDL.SDL_GetError()});
+        try stdout.print(
+            "[ERROR] Failed to initialize SDL: {s}\n",
+            .{SDL.SDL_GetError()},
+        );
         return error.SDLInitFailed;
     }
     defer SDL.SDL_Quit();
@@ -158,7 +170,10 @@ pub fn main() !void {
 
     const dev = SDL.SDL_OpenAudioDevice(null, 0, &spec, null, 0);
     if (dev == 0) {
-        try stdout.print("[ERROR] Failed to open SDL audio device: {s}\n", .{SDL.SDL_GetError()});
+        try stdout.print(
+            "[ERROR] Failed to open SDL audio device: {s}\n",
+            .{SDL.SDL_GetError()},
+        );
         return error.SDLAudioFailed;
     }
     defer SDL.SDL_CloseAudioDevice(dev);
@@ -168,15 +183,26 @@ pub fn main() !void {
     try stdout.print("[SID PLAYER] Audio started at 44100 Hz\n", .{});
 
     // Spawn playback thread
-    const player_thread = try std.Thread.spawn(.{}, playerThreadFunc, .{&audio_ctx});
+    const player_thread = try std.Thread.spawn(
+        .{},
+        playerThreadFunc,
+        .{&audio_ctx},
+    );
     defer player_thread.join();
 
     // Main loop - wait for user input
     try stdout.print("[SID PLAYER] Playing... Press Enter to stop.\n", .{});
-    _ = std.io.getStdIn().reader().readByte() catch null;
+    var read_buf: [1]u8 = undefined;
+    var stdin_reader = std.fs.File.stdin().reader(&read_buf);
+    const reader: *std.io.Reader = &stdin_reader.interface;
+    var slices = [_][]u8{&read_buf};
+    _ = reader.readVec(&slices) catch 0;
 
     // Stop playback
     audio_ctx.playing = false;
     SDL.SDL_PauseAudioDevice(dev, 1);
-    try stdout.print("[SID PLAYER] Stopped. Frames played: {d}\n", .{audio_ctx.frame_counter});
+    try stdout.print(
+        "[SID PLAYER] Stopped. Frames played: {d}\n",
+        .{audio_ctx.frame_counter},
+    );
 }

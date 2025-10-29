@@ -64,7 +64,9 @@ pub const SidFile = struct {
     pub fn parseHeader(self: *SidFile) !void {
         if (self.data.len < 124) return error.InvalidSid;
 
-        self.header = @bitCast(@as(*const SidHeader, @alignCast(@ptrCast(&self.data[0]))).*);
+        self.header = @bitCast(
+            @as(*const SidHeader, @alignCast(@ptrCast(&self.data[0]))).*,
+        );
 
         if (!std.mem.eql(u8, &@as([4]u8, self.header.id), "PSID") and
             !std.mem.eql(u8, &@as([4]u8, self.header.id), "RSID"))
@@ -106,35 +108,22 @@ pub const SidFile = struct {
     }
 
     pub fn printHeader(self: *SidFile) !void {
-        const stdout = std.io.getStdOut().writer();
+        var stdout_buffer: [1024]u8 = undefined;
+        var stdout_writer = std.fs.File.stdout().writer(&stdout_buffer);
+        const stdout = &stdout_writer.interface;
+
         try stdout.print("[sidfile] Loaded Sid tune: {s}\n", .{self.getName()});
         try stdout.print("[sidfile] Author         : {s}\n", .{self.getAuthor()});
         try stdout.print("[sidfile] Release Info   : {s}\n", .{self.getRelease()});
         try stdout.print("[sidfile] ID             : {s}\n", .{self.getId()});
         try stdout.print("[sidfile] Version        : {X:0>4}\n", .{self.header.version});
-        try stdout.print("[sidfile] Data offset    : {X:0>4}\n", .{
-            self.header.data_offset,
-        });
-        try stdout.print("[sidfile] Load address   : {X:0>4}\n", .{
-            self.header.load_address,
-        });
-        try stdout.print("[sidfile] Init address   : {X:0>4}\n", .{
-            self.header.init_address,
-        });
-        try stdout.print("[sidfile] Play address   : {X:0>4}\n", .{
-            self.header.play_address,
-        });
-        try stdout.print("[sidfile] Number of songs: {X:0>4}\n", .{
-            self.header.num_songs,
-        });
-        try stdout.print("[sidfile] Start song#    : {X:0>4}\n", .{
-            self.header.start_song,
-        });
-        try stdout.print("[sidfile] Speed          : {X:0>8}\n", .{
-            self.header.speed,
-        });
-        try stdout.print("[sidfile] Filesize       : {X:0>8}\n", .{
-            self.file_size,
-        });
+        try stdout.print("[sidfile] Data offset    : {X:0>4}\n", .{self.header.data_offset});
+        try stdout.print("[sidfile] Load address   : {X:0>4}\n", .{self.header.load_address});
+        try stdout.print("[sidfile] Init address   : {X:0>4}\n", .{self.header.init_address});
+        try stdout.print("[sidfile] Play address   : {X:0>4}\n", .{self.header.play_address});
+        try stdout.print("[sidfile] Number of songs: {X:0>4}\n", .{self.header.num_songs});
+        try stdout.print("[sidfile] Start song#    : {X:0>4}\n", .{self.header.start_song});
+        try stdout.print("[sidfile] Speed          : {X:0>8}\n", .{self.header.speed});
+        try stdout.print("[sidfile] Filesize       : {X:0>8}\n", .{self.file_size});
     }
 };

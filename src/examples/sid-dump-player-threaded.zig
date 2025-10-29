@@ -13,15 +13,19 @@ fn playerThreadFunc(player: *DumpPlayer) !void {
         if (!player.update()) {
             player.stop();
         }
-        std.time.sleep(35 * std.time.ns_per_ms);
+        std.Thread.sleep(35 * std.time.ns_per_ms);
     }
 }
 
+var stdout_buffer: [1024]u8 = undefined;
+var stdout_writer = std.fs.File.stdout().writer(&stdout_buffer);
+const stdout = &stdout_writer.interface;
+
 pub fn main() !void {
     const gpa = std.heap.page_allocator;
-    const stdout = std.io.getStdOut().writer();
 
     try stdout.print("[EXE] dump player demo threaded!\n", .{});
+    try stdout.flush();
 
     // create a ReSid instance and configure it
     var sid = try Sid.init("zigsid#1");
@@ -47,25 +51,37 @@ pub fn main() !void {
     };
 
     if (SDL.SDL_Init(SDL.SDL_INIT_AUDIO) < 0) {
-        try stdout.print("[EXE] failed to initialize SDL audio: {s}\n", .{SDL.SDL_GetError()});
+        try stdout.print(
+            "[EXE] failed to initialize SDL audio: {s}\n",
+            .{SDL.SDL_GetError()},
+        );
+        try stdout.flush();
         return;
     }
     defer SDL.SDL_Quit();
 
     const dev = SDL.SDL_OpenAudioDevice(null, 0, &spec, null, 0);
     if (dev == 0) {
-        try stdout.print("[EXE] failed to open SDL audio device: {s}\n", .{SDL.SDL_GetError()});
+        try stdout.print(
+            "[EXE] failed to open SDL audio device: {s}\n",
+            .{SDL.SDL_GetError()},
+        );
+        try stdout.flush();
         return;
     }
     defer SDL.SDL_CloseAudioDevice(dev);
 
     SDL.SDL_PauseAudioDevice(dev, 0); // Start SDL audio
-    try stdout.print("[EXE] sdl audio started at {d} Hz.\n", .{sid.getSamplingRate()});
+    try stdout.print(
+        "[EXE] sdl audio started at {d} Hz.\n",
+        .{sid.getSamplingRate()},
+    );
     // -- end of SDL initialization
 
     // start the playback, and thread for calling the update function
     player.play();
-    const playerThread = try std.Thread.spawn(.{}, playerThreadFunc, .{&player});
+    const playerThread =
+        try std.Thread.spawn(.{}, playerThreadFunc, .{&player});
     defer playerThread.join(); // Wait for the thread to finish (if needed)
 
     // do something in main: print the Sid registers, and player stats
@@ -78,24 +94,35 @@ pub fn main() !void {
         }
         try stdout.print("\n", .{});
 
-        try stdout.print("[EXE] {d} buffers played, {d} buffer underruns, {d} Sid frames\n", .{
-            player.getPlayerContext().stat_bufwrites,
-            player.getPlayerContext().stat_buf_underruns,
-            player.getPlayerContext().stat_framectr,
-        });
+        try stdout.print(
+            "[EXE] {d} buffers played, {d} buffer underruns, {d} Sid frames\n",
+            .{
+                player.getPlayerContext().stat_bufwrites,
+                player.getPlayerContext().stat_buf_underruns,
+                player.getPlayerContext().stat_framectr,
+            },
+        );
+        try stdout.flush();
 
-        std.time.sleep(0.5 * std.time.ns_per_s);
+        std.Thread.sleep(0.5 * std.time.ns_per_s);
     }
 
     try stdout.print("[EXE] press enter to exit\n", .{});
-    _ = std.io.getStdIn().reader().readByte() catch null;
+    try stdout.flush();
+    var read_buf: [1]u8 = undefined;
+    var stdin_reader = std.fs.File.stdin().reader(&read_buf);
+    const reader: *std.io.Reader = &stdin_reader.interface;
+    var slices = [_][]u8{&read_buf};
+    _ = reader.readVec(&slices) catch 0;
 
     player.stop();
 
     if (player.getPlayState() == Playstate.stopped) {
         try stdout.print("[EXE] player stopped!\n", .{});
+        try stdout.flush();
     }
 
     SDL.SDL_PauseAudioDevice(dev, 1); // Stop SDL audio
     try stdout.print("[EXE] sdl audio stopped.\n", .{});
+    try stdout.flush();
 }

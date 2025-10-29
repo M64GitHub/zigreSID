@@ -7,7 +7,9 @@ const WavWriter = ReSid.WavWriter;
 
 pub fn main() !void {
     const gpa = std.heap.page_allocator;
-    const stdout = std.io.getStdOut().writer();
+    var stdout_buffer: [1024]u8 = undefined;
+    var stdout_writer = std.fs.File.stdout().writer(&stdout_buffer);
+    const stdout = &stdout_writer.interface;
     const sampling_rate = 44100;
 
     const pcm_buffer = try gpa.alloc(i16, sampling_rate * 10); // audio buffer
@@ -28,6 +30,7 @@ pub fn main() !void {
     // this will create 10 seconds audio
     const steps_rendered = player.renderAudio(0, 50 * 10, pcm_buffer);
     try stdout.print("[EXE] Steps rendered {d}\n", .{steps_rendered});
+    try stdout.flush();
 
     // create a stereo wav file and write it to disk
     var mywav = WavWriter.init(gpa, "sid-out.wav");

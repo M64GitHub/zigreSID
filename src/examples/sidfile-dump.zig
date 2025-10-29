@@ -16,14 +16,16 @@ pub const ParsedArgs = struct {
     wav_output: ?[]const u8,
 };
 
+var stdout_buffer: [1024]u8 = undefined;
+var stdout_writer = std.fs.File.stdout().writer(&stdout_buffer);
+const stdout = &stdout_writer.interface;
+
 pub fn main() !void {
-    const stdout = std.io.getStdOut().writer();
     const gpa = std.heap.page_allocator;
 
     // parse commandline
     const args = try parseCommandLine(gpa);
 
-    std.debug.print("[EXE] loading Sid file '{s}'\n", .{args.sid_filename});
     // allocate output dump
     const dump_size = args.max_frames * 25; // 25 registers per frame
     var sid_dump = try gpa.alloc(u8, dump_size);
@@ -32,18 +34,11 @@ pub fn main() !void {
     var sid_file = SidFile.init();
     defer sid_file.deinit(gpa);
 
-    // load .sid file
-    std.debug.print("[EXE] SID filename raw bytes: ", .{});
-    for (args.sid_filename) |byte| {
-        std.debug.print("{X:02} ", .{byte});
-    }
-    std.debug.print("\n", .{});
-    std.debug.print("[EXE] loading Sid file '{s}'\n", .{args.sid_filename});
     try stdout.print("[EXE] loading Sid file '{s}'\n", .{args.sid_filename});
     if (sid_file.load(gpa, args.sid_filename)) {
-        std.debug.print("[EXE] Loaded SID file successfully!\n", .{});
+        try stdout.print("[EXE] Loaded SID file successfully!\n", .{});
     } else |err| {
-        std.debug.print("[ERROR] Failed to load SID file: {}\n", .{err});
+        try stdout.print("[ERROR] Failed to load SID file: {}\n", .{err});
         return err;
     }
 
@@ -80,14 +75,19 @@ pub fn main() !void {
         var file = try std.fs.cwd().createFile(args.output_filename, .{});
         defer file.close();
         try file.writeAll(sid_dump);
-        std.debug.print("[EXE] SID binary dump saved to {s}!\n", .{args.output_filename});
+        try stdout.print(
+            "[EXE] SID binary dump saved to {s}!\n",
+            .{args.output_filename},
+        );
     }
 
     // convert to wave file, and save
     if (args.wav_output) |filename| {
-        std.debug.print("[EXE] converting SID to WAV: {s}\n", .{filename});
+        try stdout.print("[EXE] converting SID to WAV: {s}\n", .{filename});
+        try stdout.flush();
         // TODO: Implement WAV conversion logic here
     }
+    try stdout.flush();
 }
 
 fn parseCommandLine(allocator: std.mem.Allocator) !ParsedArgs {
@@ -95,7 +95,7 @@ fn parseCommandLine(allocator: std.mem.Allocator) !ParsedArgs {
     defer std.process.argsFree(allocator, args);
 
     if (args.len < 4) {
-        std.debug.print("Usage: sid-dump <SID file> <output dump> <frames> [--debug] [--csv-dec] [--csv-hex] [--wav <wavfile>]\n", .{});
+        try stdout.print("Usage: sid-dump <SID file> <output dump> <frames> [--debug] [--csv-dec] [--csv-hex] [--wav <wavfile>]\n", .{});
         return error.InvalidArguments;
     }
 
@@ -121,15 +121,24 @@ fn parseCommandLine(allocator: std.mem.Allocator) !ParsedArgs {
             parsed.csv_format = .decimal;
         } else if (std.mem.eql(u8, args[i], "--wav")) {
             if (i + 1 >= args.len) {
-                std.debug.print("Error: --wav requires an output filename.\n", .{});
-                std.debug.print("Usage: sid-dump <SID file> <output dump> <frames> [--debug] [--csv-dec] [--csv-hex] [--wav <wavfile>]\n", .{});
+                try stdout.print(
+                    "Error: --wav requires an output filename.\n",
+                    .{},
+                );
+                try stdout.print(
+                    "Usage: sid-dump <SID file> <output dump> <frames> [--debug] [--csv-dec] [--csv-hex] [--wav <wavfile>]\n",
+                    .{},
+                );
                 return error.InvalidArguments;
             }
             parsed.wav_output = args[i + 1]; // Store WAV filename
             i += 1; // Skip next argument
         } else {
-            std.debug.print("Error: Unknown option {s}\n", .{args[i]});
-            std.debug.print("Usage: sid-dump <SID file> <output dump> <frames> [--debug] [--csv-dec] [--csv-hex] [--wav <wavfile>]\n", .{});
+            try stdout.print("Error: Unknown option {s}\n", .{args[i]});
+            try stdout.print(
+                "Usage: sid-dump <SID file> <output dump> <frames> [--debug] [--csv-dec] [--csv-hex] [--wav <wavfile>]\n",
+                .{},
+            );
             return error.InvalidArguments;
         }
     }
@@ -138,8 +147,6 @@ fn parseCommandLine(allocator: std.mem.Allocator) !ParsedArgs {
 }
 
 fn hexDumpRegisters(frame: usize, registers: []const u8) void {
-    var stdout = std.io.getStdOut().writer();
-
     stdout.print("[{X:06}] ", .{frame}) catch return;
     for (registers) |reg| {
         stdout.print("{X:02} ", .{reg}) catch return;
@@ -152,21 +159,27 @@ fn writeCsvDump(output_filename: []const u8, sid_dump: []const u8, max_frames: u
     var file = try std.fs.cwd().createFile(output_filename, .{});
     defer file.close();
 
-    // Write CSV header
-    try file.writeAll("Frame, R00, R01, R02, ..., R24\n");
+    // Create writer with buffer
+    var write_buf: [4096]u8 = undefined;
+    var file_writer = file.writer(&write_buf);
+    const writer: *std.io.Writer = &file_writer.interface;
 
-    // Write each frame’s registers in CSV format
+    // Write CSV header
+    try writer.writeAll("Frame, R00, R01, R02, ..., R24\n");
+
+    // Write each frame's registers in CSV format
     for (0..max_frames) |frame| {
-        try file.writer().print("{d}, ", .{frame});
+        try writer.print("{d}, ", .{frame});
         for (0..25) |r| {
             switch (format) {
-                .hex => try file.writer().print("{X:02}", .{sid_dump[frame * 25 + r]}),
-                .decimal => try file.writer().print("{d}", .{sid_dump[frame * 25 + r]}),
+                .hex => try writer.print("{X:02}", .{sid_dump[frame * 25 + r]}),
+                .decimal => try writer.print("{d}", .{sid_dump[frame * 25 + r]}),
             }
-            if (r < 24) try file.writer().writeAll(", ");
+            if (r < 24) try writer.writeAll(", ");
         }
-        try file.writer().writeAll("\n");
+        try writer.writeAll("\n");
     }
+    try writer.flush();
 
-    std.debug.print("[EXE] CSV dump saved to {s}!\n", .{output_filename});
+    try stdout.print("[EXE] CSV dump saved to {s}!\n", .{output_filename});
 }
