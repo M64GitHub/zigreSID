@@ -1,6 +1,6 @@
 # SID Soundchip Emulation in Zig  
 ![License](https://img.shields.io/badge/license-MIT-brightgreen?style=flat)
-![Version](https://img.shields.io/badge/version-0.4.0-8a2be2?style=flat)
+![Version](https://img.shields.io/badge/version-0.5.0-8a2be2?style=flat)
 ![Zig](https://img.shields.io/badge/Zig-0.14.0-orange?style=flat)  
 
 Authentic MOS 6581/8580 SID soundchip emulation with Zig! This project provides SID audio generation, processing, and playback, designed for precision and flexibility.
@@ -170,16 +170,7 @@ zig build
 ## Using zigreSID In Your Project
 To add zigreSID as a dependency, use:
 ```sh
-zig fetch --save https://github.com/M64GitHub/zigreSID/archive/refs/tags/v0.4.0-alpha.tar.gz
-```
-This will add the dependency to your `build.zig.zon`:
-```zig
-.dependencies = .{
-        .resid = .{
-            .url = "https://github.com/M64GitHub/zigreSID/archive/refs/tags/v0.4.0-alpha.tar.gz",
-            .hash = "resid-0.4.0-LzaBAhk4CwDmqAc2eFV0-PTn1l86jNLrg7oaZ4RcL3vT",
-        },
-},
+zig fetch --save https://github.com/M64GitHub/zigreSID/archive/refs/tags/v0.5.0-alpha.tar.gz
 ```
 
 In your `build.zig`, import the `resid` module as follows:

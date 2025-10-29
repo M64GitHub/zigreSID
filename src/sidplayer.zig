@@ -1,7 +1,6 @@
 const std = @import("std");
 const SidFile = @import("sidfile").SidFile;
 const C64 = @import("zig64");
-const stdout = std.io.getStdOut().writer();
 
 pub const SidPlayer = struct {
     sid_file: SidFile,
@@ -46,10 +45,12 @@ pub const SidPlayer = struct {
             mem_address = @as(u16, sid_rawmem[1]) * 256 +
                 @as(u16, sid_rawmem[0]);
             if (self.dbg_enabled) {
-                try stdout
-                    .print("[sidplayer] '.prg' format! load arress: {X:0>4}\n", .{
-                    mem_address,
-                });
+                std.debug.print(
+                    "[sidplayer] '.prg' format! load arress: {X:0>4}\n",
+                    .{
+                        mem_address,
+                    },
+                );
             }
             is_prg = true;
         } else {
@@ -63,7 +64,7 @@ pub const SidPlayer = struct {
         if (is_prg) {
             const loaded_addr = try local_c64.setPrg(sid_rawmem, false);
             if (self.dbg_enabled) {
-                try stdout.print(
+                std.debug.print(
                     "[sidplayer] sid file loaded to address : {X:0>4}\n",
                     .{loaded_addr},
                 );
@@ -71,7 +72,7 @@ pub const SidPlayer = struct {
         } else {
             self.c64.cpu.writeMem(sid_rawmem, mem_address);
             if (self.dbg_enabled) {
-                try stdout.print(
+                std.debug.print(
                     "[sidplayer] sid file loaded to address : {X:0>4} via memcpy\n",
                     .{mem_address},
                 );

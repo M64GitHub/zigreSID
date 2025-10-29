@@ -87,7 +87,10 @@ pub const WavWriter = struct {
 
         // Copy header and PCM data into the buffer
         @memcpy(wav_buffer[0..@sizeOf(WavHeader)], std.mem.asBytes(&header));
-        @memcpy(wav_buffer[@sizeOf(WavHeader)..], std.mem.sliceAsBytes(pcm_buffer));
+        @memcpy(
+            wav_buffer[@sizeOf(WavHeader)..],
+            std.mem.sliceAsBytes(pcm_buffer),
+        );
 
         return wav_buffer;
     }
@@ -102,7 +105,10 @@ pub const WavWriter = struct {
     }
 
     fn writeToFile(self: *WavWriter, wav_data: []u8) !void {
-        var file = try std.fs.cwd().createFile(self.filename, .{ .truncate = true });
+        var file = try std.fs.cwd().createFile(
+            self.filename,
+            .{ .truncate = true },
+        );
         defer file.close();
         try file.writeAll(wav_data);
     }

@@ -15,40 +15,136 @@ pub fn build(b: *std.Build) void {
     const mod_flagz = dep_flagz.module("flagz");
 
     // build reSID C++ shared library and C wrapper
-    const resid_lib = b.addStaticLibrary(.{
-        .name = "sid",
+    const resid_lib_mod = b.addModule("resid_lib", .{
         .target = target,
         .optimize = optimize,
     });
 
-    resid_lib.addIncludePath(.{ .cwd_relative = usr_include_path });
-    resid_lib.addIncludePath(.{ .cwd_relative = resid_include_path });
-    resid_lib.linkLibCpp();
+    resid_lib_mod.addIncludePath(.{ .cwd_relative = usr_include_path });
+    resid_lib_mod.addIncludePath(.{ .cwd_relative = resid_include_path });
 
-    resid_lib.addCSourceFiles(.{
-        .files = &.{
-            "resid-cpp/resid/envelope.cc",
-            "resid-cpp/resid/extfilt.cc",
-            "resid-cpp/resid/filter.cc",
-            "resid-cpp/resid/pot.cc",
-            "resid-cpp/resid/sid.cc",
-            "resid-cpp/resid/version.cc",
-            "resid-cpp/resid/voice.cc",
-            "resid-cpp/resid/wave6581_PS_.cc",
-            "resid-cpp/resid/wave6581_PST.cc",
-            "resid-cpp/resid/wave6581_P_T.cc",
-            "resid-cpp/resid/wave6581__ST.cc",
-            "resid-cpp/resid/wave8580_PS_.cc",
-            "resid-cpp/resid/wave8580_PST.cc",
-            "resid-cpp/resid/wave8580_P_T.cc",
-            "resid-cpp/resid/wave8580__ST.cc",
-            "resid-cpp/resid/wave.cc",
-            "resid-cpp/resid.cpp",
-            "resid-cpp/resid-dmpplayer.cpp",
-            "resid-cpp/resid-c-wrapper.cpp",
+    resid_lib_mod.addCSourceFile(
+        .{
+            .file = b.path("resid-cpp/resid/envelope.cc"),
+            .flags = &.{ "-x", "c++", "-DVERSION=\"m64-000\"", "-Ofast" },
         },
-        .flags = &.{ "-x", "c++", "-DVERSION=\"m64-000\"", "-Ofast" },
+    );
+    resid_lib_mod.addCSourceFile(
+        .{
+            .file = b.path("resid-cpp/resid/extfilt.cc"),
+            .flags = &.{ "-x", "c++", "-DVERSION=\"m64-000\"", "-Ofast" },
+        },
+    );
+    resid_lib_mod.addCSourceFile(
+        .{
+            .file = b.path("resid-cpp/resid/filter.cc"),
+            .flags = &.{ "-x", "c++", "-DVERSION=\"m64-000\"", "-Ofast" },
+        },
+    );
+    resid_lib_mod.addCSourceFile(
+        .{
+            .file = b.path("resid-cpp/resid/pot.cc"),
+            .flags = &.{ "-x", "c++", "-DVERSION=\"m64-000\"", "-Ofast" },
+        },
+    );
+    resid_lib_mod.addCSourceFile(
+        .{
+            .file = b.path("resid-cpp/resid/sid.cc"),
+            .flags = &.{ "-x", "c++", "-DVERSION=\"m64-000\"", "-Ofast" },
+        },
+    );
+    resid_lib_mod.addCSourceFile(
+        .{
+            .file = b.path("resid-cpp/resid/version.cc"),
+            .flags = &.{ "-x", "c++", "-DVERSION=\"m64-000\"", "-Ofast" },
+        },
+    );
+    resid_lib_mod.addCSourceFile(
+        .{
+            .file = b.path("resid-cpp/resid/voice.cc"),
+            .flags = &.{ "-x", "c++", "-DVERSION=\"m64-000\"", "-Ofast" },
+        },
+    );
+    resid_lib_mod.addCSourceFile(
+        .{
+            .file = b.path("resid-cpp/resid/wave6581_PS_.cc"),
+            .flags = &.{ "-x", "c++", "-DVERSION=\"m64-000\"", "-Ofast" },
+        },
+    );
+    resid_lib_mod.addCSourceFile(
+        .{
+            .file = b.path("resid-cpp/resid/wave6581_PST.cc"),
+            .flags = &.{ "-x", "c++", "-DVERSION=\"m64-000\"", "-Ofast" },
+        },
+    );
+    resid_lib_mod.addCSourceFile(
+        .{
+            .file = b.path("resid-cpp/resid/wave6581_P_T.cc"),
+            .flags = &.{ "-x", "c++", "-DVERSION=\"m64-000\"", "-Ofast" },
+        },
+    );
+    resid_lib_mod.addCSourceFile(
+        .{
+            .file = b.path("resid-cpp/resid/wave6581__ST.cc"),
+            .flags = &.{ "-x", "c++", "-DVERSION=\"m64-000\"", "-Ofast" },
+        },
+    );
+    resid_lib_mod.addCSourceFile(
+        .{
+            .file = b.path("resid-cpp/resid/wave8580_PS_.cc"),
+            .flags = &.{ "-x", "c++", "-DVERSION=\"m64-000\"", "-Ofast" },
+        },
+    );
+    resid_lib_mod.addCSourceFile(
+        .{
+            .file = b.path("resid-cpp/resid/wave8580_PST.cc"),
+            .flags = &.{ "-x", "c++", "-DVERSION=\"m64-000\"", "-Ofast" },
+        },
+    );
+    resid_lib_mod.addCSourceFile(
+        .{
+            .file = b.path("resid-cpp/resid/wave8580_P_T.cc"),
+            .flags = &.{ "-x", "c++", "-DVERSION=\"m64-000\"", "-Ofast" },
+        },
+    );
+    resid_lib_mod.addCSourceFile(
+        .{
+            .file = b.path("resid-cpp/resid/wave8580__ST.cc"),
+            .flags = &.{ "-x", "c++", "-DVERSION=\"m64-000\"", "-Ofast" },
+        },
+    );
+    resid_lib_mod.addCSourceFile(
+        .{
+            .file = b.path("resid-cpp/resid/wave.cc"),
+            .flags = &.{ "-x", "c++", "-DVERSION=\"m64-000\"", "-Ofast" },
+        },
+    );
+    resid_lib_mod.addCSourceFile(
+        .{
+            .file = b.path("resid-cpp/resid.cpp"),
+            .flags = &.{ "-x", "c++", "-DVERSION=\"m64-000\"", "-Ofast" },
+        },
+    );
+    resid_lib_mod.addCSourceFile(
+        .{
+            .file = b.path("resid-cpp/resid-dmpplayer.cpp"),
+            .flags = &.{ "-x", "c++", "-DVERSION=\"m64-000\"", "-Ofast" },
+        },
+    );
+    resid_lib_mod.addCSourceFile(
+        .{
+            .file = b.path("resid-cpp/resid-c-wrapper.cpp"),
+            .flags = &.{ "-x", "c++", "-DVERSION=\"m64-000\"", "-Ofast" },
+        },
+    );
+
+    const resid_lib = b.addLibrary(.{
+        .linkage = .static,
+        .name = "sid",
+        .root_module = resid_lib_mod,
     });
+    resid_lib.linkLibC();
+    resid_lib.linkLibCpp();
     b.installArtifact(resid_lib);
 
     // -- sub modules
@@ -134,77 +230,105 @@ pub fn build(b: *std.Build) void {
     // --
 
     // Build all executables (unchanged until here)
-    const exe_dumpplayer = b.addExecutable(.{
-        .name = "dump-player",
+    const exe_dumpplayer_mod = b.addModule("exe_dumpplayer", .{
         .root_source_file = b.path("src/examples/sid-dump-player.zig"),
         .target = target,
         .optimize = optimize,
     });
-    exe_dumpplayer.addIncludePath(.{ .cwd_relative = usr_include_path });
-    exe_dumpplayer.root_module.addImport("resid", mod_resid);
-    exe_dumpplayer.linkSystemLibrary("SDL2");
+    exe_dumpplayer_mod.addIncludePath(.{ .cwd_relative = usr_include_path });
+    exe_dumpplayer_mod.addImport("resid", mod_resid);
+    exe_dumpplayer_mod.linkSystemLibrary("SDL2", .{});
+
+    const exe_dumpplayer = b.addExecutable(.{
+        .name = "dump-player",
+        .root_module = exe_dumpplayer_mod,
+    });
     b.installArtifact(exe_dumpplayer);
 
-    const exe_threaded = b.addExecutable(.{
-        .name = "dump-player-threaded",
+    const exe_threaded_mod = b.addModule("exe_threaded", .{
         .root_source_file = b.path("src/examples/sid-dump-player-threaded.zig"),
         .target = target,
         .optimize = optimize,
     });
-    exe_threaded.addIncludePath(.{ .cwd_relative = usr_include_path });
-    exe_threaded.root_module.addImport("resid", mod_resid);
-    exe_threaded.linkSystemLibrary("SDL2");
+    exe_threaded_mod.addIncludePath(.{ .cwd_relative = usr_include_path });
+    exe_threaded_mod.addImport("resid", mod_resid);
+    exe_threaded_mod.linkSystemLibrary("SDL2", .{});
+
+    const exe_threaded = b.addExecutable(.{
+        .name = "dump-player-threaded",
+        .root_module = exe_threaded_mod,
+    });
     b.installArtifact(exe_threaded);
 
-    const exe_sdl = b.addExecutable(.{
-        .name = "sdl-dump-player",
+    const exe_sdl_mod = b.addModule("exe_sdl", .{
         .root_source_file = b.path("src/examples/sdl-sid-dump-player.zig"),
         .target = target,
         .optimize = optimize,
     });
-    exe_sdl.addIncludePath(.{ .cwd_relative = usr_include_path });
-    exe_sdl.linkSystemLibrary("SDL2");
-    exe_sdl.root_module.addImport("resid", mod_resid);
+    exe_sdl_mod.addIncludePath(.{ .cwd_relative = usr_include_path });
+    exe_sdl_mod.addImport("resid", mod_resid);
+    exe_sdl_mod.linkSystemLibrary("SDL2", .{});
+
+    const exe_sdl = b.addExecutable(.{
+        .name = "sdl-dump-player",
+        .root_module = exe_sdl_mod,
+    });
     b.installArtifact(exe_sdl);
 
-    const exe_renderaudio = b.addExecutable(.{
-        .name = "sid-render-audio",
+    const exe_renderaudio_mod = b.addModule("exe_renderaudio", .{
         .root_source_file = b.path("src/examples/render-audio-example.zig"),
         .target = target,
         .optimize = optimize,
     });
-    exe_renderaudio.addIncludePath(.{ .cwd_relative = usr_include_path });
-    exe_renderaudio.root_module.addImport("resid", mod_resid);
-    exe_renderaudio.root_module.addImport("flagz", mod_flagz);
-    exe_renderaudio.linkSystemLibrary("SDL2");
+    exe_renderaudio_mod.addIncludePath(.{ .cwd_relative = usr_include_path });
+    exe_renderaudio_mod.addImport("resid", mod_resid);
+    exe_renderaudio_mod.addImport("flagz", mod_flagz);
+    exe_renderaudio_mod.linkSystemLibrary("SDL2", .{});
+
+    const exe_renderaudio = b.addExecutable(.{
+        .name = "sid-render-audio",
+        .root_module = exe_renderaudio_mod,
+    });
     b.installArtifact(exe_renderaudio);
 
-    const exe_wavwriter = b.addExecutable(.{
-        .name = "siddump-wav-writer",
+    const exe_wavwriter_mod = b.addModule("exe_wavwriter", .{
         .root_source_file = b.path("src/examples/wav-writer-example.zig"),
         .target = target,
         .optimize = optimize,
     });
-    exe_wavwriter.root_module.addImport("resid", mod_resid);
+    exe_wavwriter_mod.addImport("resid", mod_resid);
+
+    const exe_wavwriter = b.addExecutable(.{
+        .name = "siddump-wav-writer",
+        .root_module = exe_wavwriter_mod,
+    });
     b.installArtifact(exe_wavwriter);
 
-    const exe_sidfile = b.addExecutable(.{
-        .name = "sid-dump",
+    const exe_sidfile_mod = b.addModule("exe_sidfile", .{
         .root_source_file = b.path("src/examples/sidfile-dump.zig"),
         .target = target,
         .optimize = optimize,
     });
-    exe_sidfile.root_module.addImport("resid", mod_resid);
+    exe_sidfile_mod.addImport("resid", mod_resid);
+
+    const exe_sidfile = b.addExecutable(.{
+        .name = "sid-dump",
+        .root_module = exe_sidfile_mod,
+    });
     b.installArtifact(exe_sidfile);
 
-    const exe_sidplayer = b.addExecutable(.{
-        .name = "zigreSID-play-sidfile",
+    const exe_sidplayer_mod = b.addModule("exe_sidplayer", .{
         .root_source_file = b.path("src/examples/sid-player.zig"),
         .target = target,
         .optimize = optimize,
     });
-    exe_sidplayer.root_module.addImport("resid", mod_resid);
-    exe_sidplayer.linkSystemLibrary("SDL2");
+    exe_sidplayer_mod.addImport("resid", mod_resid);
+    exe_sidplayer_mod.linkSystemLibrary("SDL2", .{});
+
+    const exe_sidplayer = b.addExecutable(.{
+        .name = "zigreSID-play-sidfile",
+        .root_module = exe_sidplayer_mod,
+    });
     exe_sidplayer.linkLibC();
     b.installArtifact(exe_sidplayer);
 

@@ -114,7 +114,9 @@ pub const MixingDumpPlayer = struct {
                 const samples_to_mix = @min(remaining, needed_samples);
 
                 // Get source slice
-                const src_slice = wav_src.pcm_data[wav_src.position .. wav_src.position + samples_to_mix];
+                const src_slice =
+                    wav_src.pcm_data[wav_src.position .. wav_src.position +
+                    samples_to_mix];
 
                 // Handle mono/stereo conversion if needed
                 if (wav_src.num_channels == 1) {
@@ -132,7 +134,10 @@ pub const MixingDumpPlayer = struct {
                     for (0..samples_to_mix / 2) |i| {
                         const left = src_slice[i * 2];
                         const right = src_slice[i * 2 + 1];
-                        const mixed_sample: i32 = @divTrunc(@as(i32, left) + @as(i32, right), 2);
+
+                        const mixed_sample: i32 = @divTrunc(@as(i32, left) +
+                            @as(i32, right), 2);
+
                         const clamped: i16 = @intCast(std.math.clamp(
                             mixed_sample + @as(i32, buffer[i]),
                             std.math.minInt(i16),

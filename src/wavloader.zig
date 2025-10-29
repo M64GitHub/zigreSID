@@ -42,17 +42,37 @@ pub const WavLoader = struct {
 
         while (pos + 8 <= data.len) {
             const chunk_id = data[pos .. pos + 4];
-            const chunk_size = std.mem.readInt(u32, data[pos + 4 .. pos + 8][0..4], .little);
+            const chunk_size = std.mem.readInt(
+                u32,
+                data[pos + 4 .. pos + 8][0..4],
+                .little,
+            );
 
             if (std.mem.eql(u8, chunk_id, "fmt ")) {
                 if (pos + 8 + chunk_size > data.len) return error.InvalidWavFile;
 
-                const audio_format = std.mem.readInt(u16, data[pos + 8 .. pos + 10][0..2], .little);
+                const audio_format = std.mem.readInt(
+                    u16,
+                    data[pos + 8 .. pos + 10][0..2],
+                    .little,
+                );
                 if (audio_format != 1) return error.UnsupportedWavFormat; // Only PCM supported
 
-                num_channels = std.mem.readInt(u16, data[pos + 10 .. pos + 12][0..2], .little);
-                sample_rate = std.mem.readInt(u32, data[pos + 12 .. pos + 16][0..4], .little);
-                bits_per_sample = std.mem.readInt(u16, data[pos + 22 .. pos + 24][0..2], .little);
+                num_channels = std.mem.readInt(
+                    u16,
+                    data[pos + 10 .. pos + 12][0..2],
+                    .little,
+                );
+                sample_rate = std.mem.readInt(
+                    u32,
+                    data[pos + 12 .. pos + 16][0..4],
+                    .little,
+                );
+                bits_per_sample = std.mem.readInt(
+                    u16,
+                    data[pos + 22 .. pos + 24][0..2],
+                    .little,
+                );
 
                 if (bits_per_sample != 16) return error.UnsupportedBitDepth;
 
@@ -64,19 +84,27 @@ pub const WavLoader = struct {
                 const data_size = chunk_size;
                 const data_start = pos + 8;
 
-                if (data_start + data_size > data.len) return error.InvalidWavFile;
+                if (data_start + data_size > data.len)
+                    return error.InvalidWavFile;
 
                 // Calculate number of samples
                 const bytes_per_sample: usize = 2; // 16-bit
                 const num_samples = data_size / (bytes_per_sample * num_channels);
 
                 // Allocate PCM buffer
-                const pcm_data = try allocator.alloc(i16, num_samples * num_channels);
+                const pcm_data = try allocator.alloc(
+                    i16,
+                    num_samples * num_channels,
+                );
 
                 // Copy PCM data
                 for (0..num_samples * num_channels) |i| {
                     const byte_offset = data_start + i * 2;
-                    pcm_data[i] = std.mem.readInt(i16, data[byte_offset .. byte_offset + 2][0..2], .little);
+                    pcm_data[i] = std.mem.readInt(
+                        i16,
+                        data[byte_offset .. byte_offset + 2][0..2],
+                        .little,
+                    );
                 }
 
                 return WavData{
