@@ -65,7 +65,7 @@ pub const SidFile = struct {
         if (self.data.len < 124) return error.InvalidSid;
 
         self.header = @bitCast(
-            @as(*const SidHeader, @alignCast(@ptrCast(&self.data[0]))).*,
+            @as(*const SidHeader, @ptrCast(@alignCast(&self.data[0]))).*,
         );
 
         if (!std.mem.eql(u8, &@as([4]u8, self.header.id), "PSID") and
@@ -125,5 +125,6 @@ pub const SidFile = struct {
         try stdout.print("[sidfile] Start song#    : {X:0>4}\n", .{self.header.start_song});
         try stdout.print("[sidfile] Speed          : {X:0>8}\n", .{self.header.speed});
         try stdout.print("[sidfile] Filesize       : {X:0>8}\n", .{self.file_size});
+        try stdout.flush();
     }
 };
