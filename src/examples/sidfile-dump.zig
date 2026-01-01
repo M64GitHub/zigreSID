@@ -12,13 +12,40 @@ pub const ParsedArgs = struct {
     max_frames: usize,
     dbg_enabled: bool,
     csv_enabled: bool,
-    csv_format: CsvFormat, // 🔥 NEW: HEX OR DECIMAL!
+    csv_format: CsvFormat,
     wav_output: ?[]const u8,
 };
 
 var stdout_buffer: [1024]u8 = undefined;
 var stdout_writer = std.fs.File.stdout().writer(&stdout_buffer);
 const stdout = &stdout_writer.interface;
+
+fn printUsage() void {
+    stdout.print(
+        \\sid-dump - Convert SID music files to register dump format
+        \\
+        \\Usage: sid-dump <SID file> <output dump> <frames> [options]
+        \\
+        \\Required arguments:
+        \\  <SID file>      Path to input .sid file
+        \\  <output dump>   Path for output dump file (.dmp or .csv)
+        \\  <frames>        Number of frames to capture (50 frames ≈ 1 second at PAL rate)
+        \\
+        \\Options:
+        \\  --debug         Print register values for each frame during capture
+        \\  --csv-dec       Output as CSV with decimal values
+        \\  --csv-hex       Output as CSV with hexadecimal values
+        \\  --wav <file>    Also generate a WAV audio file
+        \\  --help, -h      Show this help message
+        \\
+        \\Examples:
+        \\  sid-dump song.sid song.dmp 3000
+        \\  sid-dump song.sid song.csv 1500 --csv-hex
+        \\  sid-dump song.sid song.dmp 6000 --wav song.wav --debug
+        \\
+    , .{}) catch {};
+    stdout.flush() catch {};
+}
 
 pub fn main() !void {
     const gpa = std.heap.page_allocator;
@@ -94,8 +121,16 @@ fn parseCommandLine(allocator: std.mem.Allocator) !ParsedArgs {
     const args = try std.process.argsAlloc(allocator);
     defer std.process.argsFree(allocator, args);
 
+    // Check for --help or -h flag first
+    for (args) |arg| {
+        if (std.mem.eql(u8, arg, "--help") or std.mem.eql(u8, arg, "-h")) {
+            printUsage();
+            std.process.exit(0);
+        }
+    }
+
     if (args.len < 4) {
-        try stdout.print("Usage: sid-dump <SID file> <output dump> <frames> [--debug] [--csv-dec] [--csv-hex] [--wav <wavfile>]\n", .{});
+        printUsage();
         return error.InvalidArguments;
     }
 
@@ -121,24 +156,15 @@ fn parseCommandLine(allocator: std.mem.Allocator) !ParsedArgs {
             parsed.csv_format = .decimal;
         } else if (std.mem.eql(u8, args[i], "--wav")) {
             if (i + 1 >= args.len) {
-                try stdout.print(
-                    "Error: --wav requires an output filename.\n",
-                    .{},
-                );
-                try stdout.print(
-                    "Usage: sid-dump <SID file> <output dump> <frames> [--debug] [--csv-dec] [--csv-hex] [--wav <wavfile>]\n",
-                    .{},
-                );
+                try stdout.print("Error: --wav requires an output filename.\n\n", .{});
+                printUsage();
                 return error.InvalidArguments;
             }
             parsed.wav_output = args[i + 1]; // Store WAV filename
             i += 1; // Skip next argument
         } else {
-            try stdout.print("Error: Unknown option {s}\n", .{args[i]});
-            try stdout.print(
-                "Usage: sid-dump <SID file> <output dump> <frames> [--debug] [--csv-dec] [--csv-hex] [--wav <wavfile>]\n",
-                .{},
-            );
+            try stdout.print("Error: Unknown option '{s}'\n\n", .{args[i]});
+            printUsage();
             return error.InvalidArguments;
         }
     }
