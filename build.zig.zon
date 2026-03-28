@@ -9,8 +9,8 @@
             .hash = "flagz-1.1.0-vdU1bLhJAQBcZ9qTy1SfJBLoYihjq32fjHjVLR9x_WXV",
         },
         .zig64 = .{
-            .url = "https://github.com/M64GitHub/zig64/archive/refs/tags/v0.5.0.tar.gz",
-            .hash = "zig64-0.5.0-OrrYOvgZBACGKIsII5d6w596RqNmpCCJkAeQxfCsKsQW",
+            .url = "https://github.com/M64GitHub/zig64/archive/refs/tags/v0.6.0.tar.gz",
+            .hash = "zig64-0.5.0-OrrYOrMcBAB4B2tCdpH_VU53ScUgI8DAhjfE2robrigS",
         },
     },
     .paths = .{
